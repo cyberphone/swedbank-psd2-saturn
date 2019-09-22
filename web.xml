@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+    version="2.4">
+
+    <context-param>
+        <description>Logging flag</description>
+        <param-name>logging</param-name>
+        <param-value>@logging@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>PSD2 Client ID</description>
+        <param-name>client_id</param-name>
+        <param-value>@client-id@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>PSD2 Client Secret</description>
+        <param-name>client_secret</param-name>
+        <param-value>@client-secret@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Key Password</description>
+        <param-name>key_password</param-name>
+        <param-value>@key-password@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Keygen2 Key Management Key</description>
+        <param-name>kg2_kmk</param-name>
+        <param-value>@kg2-kmk@</param-value>
+    </context-param>
+    
+    <listener>
+        <listener-class>org.webpki.webapps.swedbank_psd2_saturn.LocalPSD2Service</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.HomeServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>The app</web-resource-name>
+        <url-pattern>/*</url-pattern>
+      </web-resource-collection>
+      <user-data-constraint>
+        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+    </security-constraint>
+
+</web-app>
