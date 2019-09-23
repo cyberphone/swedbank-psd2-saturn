@@ -80,9 +80,10 @@ public class HTML {
             "<img src=\"images/thelab.svg\" " +
             "style=\"cursor:pointer;height:25pt;padding-bottom:10pt;margin-right:30pt\"" +
             " onclick=\"document.location.href='home'\" title=\"Home of the lab...\"/>" +
-            "<div style=\"display:flex;padding-bottom:10pt\">" +
-            "<a href=\"https://github.com/cyberphone/shreq\" target=\"_blank\"><img src=\"images/saturn-psd2.svg\" " +
-            "style=\"height:25pt\" " +
+            "<div style=\"display:flex\">" +
+            "<a href=\"https://github.com/cyberphone/shreq\" target=\"_blank\">" +
+            "<img src=\"images/saturn-psd2.svg\" " +
+            "style=\"height:30pt\" " +
             "title=\"Specifications, source code, etc.\"/></a>" +
             "</div>" +
             "</div>")
@@ -92,9 +93,7 @@ public class HTML {
 
     static void output(HttpServletResponse response, String html)
             throws IOException, ServletException {
-        if (LocalPSD2Service.logging) {
-            logger.info(html);
-        }
+//      logger.info(html);
         response.setContentType("text/html; charset=utf-8");
         response.setHeader("Pragma", "No-Cache");
         response.setDateHeader("EXPIRES", 0);

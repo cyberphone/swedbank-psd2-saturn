@@ -11,15 +11,21 @@
     </context-param>
 
     <context-param>
-        <description>PSD2 Client ID</description>
-        <param-name>client_id</param-name>
-        <param-value>@client-id@</param-value>
+        <description>OAuth2 Client ID</description>
+        <param-name>oauth2_client_id</param-name>
+        <param-value>@oauth2-client-id@</param-value>
     </context-param>
 
     <context-param>
-        <description>PSD2 Client Secret</description>
-        <param-name>client_secret</param-name>
-        <param-value>@client-secret@</param-value>
+        <description>OAuth2 Client Secret</description>
+        <param-name>oauth2_client_secret</param-name>
+        <param-value>@oauth2-client-secret@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>OAuth2 Redirect URI</description>
+        <param-name>oauth2_redirect_uri</param-name>
+        <param-value>@oauth2-redirect-uri@</param-value>
     </context-param>
 
     <context-param>
@@ -43,9 +49,19 @@
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.HomeServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>AuthorizeServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AuthorizeServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AuthorizeServlet</servlet-name>
+        <url-pattern>/authorize</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

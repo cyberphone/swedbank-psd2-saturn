@@ -4,8 +4,8 @@
   <property file="public.properties"/>
 
   <!-- 
-    client_id=
-    client_secret=
+    oauth2_client_id=
+    oauth2_client_secret=
   -->
   <property file="secret.properties"/>
 
@@ -15,9 +15,9 @@
   <property name="temp.dir" value=".tmp"/>
   <property name="dist.dir" location="dist"/>
   <property name="keys.dir" location="keys"/>
-  <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/swedbank_saturn_psd2"/>
+  <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/swedbank_psd2_saturn"/>
 
-  <property name="logging" value="false"/>
+  <property name="logging" value="true"/>
   <property name="bouncycastle" value="true"/>
   
   <property name="application" value="${service_path}.war"/>
@@ -80,8 +80,9 @@
         </classpath>
     </javac>
     <replace file="${temp.dir}/web.xml">
-      <replacefilter token="@client-id@" value="${client_id}"/>
-      <replacefilter token="@client-secret@" value="${client_secret}"/>
+      <replacefilter token="@oauth2-client-id@" value="${oauth2_client_id}"/>
+      <replacefilter token="@oauth2-client-secret@" value="${oauth2_client_secret}"/>
+      <replacefilter token="@oauth2-redirect-uri@" value="${oauth2_redirect_uri}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
       <replacefilter token="@kg2-kmk@" value="${kg2kmk}"/>
       <replacefilter token="@logging@" value="${logging}"/>
