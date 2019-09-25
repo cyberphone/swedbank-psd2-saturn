@@ -17,12 +17,15 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
-
 import java.net.URLEncoder;
-
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
+
+import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONParser;
+import org.webpki.net.HTTPSWrapper;
 
 
 abstract class RESTBaseServlet extends HttpServlet {
@@ -31,7 +34,24 @@ abstract class RESTBaseServlet extends HttpServlet {
     
     static Logger logger = Logger.getLogger(RESTBaseServlet.class.getName());
 
+    static String oauth2Token;
+    
     static final String PSD2_BASE_URL = "https://psd2.api.swedbank.com/psd2";
+    
+    JSONObjectReader getJsonReturnData(HTTPSWrapper wrapper) throws IOException {
+        if (wrapper.getResponseCode() != HttpServletResponse.SC_OK) {
+            throw new IOException("FUCK");
+        }
+        String contentType = wrapper.getContentType();
+        if (!contentType.equals("application/json")) {
+            throw new IOException(contentType);
+        }
+        JSONObjectReader json = JSONParser.parse(wrapper.getData());
+        if (LocalPSD2Service.logging) {
+            logger.info(json.toString());
+        }
+        return json;
+    }
 
     static class RESTUrl {
 
@@ -57,5 +77,25 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
     }
 
+    static class FormData {
+
+        StringBuilder formData = new StringBuilder();
+        boolean next;
+             
+        FormData addElement(String name, String value) throws IOException {
+            if (next) {
+                formData.append('&');
+            }
+            formData.append(name)
+                    .append('=')
+                    .append(URLEncoder.encode(value, "utf-8"));
+            next = true;
+            return this;
+        }
+        
+        public byte[] toByteArray() throws IOException {
+            return formData.toString().getBytes("utf-8");
+        }
+    }
    
 }

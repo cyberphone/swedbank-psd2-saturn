@@ -63,7 +63,7 @@ Res
             response.sendRedirect(location);
        } catch (Exception e) {
             
-        }
+       }
 
         HTML.standardPage(response, null, new StringBuilder(
             "<div class=\"header\">Swedbank PSD2/Saturn API Demo</div>" +
