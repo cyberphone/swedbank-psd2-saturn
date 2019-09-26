@@ -59,6 +59,11 @@
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AuthRedirectServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>DebugServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.DebugServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
@@ -72,6 +77,11 @@
     <servlet-mapping>
         <servlet-name>AuthRedirectServlet</servlet-name>
         <url-pattern>/authredirect</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>DebugServlet</servlet-name>
+        <url-pattern>/debug</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

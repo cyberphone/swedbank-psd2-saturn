@@ -25,13 +25,48 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONParser;
 
 import org.webpki.net.HTTPSWrapper;
 
 public class AuthRedirectServlet extends RESTBaseServlet {
 
     private static final long serialVersionUID = 1L;
-    
+
+    static final JSONObjectWriter consentData;
+
+    static {
+        try {
+            consentData = new JSONObjectWriter(JSONParser.parse(
+        "{" + 
+          "\"access\": {" + 
+            "\"accounts\": [" + 
+              "{" + 
+                "\"iban\": \"string\"" + 
+              "}" + 
+            "]," + 
+            "\"availableAccounts\": \"allAccounts\"," + 
+            "\"balances\": [" + 
+              "{" + 
+                "\"iban\": \"string\"" + 
+              "}" + 
+            "]," + 
+            "\"transactions\": [" + 
+              "{" + 
+                "\"iban\": \"string\"" + 
+              "}" + 
+            "]" + 
+          "}," + 
+          "\"combinedServiceIndicator\": false," + 
+          "\"frequencyPerDay\": 0," + 
+          "\"recurringIndicator\": false," + 
+          "\"validUntil\": \"2019-10-31\"" + 
+        "}"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     static int X_Request_ID = 1536;
     
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -57,8 +92,8 @@ public class AuthRedirectServlet extends RESTBaseServlet {
             .addElement("client_secret", LocalPSD2Service.oauth2ClientSecret)
             .addElement("code", code)
             .addElement("redirect_uri", LocalPSD2Service.oauth2RedirectUri);
-        HTTPSWrapper wrapper = new HTTPSWrapper();
-        wrapper.makePostRequest(PSD2_BASE_URL + "/token", formData.toByteArray());
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader json = getJsonData(wrapper);
         oauth2Token = json.getString("access_token");
         if (LocalPSD2Service.logging) {
@@ -68,9 +103,10 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         // We got the token, now we need a consent for our accounts                   //
         ////////////////////////////////////////////////////////////////////////////////
-        wrapper = new HTTPSWrapper();
-        wrapper.setFollowRedirects(false);
-        JSONObjectWriter requestJson = new JSONObjectWriter();
+        getConsent(consentData, request);
+        if (LocalPSD2Service.logging) {
+            logger.info("consentId=" + consentId);
+        }
         response.sendRedirect("home");
     }
 }

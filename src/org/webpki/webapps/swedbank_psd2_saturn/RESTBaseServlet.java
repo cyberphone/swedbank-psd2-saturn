@@ -17,37 +17,60 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
-
 import java.net.URLEncoder;
-
 import java.util.logging.Logger;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.net.HTTPSWrapper;
-
 import org.webpki.saturn.common.BaseProperties;
+import org.webpki.saturn.common.HttpSupport;
 
 
 abstract class RESTBaseServlet extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
     
+    static final String HTTP_HEADER_X_REQUEST_ID   = "X-Request-ID";
+    static final String HTTP_HEADER_AUTHORIZATION  = "Authorization";
+    static final String HTTP_HEADER_PSU_IP_ADDRESS = "PSU-IP-Address";
+    static final String HTTP_HEADER_PSU_USER_AGENT = "PSU-User-Agent";
+
+    static int X_Request_ID = 1536;
+
     static Logger logger = Logger.getLogger(RESTBaseServlet.class.getName());
+    
+    static DateTimeFormatter httpDateFormat = 
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O");
 
     static String oauth2Token;
     
-    static final String PSD2_BASE_URL = "https://psd2.api.swedbank.com/psd2";
+    static String consentId;
+    
+    static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
+    
+    HTTPSWrapper getHTTPSWrapper() throws IOException {
+        HTTPSWrapper wrapper = new HTTPSWrapper();
+        wrapper.setHeader("Date", httpDateFormat.format(ZonedDateTime.now(ZoneOffset.UTC)));
+        return wrapper;
+    }
     
     void checkResponseCode(HTTPSWrapper wrapper,
                            int expectedResponseCode) throws IOException {
         int responseCode = wrapper.getResponseCode();
         if (responseCode != expectedResponseCode) {
-            throw new IOException("Unexpected response code: " + responseCode);
+            throw new IOException("Unexpected response code: " + 
+                                  responseCode + 
+                                  (responseCode < 500 ? "\ndata:" + wrapper.getDataUTF8() : ""));
         }
     }
     
@@ -124,5 +147,38 @@ abstract class RESTBaseServlet extends HttpServlet {
         public byte[] toByteArray() throws IOException {
             return formData.toString().getBytes("utf-8");
         }
+    }
+    
+    void setAuthorization(HTTPSWrapper wrapper) throws IOException {
+        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + oauth2Token);
+    }
+
+    JSONObjectReader postJson(RESTUrl restUrl,
+                              HTTPSWrapper wrapper,
+                              JSONObjectWriter jsonRequestData,
+                              int expectedResponseCode) throws IOException {
+        wrapper.setHeader(HttpSupport.HTTP_CONTENT_TYPE_HEADER, BaseProperties.JSON_CONTENT_TYPE);
+        wrapper.makePostRequest(restUrl.toString(), 
+                                jsonRequestData.serializeToBytes(JSONOutputFormats.NORMALIZED));
+        return getJsonData(wrapper, expectedResponseCode);
+    }
+
+    void getConsent(JSONObjectWriter jsonRequestData, HttpServletRequest request) throws IOException {
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
+            .addParameter("bic", "SANDSESS")
+            .addParameter("app-id", LocalPSD2Service.oauth2ClientId);
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, request.getRemoteAddr());
+        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, request.getHeader("user-agent"));
+        setAuthorization(wrapper);
+        JSONObjectReader json = postJson(restUrl, 
+                                         wrapper, 
+                                         jsonRequestData, 
+                                         HttpServletResponse.SC_CREATED);
+        if (!json.getString("consentStatus").equals("valid")) {
+            throw new IOException("\"consentStatus\" not = \"valid\"");
+        }
+        consentId = json.getString("consentId");
     }
 }

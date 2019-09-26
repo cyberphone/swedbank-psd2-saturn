@@ -29,8 +29,6 @@ public class AuthorizeServlet extends RESTBaseServlet {
 
     private static final long serialVersionUID = 1L;
     
-    static int X_Request_ID = 1536;
-    
     public void doPost(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +37,7 @@ public class AuthorizeServlet extends RESTBaseServlet {
         // The code below only creates a session between the TTP application and the  //
         // Open Banking service                                                       //
         ////////////////////////////////////////////////////////////////////////////////
-        RESTUrl restUrl = new RESTUrl(PSD2_BASE_URL + "/authorize")
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
             .addParameter("bic", "SANDSESS")
             .addParameter("client_id", LocalPSD2Service.oauth2ClientId)
             .addParameter("response_type", "code")
@@ -48,8 +46,8 @@ public class AuthorizeServlet extends RESTBaseServlet {
         if (LocalPSD2Service.logging) {
             logger.info(restUrl.toString());
         }
-        HTTPSWrapper wrapper = new HTTPSWrapper();
-        wrapper.setHeader("X-Request-ID", String.valueOf(X_Request_ID++));
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
         wrapper.makeGetRequest(restUrl.toString());
         String location = getLocation(wrapper);
 
