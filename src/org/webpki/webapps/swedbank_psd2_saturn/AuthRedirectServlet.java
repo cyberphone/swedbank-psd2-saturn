@@ -36,14 +36,21 @@ public class AuthRedirectServlet extends RESTBaseServlet {
     
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+        ////////////////////////////////////////////////////////////////////////////////
+        // This servlet is redirected to by the PSD2 service after a successful user  //
+        // authentication                                                             //
+        ////////////////////////////////////////////////////////////////////////////////
         String code = request.getParameter("code");
         if (code == null) {
-            throw new IOException("FUCK");
+            throw new IOException("Didn't find 'code' object");
         }
         if (LocalPSD2Service.logging) {
             logger.info("code=" + code);
         }
         
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got the code, now we need to upgrade it to a oauth2 token               //
+        ////////////////////////////////////////////////////////////////////////////////
         FormData formData = new FormData()
             .addElement("grant_type", "authorization_code")
             .addElement("client_id", LocalPSD2Service.oauth2ClientId)
@@ -51,13 +58,19 @@ public class AuthRedirectServlet extends RESTBaseServlet {
             .addElement("code", code)
             .addElement("redirect_uri", LocalPSD2Service.oauth2RedirectUri);
         HTTPSWrapper wrapper = new HTTPSWrapper();
-        wrapper.setFollowRedirects(false);
         wrapper.makePostRequest(PSD2_BASE_URL + "/token", formData.toByteArray());
-        JSONObjectReader json = getJsonReturnData(wrapper);
+        JSONObjectReader json = getJsonData(wrapper);
         oauth2Token = json.getString("access_token");
         if (LocalPSD2Service.logging) {
             logger.info("access_token=" + oauth2Token);
         }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got the token, now we need a consent for our accounts                   //
+        ////////////////////////////////////////////////////////////////////////////////
+        wrapper = new HTTPSWrapper();
+        wrapper.setFollowRedirects(false);
+        JSONObjectWriter requestJson = new JSONObjectWriter();
         response.sendRedirect("home");
     }
 }
