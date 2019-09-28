@@ -79,7 +79,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         if (code == null) {
             throw new IOException("Didn't find 'code' object");
         }
-        if (LocalPSD2Service.logging) {
+        if (LocalIntegrationService.logging) {
             logger.info("code=" + code);
         }
         
@@ -88,15 +88,15 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         FormData formData = new FormData()
             .addElement("grant_type", "authorization_code")
-            .addElement("client_id", LocalPSD2Service.oauth2ClientId)
-            .addElement("client_secret", LocalPSD2Service.oauth2ClientSecret)
+            .addElement("client_id", LocalIntegrationService.oauth2ClientId)
+            .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret)
             .addElement("code", code)
-            .addElement("redirect_uri", LocalPSD2Service.oauth2RedirectUri);
+            .addElement("redirect_uri", LocalIntegrationService.oauth2RedirectUri);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader json = getJsonData(wrapper);
         oauth2Token = json.getString("access_token");
-        if (LocalPSD2Service.logging) {
+        if (LocalIntegrationService.logging) {
             logger.info("access_token=" + oauth2Token);
         }
 
@@ -104,9 +104,23 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         // We got the token, now we need a consent for our accounts                   //
         ////////////////////////////////////////////////////////////////////////////////
         getConsent(consentData, request);
-        if (LocalPSD2Service.logging) {
+        if (LocalIntegrationService.logging) {
             logger.info("consentId=" + consentId);
         }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got the consent, now use it!                                            //
+        ////////////////////////////////////////////////////////////////////////////////
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
+            .setBic()
+            .setAppId()
+            .addParameter("withBalance", "true");
+        wrapper = getHTTPSWrapper();
+        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        setConsentId(wrapper);
+        setAuthorization(wrapper);
+        wrapper.makeGetRequest(restUrl.toString());
+        json = getJsonData(wrapper);
         response.sendRedirect("home");
     }
 }

@@ -33,17 +33,17 @@ public class AuthorizeServlet extends RESTBaseServlet {
         throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
         // Before you can do anything you must be authenticated                       //
-        // Note: this servlet is called by the browser from the TTP application       //
-        // The code below only creates a session between the TTP application and the  //
-        // Open Banking service                                                       //
+        // Note: this servlet is called by the browser from LIS                       //
+        // The code below only creates a session between LIS and the Open Banking     //
+    	// service                                                                    //
         ////////////////////////////////////////////////////////////////////////////////
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
-            .addParameter("bic", "SANDSESS")
-            .addParameter("client_id", LocalPSD2Service.oauth2ClientId)
+            .setBic()
+            .addParameter("client_id", LocalIntegrationService.oauth2ClientId)
             .addParameter("response_type", "code")
             .addParameter("scope", "PSD2sandbox")
-            .addParameter("redirect_uri", LocalPSD2Service.oauth2RedirectUri);
-        if (LocalPSD2Service.logging) {
+            .addParameter("redirect_uri", LocalIntegrationService.oauth2RedirectUri);
+        if (LocalIntegrationService.logging) {
             logger.info(restUrl.toString());
         }
         HTTPSWrapper wrapper = getHTTPSWrapper();

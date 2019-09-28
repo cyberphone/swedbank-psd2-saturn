@@ -17,10 +17,13 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
+
 import java.net.URLEncoder;
+
 import java.util.logging.Logger;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
+
 import java.time.format.DateTimeFormatter;
 
 import javax.servlet.http.HttpServlet;
@@ -31,7 +34,9 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.HttpSupport;
 
@@ -41,6 +46,7 @@ abstract class RESTBaseServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     
     static final String HTTP_HEADER_X_REQUEST_ID   = "X-Request-ID";
+    static final String HTTP_HEADER_CONSENT_ID     = "Consent-ID";
     static final String HTTP_HEADER_AUTHORIZATION  = "Authorization";
     static final String HTTP_HEADER_PSU_IP_ADDRESS = "PSU-IP-Address";
     static final String HTTP_HEADER_PSU_USER_AGENT = "PSU-User-Agent";
@@ -80,7 +86,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         if (location == null) {
             throw new IOException("\"Location\" is missing");
         }
-        if (LocalPSD2Service.logging) {
+        if (LocalIntegrationService.logging) {
             logger.info("Location: " + location);
         }
         return location;
@@ -94,7 +100,7 @@ abstract class RESTBaseServlet extends HttpServlet {
             throw new IOException("Unexpected contentType: " + contentType);
         }
         JSONObjectReader json = JSONParser.parse(wrapper.getData());
-        if (LocalPSD2Service.logging) {
+        if (LocalIntegrationService.logging) {
             logger.info(json.toString());
         }
         return json;
@@ -122,6 +128,14 @@ abstract class RESTBaseServlet extends HttpServlet {
             return this;
         }
         
+        RESTUrl setBic() throws IOException {
+            return addParameter("bic", "SANDSESS");
+        }
+
+        RESTUrl setAppId() throws IOException {
+            return addParameter("app-id", LocalIntegrationService.oauth2ClientId);
+        }
+
         @Override
         public String toString() {
             return url.toString();
@@ -165,8 +179,8 @@ abstract class RESTBaseServlet extends HttpServlet {
 
     void getConsent(JSONObjectWriter jsonRequestData, HttpServletRequest request) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
-            .addParameter("bic", "SANDSESS")
-            .addParameter("app-id", LocalPSD2Service.oauth2ClientId);
+            .setBic()
+            .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
         wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, request.getRemoteAddr());
@@ -180,5 +194,9 @@ abstract class RESTBaseServlet extends HttpServlet {
             throw new IOException("\"consentStatus\" not = \"valid\"");
         }
         consentId = json.getString("consentId");
+    }
+    
+    void setConsentId(HTTPSWrapper wrapper) throws IOException {
+        wrapper.setHeader(HTTP_HEADER_CONSENT_ID, consentId);
     }
 }

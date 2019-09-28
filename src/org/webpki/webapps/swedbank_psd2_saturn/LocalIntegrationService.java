@@ -39,9 +39,11 @@ import org.webpki.util.PEMDecoder;
 import org.webpki.saturn.common.KeyStoreEnumerator;
 import org.webpki.webutil.InitPropertyReader;
 
-public class LocalPSD2Service extends InitPropertyReader implements ServletContextListener {
+// This is the starting point for LIS (Local Integration Service)
 
-    static Logger logger = Logger.getLogger(LocalPSD2Service.class.getName());
+public class LocalIntegrationService extends InitPropertyReader implements ServletContextListener {
+
+    static Logger logger = Logger.getLogger(LocalIntegrationService.class.getName());
 
     static KeyStoreVerifier certificateVerifier;
 
@@ -101,7 +103,7 @@ public class LocalPSD2Service extends InitPropertyReader implements ServletConte
             /////////////////////////////////////////////////////////////////////////////////////////////
             logging = getPropertyBoolean("logging");
 
-            logger.info("Swedbank PSD2 Demo Successfully Initiated");
+            logger.info("Swedbank LIS Demo Successfully Initiated");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "********\n" + e.getMessage() + "\n********", e);
         }

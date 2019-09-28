@@ -81,7 +81,7 @@ public class HTML {
             "style=\"cursor:pointer;height:25pt;padding-bottom:10pt;margin-right:30pt\"" +
             " onclick=\"document.location.href='home'\" title=\"Home of the lab...\"/>" +
             "<div style=\"display:flex\">" +
-            "<a href=\"https://github.com/cyberphone/shreq\" target=\"_blank\">" +
+            "<a href=\"https://github.com/cyberphone/swedbank-psd2-saturn\" target=\"_blank\">" +
             "<img src=\"images/saturn-psd2.svg\" " +
             "style=\"height:30pt\" " +
             "title=\"Specifications, source code, etc.\"/></a>" +

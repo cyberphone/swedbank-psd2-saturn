@@ -41,7 +41,7 @@
     </context-param>
     
     <listener>
-        <listener-class>org.webpki.webapps.swedbank_psd2_saturn.LocalPSD2Service</listener-class>
+        <listener-class>org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService</listener-class>
     </listener>
 
     <servlet>
