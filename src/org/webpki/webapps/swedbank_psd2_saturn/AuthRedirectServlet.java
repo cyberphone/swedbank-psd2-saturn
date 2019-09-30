@@ -18,14 +18,18 @@ package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
 
+import java.text.SimpleDateFormat;
+
+import java.util.Date;
+
 import javax.servlet.ServletException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONParser;
 
 import org.webpki.net.HTTPSWrapper;
 
@@ -33,41 +37,29 @@ public class AuthRedirectServlet extends RESTBaseServlet {
 
     private static final long serialVersionUID = 1L;
 
-    static final JSONObjectWriter consentData;
-
-    static {
-        try {
-            consentData = new JSONObjectWriter(JSONParser.parse(
-        "{" + 
-          "\"access\": {" + 
-            "\"accounts\": [" + 
-              "{" + 
-                "\"iban\": \"string\"" + 
-              "}" + 
-            "]," + 
-            "\"availableAccounts\": \"allAccounts\"," + 
-            "\"balances\": [" + 
-              "{" + 
-                "\"iban\": \"string\"" + 
-              "}" + 
-            "]," + 
-            "\"transactions\": [" + 
-              "{" + 
-                "\"iban\": \"string\"" + 
-              "}" + 
-            "]" + 
-          "}," + 
-          "\"combinedServiceIndicator\": false," + 
-          "\"frequencyPerDay\": 0," + 
-          "\"recurringIndicator\": false," + 
-          "\"validUntil\": \"2019-10-31\"" + 
-        "}"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
 
     static int X_Request_ID = 1536;
+    
+    JSONObjectWriter createAccountConsent(String specificAccountId) throws IOException {
+        JSONObjectWriter consentData = new JSONObjectWriter();
+        JSONArrayWriter accountEntry = new JSONArrayWriter();
+        accountEntry.setObject()
+            .setString(specificAccountId == null ? "iban" : "resourceId",
+                       specificAccountId == null ? "string" : specificAccountId);
+        consentData.setObject("access")
+            .setDynamic((wr) -> specificAccountId == null ?
+                    wr.setString("availableAccounts", "allAccounts") : wr)
+            .setArray("accounts", accountEntry)
+            .setArray("balances", accountEntry)
+            .setArray("transactions", accountEntry);
+        consentData.setBoolean("combinedServiceIndicator", false) 
+                   .setInt("frequencyPerDay", 0)
+                   .setBoolean("recurringIndicator", false)
+                   .setString("validUntil",  
+            dateOnly.format(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 48))); 
+        return consentData;
+    }
     
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
@@ -103,7 +95,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         // We got the token, now we need a consent for our accounts                   //
         ////////////////////////////////////////////////////////////////////////////////
-        getConsent(consentData, request);
+        getConsent(createAccountConsent(null), request, "");
         if (LocalIntegrationService.logging) {
             logger.info("consentId=" + consentId);
         }
@@ -121,6 +113,26 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         setAuthorization(wrapper);
         wrapper.makeGetRequest(restUrl.toString());
         json = getJsonData(wrapper);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Find an account to work with                                               //
+        ////////////////////////////////////////////////////////////////////////////////
+        String targetAccountId = json.getArray("accounts").getObject().getString("resourceId");
+        if (LocalIntegrationService.logging) {
+            logger.info("accountId=" + targetAccountId);
+        }
+/*
+        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts/" + 
+                              targetAccountId  + "/balances")
+            .setBic()
+            .setAppId();
+        wrapper = getHTTPSWrapper();
+        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        setConsentId(wrapper);
+        setAuthorization(wrapper);
+        wrapper.makeGetRequest(restUrl.toString());
+        json = getJsonData(wrapper);
+*/
         response.sendRedirect("home");
     }
 }

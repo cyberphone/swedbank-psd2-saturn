@@ -171,14 +171,20 @@ abstract class RESTBaseServlet extends HttpServlet {
                               HTTPSWrapper wrapper,
                               JSONObjectWriter jsonRequestData,
                               int expectedResponseCode) throws IOException {
+        if (LocalIntegrationService.logging) {
+            logger.info("JSON to be POSTed:\n" + jsonRequestData.toString());
+        }
         wrapper.setHeader(HttpSupport.HTTP_CONTENT_TYPE_HEADER, BaseProperties.JSON_CONTENT_TYPE);
         wrapper.makePostRequest(restUrl.toString(), 
                                 jsonRequestData.serializeToBytes(JSONOutputFormats.NORMALIZED));
         return getJsonData(wrapper, expectedResponseCode);
     }
 
-    void getConsent(JSONObjectWriter jsonRequestData, HttpServletRequest request) throws IOException {
-        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
+    void getConsent(JSONObjectWriter jsonRequestData, 
+                    HttpServletRequest request, String urlModifiers) throws IOException {
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
+                                      "/sandbox/v2/consents" +
+                                      urlModifiers)
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();

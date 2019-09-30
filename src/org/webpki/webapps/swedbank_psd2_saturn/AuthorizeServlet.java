@@ -35,7 +35,7 @@ public class AuthorizeServlet extends RESTBaseServlet {
         // Before you can do anything you must be authenticated                       //
         // Note: this servlet is called by the browser from LIS                       //
         // The code below only creates a session between LIS and the Open Banking     //
-    	// service                                                                    //
+        // service                                                                    //
         ////////////////////////////////////////////////////////////////////////////////
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
             .setBic()
