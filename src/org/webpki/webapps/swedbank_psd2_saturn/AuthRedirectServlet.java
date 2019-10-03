@@ -17,20 +17,16 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Date;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-
 import org.webpki.net.HTTPSWrapper;
 
 public class AuthRedirectServlet extends RESTBaseServlet {
@@ -44,23 +40,22 @@ public class AuthRedirectServlet extends RESTBaseServlet {
     JSONObjectWriter createAccountConsent(String specificAccountId) throws IOException {
         JSONObjectWriter consentData = new JSONObjectWriter();
         JSONArrayWriter accountEntry = new JSONArrayWriter();
-        accountEntry.setObject()
-            .setString(specificAccountId == null ? "iban" : "resourceId",
-                       specificAccountId == null ? "string" : specificAccountId);
+        if (specificAccountId != null) {
+            accountEntry.setObject().setString("iban", specificAccountId);
+        }
         consentData.setObject("access")
             .setDynamic((wr) -> specificAccountId == null ?
-                    wr.setString("availableAccounts", "allAccounts") : wr)
-            .setArray("accounts", accountEntry)
-            .setArray("balances", accountEntry)
-            .setArray("transactions", accountEntry);
+                    wr.setString("availableAccounts", "allAccounts") :
+                    wr.setArray("balances", accountEntry));
         consentData.setBoolean("combinedServiceIndicator", false) 
-                   .setInt("frequencyPerDay", 0)
+                   .setInt("frequencyPerDay", 1)
                    .setBoolean("recurringIndicator", false)
                    .setString("validUntil",  
             dateOnly.format(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 48))); 
         return consentData;
     }
     
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +78,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
             .addElement("client_id", LocalIntegrationService.oauth2ClientId)
             .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret)
             .addElement("code", code)
-            .addElement("redirect_uri", LocalIntegrationService.oauth2RedirectUri);
+            .addElement("redirect_uri", LocalIntegrationService.baseUri + OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader json = getJsonData(wrapper);
@@ -95,7 +90,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         // We got the token, now we need a consent for our accounts                   //
         ////////////////////////////////////////////////////////////////////////////////
-        getConsent(createAccountConsent(null), request, "");
+        getConsent(createAccountConsent(null), request, true, SCA_ACCOUNT_SUCCESS_PATH);
         if (LocalIntegrationService.logging) {
             logger.info("consentId=" + consentId);
         }
@@ -105,8 +100,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
             .setBic()
-            .setAppId()
-            .addParameter("withBalance", "true");
+            .setAppId();
         wrapper = getHTTPSWrapper();
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
         setConsentId(wrapper);
@@ -117,9 +111,21 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         // Find an account to work with                                               //
         ////////////////////////////////////////////////////////////////////////////////
-        String targetAccountId = json.getArray("accounts").getObject().getString("resourceId");
+        targetAccountId = json.getArray("accounts").getObject().getString("iban");
         if (LocalIntegrationService.logging) {
             logger.info("accountId=" + targetAccountId);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got an account, now get more details.  For that we (may) need to do SCA //
+        ////////////////////////////////////////////////////////////////////////////////
+        String scaRedirectUrl = getConsent(createAccountConsent(targetAccountId), 
+                                           request, false, SCA_ACCOUNT_SUCCESS_PATH);
+        if (scaRedirectUrl != null) {
+            if (LocalIntegrationService.logging) {
+                logger.info("Redirect to:\n" + scaRedirectUrl);
+            }
+            response.sendRedirect(scaRedirectUrl);
         }
 /*
         restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts/" + 
@@ -133,6 +139,6 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         wrapper.makeGetRequest(restUrl.toString());
         json = getJsonData(wrapper);
 */
-        response.sendRedirect("home");
+ //       response.sendRedirect("home");
     }
 }

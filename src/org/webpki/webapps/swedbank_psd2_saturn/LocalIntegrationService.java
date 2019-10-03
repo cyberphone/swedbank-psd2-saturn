@@ -53,14 +53,14 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     
     static String oauth2ClientSecret;
 
-    static String oauth2RedirectUri;
+    static String baseUri;
 
     static final String OAUTH2_CLIENT_ID        = "oauth2_client_id";
     
     static final String OAUTH2_CLIENT_SECRET    = "oauth2_client_secret";
 
-    static final String OAUTH2_REDIRECT_URI     = "oauth2_redirect_uri";
-
+    static final String BASE_URI                = "base_uri";
+    
     InputStream getResource(String name) throws IOException {
         InputStream is = this.getClass().getResourceAsStream(name);
         if (is == null) {
@@ -87,7 +87,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
         try {
             oauth2ClientId = getPropertyString(OAUTH2_CLIENT_ID);
             oauth2ClientSecret = getPropertyString(OAUTH2_CLIENT_SECRET);
-            oauth2RedirectUri = getPropertyString(OAUTH2_REDIRECT_URI);
+            baseUri = getPropertyString(BASE_URI);
     //        new KeyStoreEnumerator(null,null);
 /*
             KeyStore keyStore = KeyStore.getInstance("PKCS12");

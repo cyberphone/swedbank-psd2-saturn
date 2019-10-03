@@ -17,18 +17,14 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
-
 import java.util.Enumeration;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONParser;
-
 import org.webpki.saturn.common.BaseProperties;
-
 import org.webpki.webutil.ServletUtil;
 
 // Debug print
@@ -37,6 +33,7 @@ public class DebugServlet extends RESTBaseServlet {
 
     private static final long serialVersionUID = 1L;
     
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         String query = request.getQueryString();
@@ -56,6 +53,7 @@ public class DebugServlet extends RESTBaseServlet {
         response.getOutputStream().write(json);
     }
     
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         doPost(request, response);

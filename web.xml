@@ -23,9 +23,9 @@
     </context-param>
 
     <context-param>
-        <description>OAuth2 Redirect URI</description>
-        <param-name>oauth2_redirect_uri</param-name>
-        <param-value>@oauth2-redirect-uri@</param-value>
+        <description>Application Base URI</description>
+        <param-name>base_uri</param-name>
+        <param-value>@base-uri@</param-value>
     </context-param>
 
     <context-param>
@@ -64,6 +64,16 @@
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.DebugServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>SCAAccountSuccessServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.SCAAccountSuccessServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>SCAFailedServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.SCAFailedServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
@@ -82,6 +92,16 @@
     <servlet-mapping>
         <servlet-name>DebugServlet</servlet-name>
         <url-pattern>/debug</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>SCAAccountSuccessServlet</servlet-name>
+        <url-pattern>/scaaccountsuccess</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>SCAFailedServlet</servlet-name>
+        <url-pattern>/scafailed</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

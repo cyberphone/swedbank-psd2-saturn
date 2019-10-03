@@ -17,13 +17,10 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
-
 import java.net.URLEncoder;
-
 import java.util.logging.Logger;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
-
 import java.time.format.DateTimeFormatter;
 
 import javax.servlet.http.HttpServlet;
@@ -34,9 +31,7 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.net.HTTPSWrapper;
-
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.HttpSupport;
 
@@ -45,11 +40,19 @@ abstract class RESTBaseServlet extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
     
-    static final String HTTP_HEADER_X_REQUEST_ID   = "X-Request-ID";
-    static final String HTTP_HEADER_CONSENT_ID     = "Consent-ID";
-    static final String HTTP_HEADER_AUTHORIZATION  = "Authorization";
-    static final String HTTP_HEADER_PSU_IP_ADDRESS = "PSU-IP-Address";
-    static final String HTTP_HEADER_PSU_USER_AGENT = "PSU-User-Agent";
+    static final String HTTP_HEADER_X_REQUEST_ID         = "X-Request-ID";
+    static final String HTTP_HEADER_CONSENT_ID           = "Consent-ID";
+    static final String HTTP_HEADER_AUTHORIZATION        = "Authorization";
+    static final String HTTP_HEADER_PSU_IP_ADDRESS       = "PSU-IP-Address";
+    static final String HTTP_HEADER_PSU_IP_PORT          = "PSU-IP-Port";
+    static final String HTTP_HEADER_PSU_HTTP_METHOD      = "PSU-Http-Method";
+    static final String HTTP_HEADER_PSU_USER_AGENT       = "PSU-User-Agent";
+    static final String HTTP_HEADER_TTP_REDIRECT_URI     = "TPP-Redirect-URI";
+    static final String HTTP_HEADER_TPP_NOK_REDIRECT_URI = "TPP-Nok-Redirect-URI";
+    
+    static final String OAUTH2_REDIRECT_PATH             = "/authredirect";
+    static final String SCA_ACCOUNT_SUCCESS_PATH         = "/scaaccountsuccess";
+    static final String SCA_FAILED_PATH                  = "/scafailed";
 
     static int X_Request_ID = 1536;
 
@@ -61,6 +64,8 @@ abstract class RESTBaseServlet extends HttpServlet {
     static String oauth2Token;
     
     static String consentId;
+    
+    static String targetAccountId;
     
     static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
     
@@ -101,7 +106,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
         JSONObjectReader json = JSONParser.parse(wrapper.getData());
         if (LocalIntegrationService.logging) {
-            logger.info(json.toString());
+            logger.info("Read JSON:\n" + json.toString());
         }
         return json;
     }
@@ -172,7 +177,7 @@ abstract class RESTBaseServlet extends HttpServlet {
                               JSONObjectWriter jsonRequestData,
                               int expectedResponseCode) throws IOException {
         if (LocalIntegrationService.logging) {
-            logger.info("JSON to be POSTed:\n" + jsonRequestData.toString());
+            logger.info("JSON to be POSTed (" + restUrl + ")\n" + jsonRequestData.toString());
         }
         wrapper.setHeader(HttpSupport.HTTP_CONTENT_TYPE_HEADER, BaseProperties.JSON_CONTENT_TYPE);
         wrapper.makePostRequest(restUrl.toString(), 
@@ -180,26 +185,38 @@ abstract class RESTBaseServlet extends HttpServlet {
         return getJsonData(wrapper, expectedResponseCode);
     }
 
-    void getConsent(JSONObjectWriter jsonRequestData, 
-                    HttpServletRequest request, String urlModifiers) throws IOException {
-        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
-                                      "/sandbox/v2/consents" +
-                                      urlModifiers)
+    String getConsent(JSONObjectWriter jsonRequestData, 
+                      HttpServletRequest request, 
+                      boolean mustBeValid,
+                      String successUrl) throws IOException {
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
         wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, request.getRemoteAddr());
+        wrapper.setHeader(HTTP_HEADER_PSU_IP_PORT, "8442");
+        wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
         wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, request.getHeader("user-agent"));
+        wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
+                LocalIntegrationService.baseUri + successUrl);
+        wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
+                LocalIntegrationService.baseUri + SCA_FAILED_PATH);
         setAuthorization(wrapper);
         JSONObjectReader json = postJson(restUrl, 
                                          wrapper, 
                                          jsonRequestData, 
                                          HttpServletResponse.SC_CREATED);
-        if (!json.getString("consentStatus").equals("valid")) {
-            throw new IOException("\"consentStatus\" not = \"valid\"");
-        }
         consentId = json.getString("consentId");
+        String consentStatus = json.getString("consentStatus");
+        if (consentStatus.equals("valid")) {
+             return null;
+        } else {
+            if (mustBeValid) {
+                throw new IOException("Unexpeded \"consentStatus\": " + consentStatus);
+            }
+            return json.getObject("_links").getObject("scaRedirect").getString("href");
+        }
     }
     
     void setConsentId(HTTPSWrapper wrapper) throws IOException {
