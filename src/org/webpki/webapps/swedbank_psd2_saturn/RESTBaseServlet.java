@@ -65,10 +65,16 @@ abstract class RESTBaseServlet extends HttpServlet {
     
     static String consentId;
     
+    static String scaStatusUrl;
+
+    static String consentStatusUrl;
+    
     static String targetAccountId;
     
-    static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
+    static String targetAccountResourseId;
     
+    static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
+
     HTTPSWrapper getHTTPSWrapper() throws IOException {
         HTTPSWrapper wrapper = new HTTPSWrapper();
         wrapper.setHeader("Date", httpDateFormat.format(ZonedDateTime.now(ZoneOffset.UTC)));
@@ -215,7 +221,10 @@ abstract class RESTBaseServlet extends HttpServlet {
             if (mustBeValid) {
                 throw new IOException("Unexpeded \"consentStatus\": " + consentStatus);
             }
-            return json.getObject("_links").getObject("scaRedirect").getString("href");
+            JSONObjectReader links = json.getObject("_links");
+            scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
+            consentStatusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
+            return links.getObject("scaRedirect").getString("href");
         }
     }
     

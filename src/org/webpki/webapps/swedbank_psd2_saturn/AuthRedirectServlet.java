@@ -46,9 +46,10 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         consentData.setObject("access")
             .setDynamic((wr) -> specificAccountId == null ?
                     wr.setString("availableAccounts", "allAccounts") :
-                    wr.setArray("balances", accountEntry));
+                    wr.setArray("balances", accountEntry)
+                      .setArray("accounts", accountEntry));
         consentData.setBoolean("combinedServiceIndicator", false) 
-                   .setInt("frequencyPerDay", 1)
+                   .setInt("frequencyPerDay", 0)
                    .setBoolean("recurringIndicator", false)
                    .setString("validUntil",  
             dateOnly.format(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 48))); 

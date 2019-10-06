@@ -28,7 +28,7 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.net.HTTPSWrapper;
 
 public class SCAAccountSuccessServlet extends RESTBaseServlet {
-
+    
     private static final long serialVersionUID = 1L;
     
     @Override
@@ -40,15 +40,36 @@ public class SCAAccountSuccessServlet extends RESTBaseServlet {
         if (LocalIntegrationService.logging) {
             logger.info("Successful return after SCA");
         }
-        
-        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts/" + 
-                targetAccountId  + "/balances")
+        HTTPSWrapper scaStatus = getHTTPSWrapper();
+        scaStatus.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        setConsentId(scaStatus);
+        setAuthorization(scaStatus);
+        RESTUrl restUrl = new RESTUrl(scaStatusUrl)
             .setBic()
+            .setAppId();
+        scaStatus.makeGetRequest(restUrl.toString());
+        logger.info("SCA Status:\n" + getJsonData(scaStatus).toString());
+        
+        HTTPSWrapper consentStatus = getHTTPSWrapper();
+        consentStatus.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        setConsentId(consentStatus);
+        setAuthorization(consentStatus);
+        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents/" + consentId)
+            .setBic()
+            .setAppId();
+        consentStatus.makeGetRequest(restUrl.toString());
+        logger.info("SCA Status:\n" + getJsonData(consentStatus).toString());
+
+        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts/" + 
+ //                targetAccountId  + "/balances")
+ "AsdF01234EfgH4567"  + "/balances")
+           .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
         setConsentId(wrapper);
         setAuthorization(wrapper);
+        logger.info(restUrl.toString());
         wrapper.makeGetRequest(restUrl.toString());
         JSONObjectReader json = getJsonData(wrapper);
 
