@@ -23,8 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.json.JSONObjectReader;
-
 import org.webpki.net.HTTPSWrapper;
 
 public class SCAAccountSuccessServlet extends RESTBaseServlet {
@@ -41,7 +39,7 @@ public class SCAAccountSuccessServlet extends RESTBaseServlet {
             logger.info("Successful return after SCA");
         }
         HTTPSWrapper scaStatus = getHTTPSWrapper();
-        scaStatus.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        setRequestId(scaStatus);
         setConsentId(scaStatus);
         setAuthorization(scaStatus);
         RESTUrl restUrl = new RESTUrl(scaStatusUrl)
@@ -51,28 +49,28 @@ public class SCAAccountSuccessServlet extends RESTBaseServlet {
         logger.info("SCA Status:\n" + getJsonData(scaStatus).toString());
         
         HTTPSWrapper consentStatus = getHTTPSWrapper();
-        consentStatus.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        setRequestId(consentStatus);
         setConsentId(consentStatus);
         setAuthorization(consentStatus);
         restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents/" + consentId)
             .setBic()
             .setAppId();
         consentStatus.makeGetRequest(restUrl.toString());
-        logger.info("SCA Status:\n" + getJsonData(consentStatus).toString());
+        logger.info("Consent Status:\n" + getJsonData(consentStatus).toString());
 
-        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts/" + 
- //                targetAccountId  + "/balances")
- "AsdF01234EfgH4567"  + "/balances")
-           .setBic()
+        getAccountData(true);
+/*
+        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
+            .setBic()
+            .addParameter("withBalance", "true")
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
         setConsentId(wrapper);
         setAuthorization(wrapper);
-        logger.info(restUrl.toString());
         wrapper.makeGetRequest(restUrl.toString());
         JSONObjectReader json = getJsonData(wrapper);
-
+*/
         response.sendRedirect("home");
     }
 }

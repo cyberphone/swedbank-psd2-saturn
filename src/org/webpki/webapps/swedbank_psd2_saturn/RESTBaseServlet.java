@@ -17,21 +17,34 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
+
 import java.net.URLEncoder;
+
+import java.util.Date;
+import java.util.Locale;
+
 import java.util.logging.Logger;
+
+import java.text.SimpleDateFormat;
+
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
+
 import java.time.format.DateTimeFormatter;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.json.JSONArrayReader;
+import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.HttpSupport;
 
@@ -54,12 +67,10 @@ abstract class RESTBaseServlet extends HttpServlet {
     static final String SCA_ACCOUNT_SUCCESS_PATH         = "/scaaccountsuccess";
     static final String SCA_FAILED_PATH                  = "/scafailed";
 
-    static int X_Request_ID = 1536;
-
     static Logger logger = Logger.getLogger(RESTBaseServlet.class.getName());
     
     static DateTimeFormatter httpDateFormat = 
-            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O");
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.US);
 
     static String oauth2Token;
     
@@ -73,7 +84,33 @@ abstract class RESTBaseServlet extends HttpServlet {
     
     static String targetAccountResourseId;
     
+    static int X_Request_ID = 1536;
+
     static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
+
+    static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
+
+    JSONObjectWriter createAccountConsent(JSONArrayReader jsonArrayReader) throws IOException {
+        JSONObjectWriter consentData = new JSONObjectWriter();
+        JSONArrayWriter accountEntry = new JSONArrayWriter();
+        if (jsonArrayReader != null) {
+            while (jsonArrayReader.hasMore()) {
+                JSONObjectReader account = jsonArrayReader.getObject();
+                accountEntry.setObject().setString("iban", account.getString("iban"));
+            }
+        }
+        consentData.setObject("access")
+            .setDynamic((wr) -> jsonArrayReader == null ?
+                    wr.setString("availableAccounts", "allAccounts") :
+                    wr.setArray("balances", accountEntry)
+                      .setArray("accounts", accountEntry));
+        consentData.setBoolean("combinedServiceIndicator", false) 
+                   .setInt("frequencyPerDay", 0)
+                   .setBoolean("recurringIndicator", false)
+                   .setString("validUntil",  
+            dateOnly.format(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 48))); 
+        return consentData;
+    }
 
     HTTPSWrapper getHTTPSWrapper() throws IOException {
         HTTPSWrapper wrapper = new HTTPSWrapper();
@@ -227,8 +264,32 @@ abstract class RESTBaseServlet extends HttpServlet {
             return links.getObject("scaRedirect").getString("href");
         }
     }
+
+    JSONObjectReader performGet(HTTPSWrapper wrapper, RESTUrl restUrl) throws IOException {
+        if (LocalIntegrationService.logging) {
+            logger.info("About to GET: " + restUrl.toString());
+        }
+        wrapper.makeGetRequest(restUrl.toString());
+        return getJsonData(wrapper);        
+    }
+
+    JSONObjectReader getAccountData(boolean withBalance) throws IOException {
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
+            .setBic()
+            .addParameter("withBalance", String.valueOf(withBalance))
+            .setAppId();
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        setRequestId(wrapper);
+        setConsentId(wrapper);
+        setAuthorization(wrapper);
+        return performGet(wrapper, restUrl);
+    }
     
     void setConsentId(HTTPSWrapper wrapper) throws IOException {
         wrapper.setHeader(HTTP_HEADER_CONSENT_ID, consentId);
+    }
+    
+    void setRequestId(HTTPSWrapper wrapper) throws IOException {
+        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
     }
 }

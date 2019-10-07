@@ -47,7 +47,7 @@ public class AuthorizeServlet extends RESTBaseServlet {
             logger.info(restUrl.toString());
         }
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        setRequestId(wrapper);
         wrapper.makeGetRequest(restUrl.toString());
         String location = getLocation(wrapper);
 
