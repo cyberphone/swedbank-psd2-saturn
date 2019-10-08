@@ -19,8 +19,10 @@ package org.webpki.webapps.swedbank_psd2_saturn;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.webpki.net.HTTPSWrapper;
 
@@ -34,8 +36,19 @@ public class AuthorizeServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         // Before you can do anything you must be authenticated                       //
         // Note: this servlet is called by the browser from LIS                       //
-        // The code below only creates a session between LIS and the Open Banking     //
-        // service                                                                    //
+        // The code below creates a session between LIS and the Open Banking service  //
+        // for a specific user.  Note: Swedbank's Sandbox only supports a single user //
+        // but we do this anyway to obtain consistency between implementations and be //
+        // closer to a production version using an enhanced Open Banking API          //
+        ////////////////////////////////////////////////////////////////////////////////
+        HttpSession session = request.getSession();
+        OpenBankingSessionData obsd = new OpenBankingSessionData();
+        obsd.userAgent = request.getHeader("user-agent");
+        obsd.clientIpAddress = request.getRemoteAddr();
+        session.setAttribute(OBSD, obsd);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
             .setBic()
@@ -44,7 +57,7 @@ public class AuthorizeServlet extends RESTBaseServlet {
             .addParameter("scope", "PSD2sandbox")
             .addParameter("redirect_uri", LocalIntegrationService.baseUri + OAUTH2_REDIRECT_PATH);
         if (LocalIntegrationService.logging) {
-            logger.info(restUrl.toString());
+            logger.info("About to GET: " + restUrl.toString());
         }
         HTTPSWrapper wrapper = getHTTPSWrapper();
         setRequestId(wrapper);

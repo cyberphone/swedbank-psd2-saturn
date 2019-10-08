@@ -38,6 +38,16 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         // This servlet is redirected to by the PSD2 service after a successful user  //
         // authentication                                                             //
         ////////////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Check that we still have a session                                         //
+        ////////////////////////////////////////////////////////////////////////////////
+        OpenBankingSessionData obsd = getObsd(request, response);
+        if (obsd == null) return;
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We should have "code" parameter                                            //
+        ////////////////////////////////////////////////////////////////////////////////
         String code = request.getParameter("code");
         if (code == null) {
             throw new IOException("Didn't find 'code' object");
@@ -58,55 +68,29 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader json = getJsonData(wrapper);
-        oauth2Token = json.getString("access_token");
-        if (LocalIntegrationService.logging) {
-            logger.info("access_token=" + oauth2Token);
-        }
+        obsd.oauth2Token = json.getString("access_token");
 
         ////////////////////////////////////////////////////////////////////////////////
         // We got the token, now we need a consent for our accounts                   //
         ////////////////////////////////////////////////////////////////////////////////
-        getConsent(createAccountConsent(null), request, true, SCA_ACCOUNT_SUCCESS_PATH);
-        if (LocalIntegrationService.logging) {
-            logger.info("consentId=" + consentId);
-        }
+        getConsent(null, obsd, SCA_ACCOUNT_SUCCESS_PATH);
 
         ////////////////////////////////////////////////////////////////////////////////
         // We got the consent, now use it!                                            //
         ////////////////////////////////////////////////////////////////////////////////
-        json = getAccountData(false);
+        json = getAccountData(false, obsd);
 
         ////////////////////////////////////////////////////////////////////////////////
-        // Find an account to work with                                               //
+        // We got an account list, now get more details.  For that we need to SCA.    //
         ////////////////////////////////////////////////////////////////////////////////
-        targetAccountId = json.getArray("accounts").getObject().getString("iban");
-        if (LocalIntegrationService.logging) {
-            logger.info("accountId=" + targetAccountId);
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // We got an account, now get more details.  For that we (may) need to do SCA //
-        ////////////////////////////////////////////////////////////////////////////////
-        String scaRedirectUrl = getConsent(createAccountConsent(json.getArray("accounts")), 
-                                           request, false, SCA_ACCOUNT_SUCCESS_PATH);
+        String scaRedirectUrl = getConsent(json.getArray("accounts"), 
+                                           obsd, SCA_ACCOUNT_SUCCESS_PATH);
         if (scaRedirectUrl != null) {
             if (LocalIntegrationService.logging) {
                 logger.info("Redirect to:\n" + scaRedirectUrl);
             }
             response.sendRedirect(scaRedirectUrl);
         }
-/*
-        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts/" + 
-                              targetAccountId  + "/balances")
-            .setBic()
-            .setAppId();
-        wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
-        setConsentId(wrapper);
-        setAuthorization(wrapper);
-        wrapper.makeGetRequest(restUrl.toString());
-        json = getJsonData(wrapper);
-*/
  //       response.sendRedirect("home");
     }
 }

@@ -23,8 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.net.HTTPSWrapper;
-
 public class SCAAccountSuccessServlet extends RESTBaseServlet {
     
     private static final long serialVersionUID = 1L;
@@ -38,39 +36,28 @@ public class SCAAccountSuccessServlet extends RESTBaseServlet {
         if (LocalIntegrationService.logging) {
             logger.info("Successful return after SCA");
         }
-        HTTPSWrapper scaStatus = getHTTPSWrapper();
-        setRequestId(scaStatus);
-        setConsentId(scaStatus);
-        setAuthorization(scaStatus);
-        RESTUrl restUrl = new RESTUrl(scaStatusUrl)
-            .setBic()
-            .setAppId();
-        scaStatus.makeGetRequest(restUrl.toString());
-        logger.info("SCA Status:\n" + getJsonData(scaStatus).toString());
-        
-        HTTPSWrapper consentStatus = getHTTPSWrapper();
-        setRequestId(consentStatus);
-        setConsentId(consentStatus);
-        setAuthorization(consentStatus);
-        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents/" + consentId)
-            .setBic()
-            .setAppId();
-        consentStatus.makeGetRequest(restUrl.toString());
-        logger.info("Consent Status:\n" + getJsonData(consentStatus).toString());
 
-        getAccountData(true);
-/*
-        restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
-            .setBic()
-            .addParameter("withBalance", "true")
-            .setAppId();
-        HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
-        setConsentId(wrapper);
-        setAuthorization(wrapper);
-        wrapper.makeGetRequest(restUrl.toString());
-        JSONObjectReader json = getJsonData(wrapper);
-*/
+        ////////////////////////////////////////////////////////////////////////////////
+        // Check that we still have a session                                         //
+        ////////////////////////////////////////////////////////////////////////////////
+        OpenBankingSessionData obsd = getObsd(request, response);
+        if (obsd == null) return;
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Verify that SCA is OK                                                      //
+        ////////////////////////////////////////////////////////////////////////////////
+        verifyOkStatus(true, obsd);
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        // Verify that Consent status is OK                                           //
+        ////////////////////////////////////////////////////////////////////////////////
+        verifyOkStatus(false, obsd);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Now get rich account data (=with balances)                                 //
+        ////////////////////////////////////////////////////////////////////////////////
+        getAccountData(true, obsd);
+
         response.sendRedirect("home");
     }
 }

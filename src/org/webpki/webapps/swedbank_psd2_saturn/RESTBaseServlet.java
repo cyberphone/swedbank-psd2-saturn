@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 import java.text.SimpleDateFormat;
-
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 
@@ -35,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONArrayWriter;
@@ -52,6 +52,8 @@ import org.webpki.saturn.common.HttpSupport;
 abstract class RESTBaseServlet extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
+
+    static final String OBSD                             = "obsd";
     
     static final String HTTP_HEADER_X_REQUEST_ID         = "X-Request-ID";
     static final String HTTP_HEADER_CONSENT_ID           = "Consent-ID";
@@ -70,25 +72,23 @@ abstract class RESTBaseServlet extends HttpServlet {
     static Logger logger = Logger.getLogger(RESTBaseServlet.class.getName());
     
     static DateTimeFormatter httpDateFormat = 
-            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.US);
+           DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.US);
 
-    static String oauth2Token;
-    
-    static String consentId;
-    
-    static String scaStatusUrl;
-
-    static String consentStatusUrl;
-    
-    static String targetAccountId;
-    
-    static String targetAccountResourseId;
-    
     static int X_Request_ID = 1536;
 
     static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
 
     static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
+
+    OpenBankingSessionData getObsd(HttpServletRequest request, 
+                                   HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendRedirect("home");
+            return null;
+        }
+        return (OpenBankingSessionData)session.getAttribute(OBSD);
+    }
 
     JSONObjectWriter createAccountConsent(JSONArrayReader jsonArrayReader) throws IOException {
         JSONObjectWriter consentData = new JSONObjectWriter();
@@ -211,8 +211,9 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
     }
     
-    void setAuthorization(HTTPSWrapper wrapper) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + oauth2Token);
+    void setAuthorization(HTTPSWrapper wrapper,
+                          OpenBankingSessionData obsd) throws IOException {
+        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + obsd.oauth2Token);
     }
 
     JSONObjectReader postJson(RESTUrl restUrl,
@@ -228,39 +229,38 @@ abstract class RESTBaseServlet extends HttpServlet {
         return getJsonData(wrapper, expectedResponseCode);
     }
 
-    String getConsent(JSONObjectWriter jsonRequestData, 
-                      HttpServletRequest request, 
-                      boolean mustBeValid,
+    String getConsent(JSONArrayReader accountData, 
+                      OpenBankingSessionData obsd, 
                       String successUrl) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
-        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, request.getRemoteAddr());
+        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, obsd.clientIpAddress);
         wrapper.setHeader(HTTP_HEADER_PSU_IP_PORT, "8442");
         wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
-        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, request.getHeader("user-agent"));
+        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, obsd.userAgent);
         wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
                 LocalIntegrationService.baseUri + successUrl);
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
                 LocalIntegrationService.baseUri + SCA_FAILED_PATH);
-        setAuthorization(wrapper);
+        setRequestId(wrapper);
+        setAuthorization(wrapper, obsd);
         JSONObjectReader json = postJson(restUrl, 
                                          wrapper, 
-                                         jsonRequestData, 
+                                         createAccountConsent(accountData), 
                                          HttpServletResponse.SC_CREATED);
-        consentId = json.getString("consentId");
+        obsd.consentId = json.getString("consentId");
         String consentStatus = json.getString("consentStatus");
         if (consentStatus.equals("valid")) {
              return null;
         } else {
-            if (mustBeValid) {
+            if (accountData == null) {
                 throw new IOException("Unexpeded \"consentStatus\": " + consentStatus);
             }
             JSONObjectReader links = json.getObject("_links");
-            scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
-            consentStatusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
+            obsd.scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
+            obsd.consentStatusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
             return links.getObject("scaRedirect").getString("href");
         }
     }
@@ -273,23 +273,40 @@ abstract class RESTBaseServlet extends HttpServlet {
         return getJsonData(wrapper);        
     }
 
-    JSONObjectReader getAccountData(boolean withBalance) throws IOException {
+    JSONObjectReader getAccountData(boolean withBalance,
+                                    OpenBankingSessionData obsd) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
             .setBic()
             .addParameter("withBalance", String.valueOf(withBalance))
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
         setRequestId(wrapper);
-        setConsentId(wrapper);
-        setAuthorization(wrapper);
+        setConsentId(wrapper, obsd);
+        setAuthorization(wrapper, obsd);
         return performGet(wrapper, restUrl);
     }
     
-    void setConsentId(HTTPSWrapper wrapper) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_CONSENT_ID, consentId);
+    void setConsentId(HTTPSWrapper wrapper,
+                      OpenBankingSessionData obsd) throws IOException {
+        wrapper.setHeader(HTTP_HEADER_CONSENT_ID, obsd.consentId);
     }
     
     void setRequestId(HTTPSWrapper wrapper) throws IOException {
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+    }
+
+    void verifyOkStatus(boolean scaFlag, OpenBankingSessionData obsd) throws IOException {
+        HTTPSWrapper scaStatus = getHTTPSWrapper();
+        setRequestId(scaStatus);
+        setConsentId(scaStatus, obsd);
+        setAuthorization(scaStatus, obsd);
+        RESTUrl restUrl = new RESTUrl(scaFlag ? obsd.scaStatusUrl : obsd.consentStatusUrl)
+            .setBic()
+            .setAppId();
+        if (!performGet(scaStatus, restUrl)
+                .getString(scaFlag ? "scaStatus" : "consentStatus")
+                    .equals(scaFlag ? "finalised" : "valid")) {
+            throw new IOException("Status error");
+        }
     }
 }
