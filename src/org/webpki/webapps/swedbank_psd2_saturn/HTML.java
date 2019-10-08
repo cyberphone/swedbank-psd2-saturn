@@ -70,12 +70,16 @@ public class HTML {
     }
 
     static String getHTML(String javascript, String box) {
-        StringBuilder html = new StringBuilder(HTML_INIT);
+        StringBuilder html = new StringBuilder(HTML_INIT + 
+            "<script>\"use strict\";\n" +
+            "history.pushState(null, null, 'home');\n" +
+            "window.addEventListener('popstate', function(event) {\n" +
+            "  history.pushState(null, null, 'home');\n" +
+            "});\n");
         if (javascript != null) {
-            html.append("<script>").append(javascript)
-                    .append("</script>");
+            html.append(javascript);
         }
-        html.append("</head><body>" +
+        html.append("</script></head><body>" +
             "<div style=\"display:flex;flex-wrap:wrap-reverse;justify-content:space-between\">" +
             "<img src=\"images/thelab.svg\" " +
             "style=\"cursor:pointer;height:25pt;padding-bottom:10pt;margin-right:30pt\"" +

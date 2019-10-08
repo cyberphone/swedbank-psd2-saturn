@@ -28,12 +28,17 @@ public class HomeServlet extends RESTBaseServlet {
 
     private static final long serialVersionUID = 1L;
     
+    static final String SESSION_TIMEOUT = "timeout";
+    
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Swedbank PSD2/Saturn API Demo</div>" +
+            "<div class=\"header\">Swedbank PSD2/Saturn API Demo</div>")
+        .append(request.getParameter(SESSION_TIMEOUT) == null ? "" :
+            "<div class=\"error\">Session Timed Out</div>")
+        .append(
             "<div style=\"padding-top:15pt\">This site permits testing a system using " +
             "Swedbanks's PSD2 API, running in an emulated local mode to support Saturn.  " +
             "For accessing the source code and documentation, click on the Saturn PSD2 logotype.</div>" +

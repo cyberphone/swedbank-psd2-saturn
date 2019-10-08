@@ -84,7 +84,7 @@ abstract class RESTBaseServlet extends HttpServlet {
                                    HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            response.sendRedirect("home");
+            response.sendRedirect("home?" + HomeServlet.SESSION_TIMEOUT);
             return null;
         }
         return (OpenBankingSessionData)session.getAttribute(OBSD);

@@ -31,11 +31,16 @@ li {
   background:#ffffea;
 }
 
-.header {
+.header, .error {
   text-align:center;
   font-weight:bolder;
   font-size:12pt;
   font-family:arial,verdana;
+}
+
+.error {
+  padding-top:15pt;
+  color:red;
 }
 
 .sitefooter {
