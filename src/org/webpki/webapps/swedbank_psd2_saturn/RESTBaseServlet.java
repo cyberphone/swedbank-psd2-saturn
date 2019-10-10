@@ -56,6 +56,8 @@ abstract class RESTBaseServlet extends HttpServlet {
 
     static final String OBSD                             = "obsd";
     
+    static final String DEFAULT_USER                     = "20010101-1234";
+    
     static final String HTTP_HEADER_USER_AGENT           = "User-Agent";
 
     static final String HTTP_HEADER_X_REQUEST_ID         = "X-Request-ID";
@@ -289,7 +291,19 @@ abstract class RESTBaseServlet extends HttpServlet {
         i = derivedUrl.lastIndexOf('/');
         return derivedUrl.substring(0, i + 1) + path;
     }
-    
+
+    void getOAuth2Token(OpenBankingSessionData obsd, String code) throws IOException {
+        FormData formData = new FormData()
+            .addElement("grant_type", "authorization_code")
+            .addElement("client_id", LocalIntegrationService.oauth2ClientId)
+            .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret)
+            .addElement("code", code)
+            .addElement("redirect_uri", LocalIntegrationService.baseUri + OAUTH2_REDIRECT_PATH);
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
+        obsd.oauth2Token = getJsonData(wrapper).getString("access_token");
+    }
+
     void setAuthorization(HTTPSWrapper wrapper,
                           OpenBankingSessionData obsd) throws IOException {
         wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + obsd.oauth2Token);
@@ -403,5 +417,82 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
         wrapper.makeGetRequest(restUrl.toString());
         return getLocation(wrapper);
+    }
+    
+    void emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
+        ////////////////////////////////////////////////////////////////////////////////
+        // Initial LIS to API session creation.                                       //
+        ////////////////////////////////////////////////////////////////////////////////
+        String location = initializeApi();
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // The returned "Location" is now returned to the browser as a redirect which //
+        // in turn is supposed to invoke a Web authentication UI which if successful  //
+        // should redirect back to the "redirect_uri" with an authentication code.    //
+        //                                                                            //
+        // Now, this isn't actually true because the code below does "Web Scraping    //
+        // in a very provider-specific way.                                           //                            
+        ////////////////////////////////////////////////////////////////////////////////
+        HTTPSWrapper wrapper = getBrowserEmulator(obsd);
+        wrapper.makeGetRequest(location);
+        Scraper scraper = new Scraper(wrapper);
+        scraper.scanTo("<form ");
+        RESTUrl restUrl = new RESTUrl(combineUrl(location, scraper.findWithin("action")))
+            .addScrapedNameValue(scraper, "sessionID")
+            .addScrapedNameValue(scraper, "sessionData")
+            .addScrapedNameValue(scraper, "bic")
+            .addParameter("userId", obsd.userId);
+        location = restUrl.toString();
+        String setCookie = wrapper.getHeaderValue("set-cookie");
+        String cookie = setCookie.substring(0, setCookie.indexOf(';'));
+
+        wrapper = getBrowserEmulator(obsd);
+        wrapper.setHeader("cookie", cookie);
+        logger.info(location);
+        wrapper.makeGetRequest(location);
+        scraper = new Scraper(wrapper);
+        scraper.scanTo("<form ");
+        restUrl = new RESTUrl(combineUrl(location, scraper.findWithin("action")))
+            .addScrapedNameValue(scraper, "sessionID")
+            .addScrapedNameValue(scraper, "sessionData")
+            .addScrapedNameValue(scraper, "bic");
+        location = restUrl.toString();
+
+        wrapper = getBrowserEmulator(obsd);
+        wrapper.setHeader("cookie", cookie);
+        logger.info(location);
+        wrapper.makeGetRequest(location);
+        logger.info(String.valueOf(wrapper.getResponseCode()));
+        scraper = new Scraper(wrapper);
+        scraper.scanTo("<form ");
+        location = combineUrl(location, scraper.findWithin("action"));
+        FormData formData = new FormData()
+            .addScrapedNameValue(scraper, "sessionID")
+            .addScrapedNameValue(scraper, "sessionData")
+            .addScrapedNameValue(scraper, "action")
+            .addScrapedNameValue(scraper, "bic");
+
+        wrapper = getBrowserEmulator(obsd);
+        wrapper.setHeader("cookie", cookie);
+        logger.info(location);
+        wrapper.makePostRequest(location, formData.toByteArray());
+        location = getLocation(wrapper);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We should have "code" parameter                                            //
+        ////////////////////////////////////////////////////////////////////////////////
+        int i = location.indexOf("?code=");
+        if (i < 0) {
+            throw new IOException("Didn't find 'code' object");
+        }
+        String code = location.substring(i + 6);
+        if (LocalIntegrationService.logging) {
+            logger.info("code=" + code);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got the code, now we need to upgrade it to an oauth2 token              //
+        ////////////////////////////////////////////////////////////////////////////////
+        getOAuth2Token(obsd, code);
     }
 }

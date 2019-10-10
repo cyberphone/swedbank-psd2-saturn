@@ -24,13 +24,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+// This servlet MUST only called in the Test mode (using Open Banking GUI)
+// and before any other Test mode servlets
 
-public class AuthorizeServlet extends RESTBaseServlet {
+public class OriginalAuthorizeServlet extends RESTBaseServlet {
 
     private static final long serialVersionUID = 1L;
     
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
         // Before you can do anything you must be authenticated                       //
@@ -46,7 +48,17 @@ public class AuthorizeServlet extends RESTBaseServlet {
                                            request.getRemoteAddr(),
                                            request.getHeader(HTTP_HEADER_USER_AGENT));
         session.setAttribute(OBSD, obsd);
-        
-        emulatedAuthorize(obsd);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Initial LIS to API session creation.                                       //
+        ////////////////////////////////////////////////////////////////////////////////
+        String location = initializeApi();
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // The returned "Location" is now returned to the browser as a redirect which //
+        // in turn is supposed to invoke a Web authentication UI which if successful  //
+        // should redirect back to the "redirect_uri" with an authentication code     //
+        ////////////////////////////////////////////////////////////////////////////////
+        response.sendRedirect(location);
     }
 }

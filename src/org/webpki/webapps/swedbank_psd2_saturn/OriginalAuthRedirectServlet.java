@@ -25,7 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONObjectReader;
 
-public class AuthRedirectServlet extends RESTBaseServlet {
+// This servlet is only called in the Test mode (using Open Banking GUI)
+
+public class OriginalAuthRedirectServlet extends RESTBaseServlet {
 
     private static final long serialVersionUID = 1L;
 
@@ -55,7 +57,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         }
         
         ////////////////////////////////////////////////////////////////////////////////
-        // We got the code, now we need to upgrade it to a oauth2 token               //
+        // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
         getOAuth2Token(obsd, code);
 

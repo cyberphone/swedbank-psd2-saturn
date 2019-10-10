@@ -80,7 +80,6 @@
         </classpath>
     </javac>
     <replace file="${temp.dir}/web.xml">
-      <replacefilter token="@emulation-mode@" value="${emulation_mode}"/>
       <replacefilter token="@oauth2-client-id@" value="${oauth2_client_id}"/>
       <replacefilter token="@oauth2-client-secret@" value="${oauth2_client_secret}"/>
       <replacefilter token="@base-uri@" value="${base_uri}"/>

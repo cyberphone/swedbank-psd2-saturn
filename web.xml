@@ -11,12 +11,6 @@
     </context-param>
 
     <context-param>
-        <description>Emulation (Web Scraping) Mode</description>
-        <param-name>emulation_mode</param-name>
-        <param-value>@emulation-mode@</param-value>
-    </context-param>
-
-    <context-param>
         <description>OAuth2 Client ID</description>
         <param-name>oauth2_client_id</param-name>
         <param-value>@oauth2-client-id@</param-value>
@@ -61,8 +55,13 @@
     </servlet>
 
     <servlet>
-        <servlet-name>AuthRedirectServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AuthRedirectServlet</servlet-class>
+        <servlet-name>OriginalAuthorizeServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.OriginalAuthorizeServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>OriginalAuthRedirectServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.OriginalAuthRedirectServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -91,7 +90,12 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>AuthRedirectServlet</servlet-name>
+        <servlet-name>OriginalAuthorizeServlet</servlet-name>
+        <url-pattern>/originalauthorize</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>OriginalAuthRedirectServlet</servlet-name>
         <url-pattern>/authredirect</url-pattern>
     </servlet-mapping>
 

@@ -49,8 +49,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     static boolean logging;
     
-    static boolean emulationMode;
-
     static String oauth2ClientId;
     
     static String oauth2ClientSecret;
@@ -89,11 +87,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public void contextInitialized(ServletContextEvent event) {
         initProperties(event);
         try {
-            /////////////////////////////////////////////////////////////////////////////////////////////
-            // Using "Web Scraping" to emulate the needed Open Banking functionality
-            /////////////////////////////////////////////////////////////////////////////////////////////
-            emulationMode = getPropertyBoolean(EMULATION_MODE);
-
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Core Open Banking/OAuth2 elements
             /////////////////////////////////////////////////////////////////////////////////////////////
