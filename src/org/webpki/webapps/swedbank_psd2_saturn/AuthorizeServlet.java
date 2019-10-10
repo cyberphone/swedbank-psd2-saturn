@@ -62,28 +62,47 @@ public class AuthorizeServlet extends RESTBaseServlet {
             wrapper.makeGetRequest(location);
             Scraper scraper = new Scraper(wrapper);
             scraper.scanTo("<form ");
-            RESTUrl restUrl = new RESTUrl(location, scraper.findWithin("action"))
+            RESTUrl restUrl = new RESTUrl(combineUrl(location, scraper.findWithin("action")))
                 .addScrapedNameValue(scraper, "sessionID")
                 .addScrapedNameValue(scraper, "sessionData")
                 .addScrapedNameValue(scraper, "bic")
                 .addParameter("userId", "55");
-            logger.info(restUrl.toString());
-            String cookie = wrapper.getHeaderValue("set-cookie");
-            cookie = cookie.substring(0, cookie.indexOf(';'));
+            location = restUrl.toString();
+            String setCookie = wrapper.getHeaderValue("set-cookie");
+            String cookie = setCookie.substring(0, setCookie.indexOf(';'));
 
             wrapper = getBrowserEmulator(obsd);
             wrapper.setHeader("cookie", cookie);
-            location = restUrl.toString();
+            logger.info(location);
             wrapper.makeGetRequest(location);
             scraper = new Scraper(wrapper);
             scraper.scanTo("<form ");
-            restUrl = new RESTUrl(location, scraper.findWithin("action"))
+            restUrl = new RESTUrl(combineUrl(location, scraper.findWithin("action")))
                 .addScrapedNameValue(scraper, "sessionID")
                 .addScrapedNameValue(scraper, "sessionData")
                 .addScrapedNameValue(scraper, "bic");
-            logger.info(restUrl.toString());
-        } else {
-            response.sendRedirect(location);
+            location = restUrl.toString();
+
+            wrapper = getBrowserEmulator(obsd);
+            wrapper.setHeader("cookie", cookie);
+            logger.info(location);
+            wrapper.makeGetRequest(location);
+            logger.info(String.valueOf(wrapper.getResponseCode()));
+            scraper = new Scraper(wrapper);
+            scraper.scanTo("<form ");
+            location = combineUrl(location, scraper.findWithin("action"));
+            FormData formData = new FormData()
+                .addScrapedNameValue(scraper, "sessionID")
+                .addScrapedNameValue(scraper, "sessionData")
+                .addScrapedNameValue(scraper, "action")
+                .addScrapedNameValue(scraper, "bic");
+
+            wrapper = getBrowserEmulator(obsd);
+            wrapper.setHeader("cookie", cookie);
+            logger.info(location);
+            wrapper.makePostRequest(location, formData.toByteArray());
+            location = getLocation(wrapper);
         }
+        response.sendRedirect(location);
     }
 }

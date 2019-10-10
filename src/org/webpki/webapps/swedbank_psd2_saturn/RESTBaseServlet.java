@@ -94,7 +94,7 @@ abstract class RESTBaseServlet extends HttpServlet {
             }
             html = wrapper.getDataUTF8();
             if (LocalIntegrationService.logging) {
-//                logger.info("Scraping html:\n" + html);
+ //               logger.info("Scraping html:\n" + html);
             }
         }
         
@@ -223,20 +223,6 @@ abstract class RESTBaseServlet extends HttpServlet {
             url = new StringBuilder(baseUrl);
         }
         
-        RESTUrl(String derivedUrl, String path) {
-            if (path.startsWith("https:")) {
-                derivedUrl = path;
-            } else {
-                int i = derivedUrl.indexOf('?');
-                if (i > 0) {
-                    derivedUrl = derivedUrl.substring(0, i);
-                }
-                i = derivedUrl.lastIndexOf('/');
-                derivedUrl = derivedUrl.substring(0, i + 1) + path;
-            }
-            url = new StringBuilder(derivedUrl);
-        }
-        
         RESTUrl addParameter(String name, String value) throws IOException {
             url.append(next ? '&' : '?')
                .append(name)
@@ -280,9 +266,28 @@ abstract class RESTBaseServlet extends HttpServlet {
             return this;
         }
         
+        FormData addScrapedNameValue(Scraper scraper, String name) throws IOException {
+            return addElement(name, scraper.inputNameValue(name));
+        }
+
         public byte[] toByteArray() throws IOException {
             return formData.toString().getBytes("utf-8");
         }
+    }
+    
+    String combineUrl(String derivedUrl, String path) {
+        if (path.startsWith("https:")) {
+            return path;
+        }
+        if (path.startsWith("/")) {
+            return derivedUrl.substring(0, derivedUrl.indexOf('/', 8)) + path;
+        }
+        int i = derivedUrl.indexOf('?');
+        if (i > 0) {
+            derivedUrl = derivedUrl.substring(0, i);
+        }
+        i = derivedUrl.lastIndexOf('/');
+        return derivedUrl.substring(0, i + 1) + path;
     }
     
     void setAuthorization(HTTPSWrapper wrapper,
