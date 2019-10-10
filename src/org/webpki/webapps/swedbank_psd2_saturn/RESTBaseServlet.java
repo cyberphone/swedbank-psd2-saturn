@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 import java.text.SimpleDateFormat;
+
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 
@@ -55,6 +56,8 @@ abstract class RESTBaseServlet extends HttpServlet {
 
     static final String OBSD                             = "obsd";
     
+    static final String HTTP_HEADER_USER_AGENT           = "User-Agent";
+
     static final String HTTP_HEADER_X_REQUEST_ID         = "X-Request-ID";
     static final String HTTP_HEADER_CONSENT_ID           = "Consent-ID";
     static final String HTTP_HEADER_AUTHORIZATION        = "Authorization";
@@ -80,6 +83,53 @@ abstract class RESTBaseServlet extends HttpServlet {
 
     static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
 
+    class Scraper {
+
+        String html;
+        int index;
+
+        Scraper(HTTPSWrapper wrapper) throws IOException {
+            if (!wrapper.getContentType().startsWith("text/html")) {
+                throw new IOException("Unexpected content type: " + wrapper.getContentType());
+            }
+            html = wrapper.getDataUTF8();
+            if (LocalIntegrationService.logging) {
+//                logger.info("Scraping html:\n" + html);
+            }
+        }
+        
+        void bad(String text) throws IOException {
+            throw new IOException("Scraper: " + text);
+        }
+
+        void scanTo(String tag) throws IOException {
+            index = html.indexOf(tag, index);
+            if (index++ < 0) bad(tag);
+        }
+        
+        String findWithin(String what) throws IOException {
+            int last = html.indexOf('>', index);
+            String sub = html.substring(index, last);
+            int curr = sub.indexOf(" " + what + "=\"");
+            if (curr < 0) bad(what);
+            curr += what.length() + 3;
+            last = sub.indexOf('"', curr);
+            if (last < 0) bad(what);
+            return sub.substring(curr, last);
+        }
+
+        public String inputNameValue(String name) throws IOException {
+            scanTo("<input ");
+            if (!findWithin("name").equals(name)) bad(name);
+            return findWithin("value");
+        }
+
+        @Override
+        public String toString() {
+            return html;
+        }
+    }
+    
     OpenBankingSessionData getObsd(HttpServletRequest request, 
                                    HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
@@ -115,6 +165,12 @@ abstract class RESTBaseServlet extends HttpServlet {
     HTTPSWrapper getHTTPSWrapper() throws IOException {
         HTTPSWrapper wrapper = new HTTPSWrapper();
         wrapper.setHeader("Date", httpDateFormat.format(ZonedDateTime.now(ZoneOffset.UTC)));
+        return wrapper;
+    }
+    
+    HTTPSWrapper getBrowserEmulator(OpenBankingSessionData obsd) throws IOException {
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        wrapper.setHeader(HTTP_HEADER_USER_AGENT, obsd.userAgent);
         return wrapper;
     }
     
@@ -167,6 +223,20 @@ abstract class RESTBaseServlet extends HttpServlet {
             url = new StringBuilder(baseUrl);
         }
         
+        RESTUrl(String derivedUrl, String path) {
+            if (path.startsWith("https:")) {
+                derivedUrl = path;
+            } else {
+                int i = derivedUrl.indexOf('?');
+                if (i > 0) {
+                    derivedUrl = derivedUrl.substring(0, i);
+                }
+                i = derivedUrl.lastIndexOf('/');
+                derivedUrl = derivedUrl.substring(0, i + 1) + path;
+            }
+            url = new StringBuilder(derivedUrl);
+        }
+        
         RESTUrl addParameter(String name, String value) throws IOException {
             url.append(next ? '&' : '?')
                .append(name)
@@ -184,6 +254,10 @@ abstract class RESTBaseServlet extends HttpServlet {
             return addParameter("app-id", LocalIntegrationService.oauth2ClientId);
         }
 
+        RESTUrl addScrapedNameValue(Scraper scraper, String name) throws IOException {
+            return addParameter(name, scraper.inputNameValue(name));
+        }
+        
         @Override
         public String toString() {
             return url.toString();
@@ -308,5 +382,21 @@ abstract class RESTBaseServlet extends HttpServlet {
                     .equals(scaFlag ? "finalised" : "valid")) {
             throw new IOException("Status error");
         }
+    }
+
+    String initializeApi() throws IOException {
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
+            .setBic()
+            .addParameter("client_id", LocalIntegrationService.oauth2ClientId)
+            .addParameter("response_type", "code")
+            .addParameter("scope", "PSD2sandbox")
+            .addParameter("redirect_uri", LocalIntegrationService.baseUri + OAUTH2_REDIRECT_PATH);
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        setRequestId(wrapper);
+        if (LocalIntegrationService.logging) {
+            logger.info("About to GET: " + restUrl.toString());
+        }
+        wrapper.makeGetRequest(restUrl.toString());
+        return getLocation(wrapper);
     }
 }

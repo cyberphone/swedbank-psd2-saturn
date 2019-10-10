@@ -43,32 +43,47 @@ public class AuthorizeServlet extends RESTBaseServlet {
         ////////////////////////////////////////////////////////////////////////////////
         HttpSession session = request.getSession();
         OpenBankingSessionData obsd = new OpenBankingSessionData();
-        obsd.userAgent = request.getHeader("user-agent");
+        obsd.userAgent = request.getHeader(HTTP_HEADER_USER_AGENT);
         obsd.clientIpAddress = request.getRemoteAddr();
         session.setAttribute(OBSD, obsd);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
-        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
-            .setBic()
-            .addParameter("client_id", LocalIntegrationService.oauth2ClientId)
-            .addParameter("response_type", "code")
-            .addParameter("scope", "PSD2sandbox")
-            .addParameter("redirect_uri", LocalIntegrationService.baseUri + OAUTH2_REDIRECT_PATH);
-        if (LocalIntegrationService.logging) {
-            logger.info("About to GET: " + restUrl.toString());
-        }
-        HTTPSWrapper wrapper = getHTTPSWrapper();
-        setRequestId(wrapper);
-        wrapper.makeGetRequest(restUrl.toString());
-        String location = getLocation(wrapper);
+        String location = initializeApi();
 
         ////////////////////////////////////////////////////////////////////////////////
         // The returned "Location" is now returned to the browser as a redirect which //
         // in turn is supposed to invoke a Web authentication UI which if successful  //
         // should redirect back to the "redirect_uri" with an authentication code     //
         ////////////////////////////////////////////////////////////////////////////////
-        response.sendRedirect(location);
+        if (LocalIntegrationService.emulationMode) {
+            HTTPSWrapper wrapper = getBrowserEmulator(obsd);
+            wrapper.makeGetRequest(location);
+            Scraper scraper = new Scraper(wrapper);
+            scraper.scanTo("<form ");
+            RESTUrl restUrl = new RESTUrl(location, scraper.findWithin("action"))
+                .addScrapedNameValue(scraper, "sessionID")
+                .addScrapedNameValue(scraper, "sessionData")
+                .addScrapedNameValue(scraper, "bic")
+                .addParameter("userId", "55");
+            logger.info(restUrl.toString());
+            String cookie = wrapper.getHeaderValue("set-cookie");
+            cookie = cookie.substring(0, cookie.indexOf(';'));
+
+            wrapper = getBrowserEmulator(obsd);
+            wrapper.setHeader("cookie", cookie);
+            location = restUrl.toString();
+            wrapper.makeGetRequest(location);
+            scraper = new Scraper(wrapper);
+            scraper.scanTo("<form ");
+            restUrl = new RESTUrl(location, scraper.findWithin("action"))
+                .addScrapedNameValue(scraper, "sessionID")
+                .addScrapedNameValue(scraper, "sessionData")
+                .addScrapedNameValue(scraper, "bic");
+            logger.info(restUrl.toString());
+        } else {
+            response.sendRedirect(location);
+        }
     }
 }

@@ -11,6 +11,12 @@
     </context-param>
 
     <context-param>
+        <description>Emulation (Web Scraping) Mode</description>
+        <param-name>emulation_mode</param-name>
+        <param-value>@emulation-mode@</param-value>
+    </context-param>
+
+    <context-param>
         <description>OAuth2 Client ID</description>
         <param-name>oauth2_client_id</param-name>
         <param-value>@oauth2-client-id@</param-value>

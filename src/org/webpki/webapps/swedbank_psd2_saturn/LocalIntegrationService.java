@@ -48,6 +48,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     static KeyStoreVerifier certificateVerifier;
 
     static boolean logging;
+    
+    static boolean emulationMode;
 
     static String oauth2ClientId;
     
@@ -60,6 +62,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     static final String OAUTH2_CLIENT_SECRET    = "oauth2_client_secret";
 
     static final String BASE_URI                = "base_uri";
+
+    static final String EMULATION_MODE          = "emulation_mode";
     
     InputStream getResource(String name) throws IOException {
         InputStream is = this.getClass().getResourceAsStream(name);
@@ -85,8 +89,20 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public void contextInitialized(ServletContextEvent event) {
         initProperties(event);
         try {
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            // Using "Web Scraping" to emulate the needed Open Banking functionality
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            emulationMode = getPropertyBoolean(EMULATION_MODE);
+
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            // Core Open Banking/OAuth2 elements
+            /////////////////////////////////////////////////////////////////////////////////////////////
             oauth2ClientId = getPropertyString(OAUTH2_CLIENT_ID);
             oauth2ClientSecret = getPropertyString(OAUTH2_CLIENT_SECRET);
+
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            // Where our app resides in Cyberspace
+            /////////////////////////////////////////////////////////////////////////////////////////////
             baseUri = getPropertyString(BASE_URI);
     //        new KeyStoreEnumerator(null,null);
 /*
