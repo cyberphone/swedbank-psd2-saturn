@@ -27,6 +27,11 @@ li {
   background:#f8f8f8;
 }
 
+.centerbox {
+    display:flex;
+    justify-content:center;
+}
+
 .textbox {
   background:#ffffea;
 }

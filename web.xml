@@ -60,6 +60,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>AccountsServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AccountsServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>TestAuthorizeServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthorizeServlet</servlet-class>
     </servlet>
@@ -70,12 +75,12 @@
     </servlet>
 
     <servlet>
-        <servlet-name>SCAAccountSuccessServlet</servlet-name>
+        <servlet-name>TestSCAAccountSuccessServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAAccountSuccessServlet</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>SCAFailedServlet</servlet-name>
+        <servlet-name>TestSCAFailedServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAFailedServlet</servlet-class>
     </servlet>
 
@@ -95,6 +100,11 @@
     </servlet-mapping>
 
     <servlet-mapping>
+        <servlet-name>AccountsServlet</servlet-name>
+        <url-pattern>/accounts</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
         <servlet-name>TestAuthorizeServlet</servlet-name>
         <url-pattern>/api.test</url-pattern>
     </servlet-mapping>
@@ -105,12 +115,12 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>SCAAccountSuccessServlet</servlet-name>
+        <servlet-name>TestSCAAccountSuccessServlet</servlet-name>
         <url-pattern>/api.scaaccountsuccess</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>SCAFailedServlet</servlet-name>
+        <servlet-name>TestSCAFailedServlet</servlet-name>
         <url-pattern>/api.scafailed</url-pattern>
     </servlet-mapping>
 

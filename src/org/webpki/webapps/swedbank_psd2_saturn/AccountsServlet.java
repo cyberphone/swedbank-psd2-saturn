@@ -22,46 +22,22 @@ import javax.servlet.ServletException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBankingSessionData;
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
 
-public class AuthorizeServlet extends APICore {
+public class AccountsServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
-        ////////////////////////////////////////////////////////////////////////////////
-        // Before you can do anything you must be authenticated                       //
-        // Note: this servlet is called by the browser from LIS                       //
-        // The code below creates a session between LIS and the Open Banking service  //
-        // for a specific user.  Note: Swedbank's Sandbox only supports a single user //
-        // but we do this anyway to obtain consistency between implementations and be //
-        // closer to a production version using an enhanced Open Banking API          //
-        ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = 
-                new OpenBankingSessionData(DEFAULT_USER,
-                                           request.getRemoteAddr(),
-                                           request.getHeader(HTTP_HEADER_USER_AGENT));
-        if(emulatedAuthorize(obsd)) {
-            // We did it!  Continue to the next step but first
-            // create a session holding the precious OAuth2 token etc.
-            request.getSession().setAttribute(OBSD, obsd);
-            response.sendRedirect("accounts");
-        } else {
-            doGet(request, response);
-        }
-    }
-
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Login to Application</div>" +
+            "<div class=\"header\">Select Account</div>" +
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<div style=\"padding-top:15pt\">In a production setup you would need to login but " +

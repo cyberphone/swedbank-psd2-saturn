@@ -41,29 +41,20 @@ public class HomeServlet extends APICore {
         .append(request.getParameter(SESSION_TIMEOUT) == null ? "" :
             "<div class=\"error\">Session Timed Out</div>")
         .append(
-            "<div style=\"padding-top:15pt\">This site permits testing a system using " +
-            "Swedbanks's PSD2 API, running in an emulated local mode to support Saturn.  " +
-            "For accessing the source code and documentation, click on the Saturn PSD2 logotype.</div>" +
-            "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
-            "<div style=\"display:flex;justify-content:center\"><table>" +
-            "<tr><td><div class=\"multibtn\" " +
-            "onclick=\"document.forms.authorize.submit()\" " +
-            "title=\"Authorize\">" +
-            "Login to Application" +
-            "</div></td></tr>" +
-/*
-            "<tr><td><div class=\"multibtn\" " +
-            "onclick=\"document.location.href='validate'\" " +
-            "title=\"Validate Signed Request\">" +
-            "Validate Signed Request" +
-            "</div></td></tr>" +
-            "<tr><td><div class=\"multibtn\" " +
-            "onclick=\"document.location.href='curl'\" " +
-            "title=\"Online Testing with CURL/Browser\">" +
-            "Online Testing with CURL/Browser" +
-            "</div></td></tr>" +
-*/
-            "</table></div>" +
+            "<div class=\"centerbox\">" +
+              "<div style=\"padding-top:15pt\">This site permits testing a system using " +
+              "Swedbanks's PSD2 API, running in an emulated local mode to support Saturn.  " +
+              "For accessing the source code and documentation, click on the Saturn PSD2 logotype.</div>" +
+            "</div>" +
+            "<div class=\"centerbox\">" +
+              "<table>" +
+                "<tr><td><div class=\"multibtn\" " +
+                "onclick=\"document.location.href='authorize'\" " +
+                "title=\"Begin enrollment process\">" +
+                "Begin Enrollment" +
+                "</div></td></tr>" +
+              "</table>" +
+            "</div>" +
             "<div class=\"sitefooter\">This system only uses session cookies.</div>"));
     }
 }

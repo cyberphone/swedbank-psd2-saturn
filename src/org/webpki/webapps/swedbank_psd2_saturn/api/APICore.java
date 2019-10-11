@@ -426,7 +426,7 @@ public abstract class APICore extends HttpServlet {
         return getLocation(wrapper);
     }
     
-    public static void emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
+    public static boolean emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
@@ -501,5 +501,10 @@ public abstract class APICore extends HttpServlet {
         // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
         getOAuth2Token(obsd, code);
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        // Since this is an emulator using a single user we always succeed :-)        //
+        ////////////////////////////////////////////////////////////////////////////////
+        return true;
     }
 }

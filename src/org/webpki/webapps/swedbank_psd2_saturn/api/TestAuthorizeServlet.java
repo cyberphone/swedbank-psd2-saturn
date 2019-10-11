@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.webpki.webapps.swedbank_psd2_saturn.HTML;
+
 // This servlet MUST only called in the Test mode (using Open Banking GUI)
 // and before any other Test mode servlets
 
@@ -33,6 +35,24 @@ public class TestAuthorizeServlet extends APICore {
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        
+        HTML.standardPage(response, null, new StringBuilder(
+            "<div class=\"header\">Internal API Test with GUI</div>" +
+            "<form name=\"authorize\" action=\"api.test\" method=\"POST\"></form>" +
+            "<div class=\"centerbox\">" +
+              "<table>" +
+                "<tr><td><div class=\"multibtn\" " +
+                "onclick=\"document.forms.authorize.submit()\" " +
+                "title=\"Authorize Login\">" +
+                "Step #1: Authorize/Login" +
+                "</div></td></tr>" +
+              "</table>" +
+            "</div>"));
+    }
+
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
         // Before you can do anything you must be authenticated                       //

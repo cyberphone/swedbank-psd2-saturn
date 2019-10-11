@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONObjectReader;
 
+import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
@@ -36,6 +37,7 @@ public class TestAuthRedirectServlet extends APICore {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+        
         ////////////////////////////////////////////////////////////////////////////////
         // This servlet is redirected to by the PSD2 service after a successful user  //
         // authentication                                                             //
@@ -62,9 +64,33 @@ public class TestAuthRedirectServlet extends APICore {
         // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
         getOAuth2Token(obsd, code);
+        
+        HTML.standardPage(response, null, new StringBuilder(
+            "<div class=\"header\">Internal API Test with GUI</div>" +
+            "<form name=\"authorize\" action=\"api.authredirect\" method=\"POST\"></form>" +
+            "<div class=\"centerbox\">" +
+              "<table>" +
+                "<tr><td><div class=\"multibtn\" " +
+                "onclick=\"document.forms.authorize.submit()\" " +
+                "title=\"&quot;Consent&quot; \u00bb Get Account Data\">" +
+                "Step #2: Consent \u00bb Get Account Data" +
+                "</div></td></tr>" +
+              "</table>" +
+            "</div>"));
+    }
+    
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We got the token, now we need a consent for our accounts                   //
+        // Check that we still have a session                                         //
+        ////////////////////////////////////////////////////////////////////////////////
+        OpenBankingSessionData obsd = getObsd(request, response);
+        if (obsd == null) return;
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We have the token, now we need a consent for our accounts                  //
         ////////////////////////////////////////////////////////////////////////////////
         getConsent(null, obsd, SCA_ACCOUNT_SUCCESS_PATH);
 

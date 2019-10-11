@@ -140,9 +140,9 @@ public class HTML {
             "</textarea></div>";
     }
     
-    static void standardPage(HttpServletResponse response, 
-                            String javaScript,
-                            StringBuilder html) throws IOException, ServletException {
+    public static void standardPage(HttpServletResponse response, 
+                                    String javaScript,
+                                    StringBuilder html) throws IOException, ServletException {
         HTML.output(response, HTML.getHTML(javaScript, html.toString()));
     }
 
