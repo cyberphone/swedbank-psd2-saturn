@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.webapps.swedbank_psd2_saturn;
+package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.Serializable;
 
@@ -24,7 +24,7 @@ public class OpenBankingSessionData implements Serializable {
     static final String DEFAULT_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36";
 
-    OpenBankingSessionData(String userId, String clientIpAddress, String userAgent) {
+    public OpenBankingSessionData(String userId, String clientIpAddress, String userAgent) {
         this.userId = userId;
         this.clientIpAddress = clientIpAddress;
         this.userAgent = userAgent == null ? DEFAULT_BROWSER : userAgent;

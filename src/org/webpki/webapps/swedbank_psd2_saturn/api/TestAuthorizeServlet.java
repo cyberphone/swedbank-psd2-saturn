@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.webapps.swedbank_psd2_saturn;
+package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import javax.servlet.http.HttpSession;
 // This servlet MUST only called in the Test mode (using Open Banking GUI)
 // and before any other Test mode servlets
 
-public class OriginalAuthorizeServlet extends RESTBaseServlet {
+public class TestAuthorizeServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     

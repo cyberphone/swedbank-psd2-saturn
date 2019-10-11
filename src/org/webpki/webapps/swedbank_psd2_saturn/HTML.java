@@ -69,7 +69,7 @@ public class HTML {
         }
     }
 
-    static String getHTML(String javascript, String box) {
+    public static String getHTML(String javascript, String box) {
         StringBuilder html = new StringBuilder(HTML_INIT + 
             "<script>\"use strict\";\n" +
             "history.pushState(null, null, 'home');\n" +
@@ -95,7 +95,7 @@ public class HTML {
         return html.toString();
     }
 
-    static void output(HttpServletResponse response, String html)
+    public static void output(HttpServletResponse response, String html)
             throws IOException, ServletException {
 //      logger.info(html);
         response.setContentType("text/html; charset=utf-8");

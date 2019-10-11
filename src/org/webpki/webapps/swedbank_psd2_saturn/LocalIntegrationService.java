@@ -47,13 +47,13 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     static KeyStoreVerifier certificateVerifier;
 
-    static boolean logging;
+    public static boolean logging;
     
-    static String oauth2ClientId;
+    public static String oauth2ClientId;
     
-    static String oauth2ClientSecret;
+    public static String oauth2ClientSecret;
 
-    static String baseUri;
+    public static String baseUri;
 
     static final String OAUTH2_CLIENT_ID        = "oauth2_client_id";
     

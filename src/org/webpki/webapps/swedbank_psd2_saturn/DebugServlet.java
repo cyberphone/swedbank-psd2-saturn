@@ -17,19 +17,25 @@
 package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
+
 import java.util.Enumeration;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONParser;
+
 import org.webpki.saturn.common.BaseProperties;
+
 import org.webpki.webutil.ServletUtil;
+
+import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
 // Debug print
 
-public class DebugServlet extends RESTBaseServlet {
+public class DebugServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     

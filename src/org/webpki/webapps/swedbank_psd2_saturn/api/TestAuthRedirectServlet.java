@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.webapps.swedbank_psd2_saturn;
+package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 
@@ -25,7 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONObjectReader;
 
-public class AuthRedirectServlet extends RESTBaseServlet {
+import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+
+// This servlet is only called in the Test mode (using Open Banking GUI)
+
+public class TestAuthRedirectServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
 
@@ -44,7 +48,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         if (obsd == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We should have "code" parameter                                            //
+        // We should now have the "code" parameter                                    //
         ////////////////////////////////////////////////////////////////////////////////
         String code = request.getParameter("code");
         if (code == null) {
@@ -55,7 +59,7 @@ public class AuthRedirectServlet extends RESTBaseServlet {
         }
         
         ////////////////////////////////////////////////////////////////////////////////
-        // We got the code, now we need to upgrade it to a oauth2 token               //
+        // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
         getOAuth2Token(obsd, code);
 

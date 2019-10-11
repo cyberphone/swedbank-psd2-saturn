@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.webapps.swedbank_psd2_saturn;
+package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 
@@ -49,16 +49,20 @@ import org.webpki.net.HTTPSWrapper;
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.HttpSupport;
 
+import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
+import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-abstract class RESTBaseServlet extends HttpServlet {
+// This is the core API class.  It is both API and provider specific
+
+public abstract class APICore extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
 
-    static final String OBSD                             = "obsd";
+    public static final String OBSD                      = "obsd";
     
-    static final String DEFAULT_USER                     = "20010101-1234";
+    public static final String DEFAULT_USER              = "20010101-1234";
     
-    static final String HTTP_HEADER_USER_AGENT           = "User-Agent";
+    public static final String HTTP_HEADER_USER_AGENT    = "User-Agent";
 
     static final String HTTP_HEADER_X_REQUEST_ID         = "X-Request-ID";
     static final String HTTP_HEADER_CONSENT_ID           = "Consent-ID";
@@ -70,11 +74,14 @@ abstract class RESTBaseServlet extends HttpServlet {
     static final String HTTP_HEADER_TTP_REDIRECT_URI     = "TPP-Redirect-URI";
     static final String HTTP_HEADER_TPP_NOK_REDIRECT_URI = "TPP-Nok-Redirect-URI";
     
-    static final String OAUTH2_REDIRECT_PATH             = "/authredirect";
-    static final String SCA_ACCOUNT_SUCCESS_PATH         = "/scaaccountsuccess";
-    static final String SCA_FAILED_PATH                  = "/scafailed";
+    // Note: the following paths are only active in the Test (GUI) mode but
+    // are anyway communicated in the emulated mode since they are required
+    // by the Open Banking API
+    static final String OAUTH2_REDIRECT_PATH             = "/api.authredirect";
+    static final String SCA_ACCOUNT_SUCCESS_PATH         = "/api.scaaccountsuccess";
+    static final String SCA_FAILED_PATH                  = "/api.scafailed";
 
-    static Logger logger = Logger.getLogger(RESTBaseServlet.class.getName());
+    protected static Logger logger = Logger.getLogger(APICore.class.getName());
     
     static DateTimeFormatter httpDateFormat = 
            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.US);
@@ -85,7 +92,7 @@ abstract class RESTBaseServlet extends HttpServlet {
 
     static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
 
-    class Scraper {
+    static class Scraper {
 
         String html;
         int index;
@@ -132,8 +139,8 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
     }
     
-    OpenBankingSessionData getObsd(HttpServletRequest request, 
-                                   HttpServletResponse response) throws IOException {
+    static OpenBankingSessionData getObsd(HttpServletRequest request, 
+                                          HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
             response.sendRedirect("home?" + HomeServlet.SESSION_TIMEOUT);
@@ -142,7 +149,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         return (OpenBankingSessionData)session.getAttribute(OBSD);
     }
 
-    JSONObjectWriter createAccountConsent(JSONArrayReader jsonArrayReader) throws IOException {
+    static JSONObjectWriter createAccountConsent(JSONArrayReader jsonArrayReader) throws IOException {
         JSONObjectWriter consentData = new JSONObjectWriter();
         JSONArrayWriter accountEntry = new JSONArrayWriter();
         if (jsonArrayReader != null) {
@@ -164,20 +171,20 @@ abstract class RESTBaseServlet extends HttpServlet {
         return consentData;
     }
 
-    HTTPSWrapper getHTTPSWrapper() throws IOException {
+    static HTTPSWrapper getHTTPSWrapper() throws IOException {
         HTTPSWrapper wrapper = new HTTPSWrapper();
         wrapper.setHeader("Date", httpDateFormat.format(ZonedDateTime.now(ZoneOffset.UTC)));
         return wrapper;
     }
     
-    HTTPSWrapper getBrowserEmulator(OpenBankingSessionData obsd) throws IOException {
+    static HTTPSWrapper getBrowserEmulator(OpenBankingSessionData obsd) throws IOException {
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.setHeader(HTTP_HEADER_USER_AGENT, obsd.userAgent);
         return wrapper;
     }
     
-    void checkResponseCode(HTTPSWrapper wrapper,
-                           int expectedResponseCode) throws IOException {
+    static void checkResponseCode(HTTPSWrapper wrapper,
+                                  int expectedResponseCode) throws IOException {
         int responseCode = wrapper.getResponseCode();
         if (responseCode != expectedResponseCode) {
             throw new IOException("Unexpected response code: " + 
@@ -186,7 +193,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
     }
     
-    String getLocation(HTTPSWrapper wrapper) throws IOException {
+    static String getLocation(HTTPSWrapper wrapper) throws IOException {
         checkResponseCode(wrapper, HttpServletResponse.SC_FOUND);
         String location = wrapper.getHeaderValue("Location");
         if (location == null) {
@@ -198,8 +205,8 @@ abstract class RESTBaseServlet extends HttpServlet {
         return location;
     }
     
-    JSONObjectReader getJsonData(HTTPSWrapper wrapper,
-                                 int expectedResponseCode) throws IOException {
+    static JSONObjectReader getJsonData(HTTPSWrapper wrapper,
+                                        int expectedResponseCode) throws IOException {
         checkResponseCode(wrapper, expectedResponseCode);
         String contentType = wrapper.getContentType();
         if (!contentType.equals(BaseProperties.JSON_CONTENT_TYPE)) {
@@ -212,7 +219,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         return json;
     }
 
-    JSONObjectReader getJsonData(HTTPSWrapper wrapper) throws IOException {
+    static JSONObjectReader getJsonData(HTTPSWrapper wrapper) throws IOException {
         return getJsonData(wrapper, HttpServletResponse.SC_OK);
     }
 
@@ -277,7 +284,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
     }
     
-    String combineUrl(String derivedUrl, String path) {
+    static String combineUrl(String derivedUrl, String path) {
         if (path.startsWith("https:")) {
             return path;
         }
@@ -292,7 +299,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         return derivedUrl.substring(0, i + 1) + path;
     }
 
-    void getOAuth2Token(OpenBankingSessionData obsd, String code) throws IOException {
+    static void getOAuth2Token(OpenBankingSessionData obsd, String code) throws IOException {
         FormData formData = new FormData()
             .addElement("grant_type", "authorization_code")
             .addElement("client_id", LocalIntegrationService.oauth2ClientId)
@@ -304,15 +311,15 @@ abstract class RESTBaseServlet extends HttpServlet {
         obsd.oauth2Token = getJsonData(wrapper).getString("access_token");
     }
 
-    void setAuthorization(HTTPSWrapper wrapper,
-                          OpenBankingSessionData obsd) throws IOException {
+    static void setAuthorization(HTTPSWrapper wrapper,
+                                 OpenBankingSessionData obsd) throws IOException {
         wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + obsd.oauth2Token);
     }
 
-    JSONObjectReader postJson(RESTUrl restUrl,
-                              HTTPSWrapper wrapper,
-                              JSONObjectWriter jsonRequestData,
-                              int expectedResponseCode) throws IOException {
+    static JSONObjectReader postJson(RESTUrl restUrl,
+                                     HTTPSWrapper wrapper,
+                                     JSONObjectWriter jsonRequestData,
+                                     int expectedResponseCode) throws IOException {
         if (LocalIntegrationService.logging) {
             logger.info("JSON to be POSTed (" + restUrl + ")\n" + jsonRequestData.toString());
         }
@@ -322,9 +329,9 @@ abstract class RESTBaseServlet extends HttpServlet {
         return getJsonData(wrapper, expectedResponseCode);
     }
 
-    String getConsent(JSONArrayReader accountData, 
-                      OpenBankingSessionData obsd, 
-                      String successUrl) throws IOException {
+    static String getConsent(JSONArrayReader accountData, 
+                             OpenBankingSessionData obsd, 
+                             String successUrl) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
             .setBic()
             .setAppId();
@@ -358,7 +365,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
     }
 
-    JSONObjectReader performGet(HTTPSWrapper wrapper, RESTUrl restUrl) throws IOException {
+    static JSONObjectReader performGet(HTTPSWrapper wrapper, RESTUrl restUrl) throws IOException {
         if (LocalIntegrationService.logging) {
             logger.info("About to GET: " + restUrl.toString());
         }
@@ -366,8 +373,8 @@ abstract class RESTBaseServlet extends HttpServlet {
         return getJsonData(wrapper);        
     }
 
-    JSONObjectReader getAccountData(boolean withBalance,
-                                    OpenBankingSessionData obsd) throws IOException {
+    static JSONObjectReader getAccountData(boolean withBalance,
+                                           OpenBankingSessionData obsd) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
             .setBic()
             .addParameter("withBalance", String.valueOf(withBalance))
@@ -379,16 +386,16 @@ abstract class RESTBaseServlet extends HttpServlet {
         return performGet(wrapper, restUrl);
     }
     
-    void setConsentId(HTTPSWrapper wrapper,
-                      OpenBankingSessionData obsd) throws IOException {
+    static void setConsentId(HTTPSWrapper wrapper,
+                             OpenBankingSessionData obsd) throws IOException {
         wrapper.setHeader(HTTP_HEADER_CONSENT_ID, obsd.consentId);
     }
     
-    void setRequestId(HTTPSWrapper wrapper) throws IOException {
+    static void setRequestId(HTTPSWrapper wrapper) throws IOException {
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
     }
 
-    void verifyOkStatus(boolean scaFlag, OpenBankingSessionData obsd) throws IOException {
+    static void verifyOkStatus(boolean scaFlag, OpenBankingSessionData obsd) throws IOException {
         HTTPSWrapper scaStatus = getHTTPSWrapper();
         setRequestId(scaStatus);
         setConsentId(scaStatus, obsd);
@@ -403,7 +410,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         }
     }
 
-    String initializeApi() throws IOException {
+    static String initializeApi() throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
             .setBic()
             .addParameter("client_id", LocalIntegrationService.oauth2ClientId)
@@ -419,7 +426,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         return getLocation(wrapper);
     }
     
-    void emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
+    public static void emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
@@ -430,8 +437,8 @@ abstract class RESTBaseServlet extends HttpServlet {
         // in turn is supposed to invoke a Web authentication UI which if successful  //
         // should redirect back to the "redirect_uri" with an authentication code.    //
         //                                                                            //
-        // Now, this isn't actually true because the code below does "Web Scraping    //
-        // in a very provider-specific way.                                           //                            
+        // Now, this isn't actually true because the code below does "Web Scraping"   //
+        // in a VERY provider specific way.                                           //                            
         ////////////////////////////////////////////////////////////////////////////////
         HTTPSWrapper wrapper = getBrowserEmulator(obsd);
         wrapper.makeGetRequest(location);
@@ -479,7 +486,7 @@ abstract class RESTBaseServlet extends HttpServlet {
         location = getLocation(wrapper);
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We should have "code" parameter                                            //
+        // We should now have the "code" parameter                                    //
         ////////////////////////////////////////////////////////////////////////////////
         int i = location.indexOf("?code=");
         if (i < 0) {

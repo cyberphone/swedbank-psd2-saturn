@@ -24,8 +24,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBankingSessionData;
+import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
-public class AuthorizeServlet extends RESTBaseServlet {
+
+public class AuthorizeServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     

@@ -45,6 +45,11 @@
     </listener>
 
     <servlet>
+        <servlet-name>DebugServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.DebugServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>HomeServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.HomeServlet</servlet-class>
     </servlet>
@@ -55,29 +60,29 @@
     </servlet>
 
     <servlet>
-        <servlet-name>OriginalAuthorizeServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.OriginalAuthorizeServlet</servlet-class>
+        <servlet-name>TestAuthorizeServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthorizeServlet</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>OriginalAuthRedirectServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.OriginalAuthRedirectServlet</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>DebugServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.DebugServlet</servlet-class>
+        <servlet-name>TestAuthRedirectServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthRedirectServlet</servlet-class>
     </servlet>
 
     <servlet>
         <servlet-name>SCAAccountSuccessServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.SCAAccountSuccessServlet</servlet-class>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAAccountSuccessServlet</servlet-class>
     </servlet>
 
     <servlet>
         <servlet-name>SCAFailedServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.SCAFailedServlet</servlet-class>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAFailedServlet</servlet-class>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DebugServlet</servlet-name>
+        <url-pattern>/debug</url-pattern>
+    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
@@ -90,28 +95,23 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>OriginalAuthorizeServlet</servlet-name>
-        <url-pattern>/originalauthorize</url-pattern>
+        <servlet-name>TestAuthorizeServlet</servlet-name>
+        <url-pattern>/api.test</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>OriginalAuthRedirectServlet</servlet-name>
-        <url-pattern>/authredirect</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>DebugServlet</servlet-name>
-        <url-pattern>/debug</url-pattern>
+        <servlet-name>TestAuthRedirectServlet</servlet-name>
+        <url-pattern>/api.authredirect</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>SCAAccountSuccessServlet</servlet-name>
-        <url-pattern>/scaaccountsuccess</url-pattern>
+        <url-pattern>/api.scaaccountsuccess</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>SCAFailedServlet</servlet-name>
-        <url-pattern>/scafailed</url-pattern>
+        <url-pattern>/api.scafailed</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

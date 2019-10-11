@@ -23,12 +23,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
-public class HomeServlet extends RESTBaseServlet {
+
+public class HomeServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     
-    static final String SESSION_TIMEOUT = "timeout";
+    public static final String SESSION_TIMEOUT = "timeout";
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)

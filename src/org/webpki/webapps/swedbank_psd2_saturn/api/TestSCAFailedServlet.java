@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.webapps.swedbank_psd2_saturn;
+package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 
@@ -23,7 +23,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class SCAFailedServlet extends RESTBaseServlet {
+import org.webpki.webapps.swedbank_psd2_saturn.HTML;
+
+public class TestSCAFailedServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     
