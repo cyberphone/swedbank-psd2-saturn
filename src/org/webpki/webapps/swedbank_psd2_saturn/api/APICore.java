@@ -139,8 +139,9 @@ public abstract class APICore extends HttpServlet {
         }
     }
     
-    static OpenBankingSessionData getObsd(HttpServletRequest request, 
-                                          HttpServletResponse response) throws IOException {
+    protected static OpenBankingSessionData getObsd(HttpServletRequest request, 
+                                                    HttpServletResponse response) 
+    throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
             response.sendRedirect("home?" + HomeServlet.SESSION_TIMEOUT);
@@ -329,9 +330,8 @@ public abstract class APICore extends HttpServlet {
         return getJsonData(wrapper, expectedResponseCode);
     }
 
-    static String getConsent(JSONArrayReader accountData, 
-                             OpenBankingSessionData obsd, 
-                             String successUrl) throws IOException {
+    protected static String getConsent(JSONArrayReader accountData, 
+                             OpenBankingSessionData obsd) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
             .setBic()
             .setAppId();
@@ -341,7 +341,7 @@ public abstract class APICore extends HttpServlet {
         wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
         wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, obsd.userAgent);
         wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
-                LocalIntegrationService.baseUri + successUrl);
+                LocalIntegrationService.baseUri + SCA_ACCOUNT_SUCCESS_PATH);
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
                 LocalIntegrationService.baseUri + SCA_FAILED_PATH);
         setRequestId(wrapper);
@@ -373,7 +373,7 @@ public abstract class APICore extends HttpServlet {
         return getJsonData(wrapper);        
     }
 
-    static JSONObjectReader getAccountData(boolean withBalance,
+    protected static JSONObjectReader getAccountData(boolean withBalance,
                                            OpenBankingSessionData obsd) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
             .setBic()
@@ -451,10 +451,10 @@ public abstract class APICore extends HttpServlet {
             .addParameter("userId", obsd.userId);
         location = restUrl.toString();
         String setCookie = wrapper.getHeaderValue("set-cookie");
-        String cookie = setCookie.substring(0, setCookie.indexOf(';'));
-
+        obsd.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
+ 
         wrapper = getBrowserEmulator(obsd);
-        wrapper.setHeader("cookie", cookie);
+        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
         logger.info(location);
         wrapper.makeGetRequest(location);
         scraper = new Scraper(wrapper);
@@ -466,7 +466,7 @@ public abstract class APICore extends HttpServlet {
         location = restUrl.toString();
 
         wrapper = getBrowserEmulator(obsd);
-        wrapper.setHeader("cookie", cookie);
+        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
         logger.info(location);
         wrapper.makeGetRequest(location);
         logger.info(String.valueOf(wrapper.getResponseCode()));
@@ -480,7 +480,7 @@ public abstract class APICore extends HttpServlet {
             .addScrapedNameValue(scraper, "bic");
 
         wrapper = getBrowserEmulator(obsd);
-        wrapper.setHeader("cookie", cookie);
+        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
         logger.info(location);
         wrapper.makePostRequest(location, formData.toByteArray());
         location = getLocation(wrapper);
@@ -506,5 +506,10 @@ public abstract class APICore extends HttpServlet {
         // Since this is an emulator using a single user we always succeed :-)        //
         ////////////////////////////////////////////////////////////////////////////////
         return true;
+    }
+    
+    public static Accounts emulatedAccountDataAccess(String[] accountList,
+                                                     OpenBankingSessionData obsd) {
+        return null;
     }
 }

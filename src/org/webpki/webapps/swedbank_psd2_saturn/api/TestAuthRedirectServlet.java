@@ -92,7 +92,7 @@ public class TestAuthRedirectServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // We have the token, now we need a consent for our accounts                  //
         ////////////////////////////////////////////////////////////////////////////////
-        getConsent(null, obsd, SCA_ACCOUNT_SUCCESS_PATH);
+        getConsent(null, obsd);
 
         ////////////////////////////////////////////////////////////////////////////////
         // We got the consent, now use it!                                            //
@@ -102,8 +102,7 @@ public class TestAuthRedirectServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // We got an account list, now get more details.  For that we need to SCA.    //
         ////////////////////////////////////////////////////////////////////////////////
-        String scaRedirectUrl = getConsent(json.getArray("accounts"), 
-                                           obsd, SCA_ACCOUNT_SUCCESS_PATH);
+        String scaRedirectUrl = getConsent(json.getArray("accounts"), obsd);
         if (scaRedirectUrl != null) {
             if (LocalIntegrationService.logging) {
                 logger.info("Redirect to:\n" + scaRedirectUrl);

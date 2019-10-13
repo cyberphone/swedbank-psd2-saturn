@@ -22,8 +22,8 @@ import javax.servlet.ServletException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
+import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBankingSessionData;
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
@@ -33,12 +33,34 @@ public class AccountsServlet extends APICore {
     private static final long serialVersionUID = 1L;
     
     @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException {
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Check that we still have a session                                         //
+        ////////////////////////////////////////////////////////////////////////////////
+        OpenBankingSessionData obsd = getObsd(request, response);
+        if (obsd == null) return;
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We have the token, now we need a plain account listing                     //
+        ////////////////////////////////////////////////////////////////////////////////
+        Accounts accounts = emulatedAccountDataAccess(null, obsd);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got an account list, now get balances for the accounts.                 //
+        ////////////////////////////////////////////////////////////////////////////////
+        accounts = emulatedAccountDataAccess(accounts.getAccountIds(), obsd);
+ //       response.sendRedirect("home");
+    }
+
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+    throws IOException, ServletException {
 
         HTML.standardPage(response, null, new StringBuilder(
             "<div class=\"header\">Select Account</div>" +
-            "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
+            "<form name=\"accounts\" action=\"accounts\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<div style=\"padding-top:15pt\">In a production setup you would need to login but " +
                 "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single user, " +
@@ -47,7 +69,7 @@ public class AccountsServlet extends APICore {
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                  "onclick=\"document.forms.authorize.submit()\" " +
+                  "onclick=\"document.forms.accounts.submit()\" " +
                   "title=\"Continue to account list\">" +
                   "Continue...</div></td></tr>" +
               "</table>" +

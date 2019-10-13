@@ -43,7 +43,7 @@ public class HomeServlet extends APICore {
         .append(
             "<div class=\"centerbox\">" +
               "<div style=\"padding-top:15pt\">This site permits testing a system using " +
-              "Swedbanks's PSD2 API, running in an emulated local mode to support Saturn.  " +
+              "Swedbank's PSD2 API, running in an emulated local mode to support Saturn.  " +
               "For accessing the source code and documentation, click on the Saturn PSD2 logotype.</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
@@ -55,6 +55,7 @@ public class HomeServlet extends APICore {
                 "</div></td></tr>" +
               "</table>" +
             "</div>" +
+            "<div style=\"padding-top:15pt\"><a href=\"api.test\">Internal Testing Only</a></div>" +
             "<div class=\"sitefooter\">This system only uses session cookies.</div>"));
     }
 }

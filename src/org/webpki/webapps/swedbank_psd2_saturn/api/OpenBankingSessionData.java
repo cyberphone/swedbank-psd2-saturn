@@ -18,6 +18,8 @@ package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.Serializable;
 
+import org.webpki.json.JSONObjectReader;
+
 
 public class OpenBankingSessionData implements Serializable {
     
@@ -45,4 +47,12 @@ public class OpenBankingSessionData implements Serializable {
     String scaStatusUrl;
 
     String consentStatusUrl;
+    
+    String emulatorModeCookie;
+    
+    JSONObjectReader accountData;
+    
+    public JSONObjectReader getAccountData() {
+        return accountData;
+    }
 }

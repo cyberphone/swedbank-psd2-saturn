@@ -33,7 +33,7 @@ public class AuthorizeServlet extends APICore {
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
+    throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
         // Before you can do anything you must be authenticated                       //
         // Note: this servlet is called by the browser from LIS                       //
@@ -48,7 +48,7 @@ public class AuthorizeServlet extends APICore {
                                            request.getHeader(HTTP_HEADER_USER_AGENT));
         if(emulatedAuthorize(obsd)) {
             // We did it!  Continue to the next step but first
-            // create a session holding the precious OAuth2 token etc.
+            // create an HTTP session (cookie) holding the precious OAuth2 token etc.
             request.getSession().setAttribute(OBSD, obsd);
             response.sendRedirect("accounts");
         } else {
@@ -58,7 +58,7 @@ public class AuthorizeServlet extends APICore {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+    throws IOException, ServletException {
 
         HTML.standardPage(response, null, new StringBuilder(
             "<div class=\"header\">Login to Application</div>" +
