@@ -17,26 +17,41 @@
 package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import java.math.BigDecimal;
 
 import java.util.LinkedHashMap;
 
+import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
 
+import org.webpki.saturn.common.Currencies;
 
-public class Accounts {
+public class Accounts implements Serializable {
 
-    JSONObjectReader internalAccountData;
-
-    Accounts(JSONObjectReader internalAccountData) {
-        this.internalAccountData = internalAccountData;
+    Accounts(JSONObjectReader accountData) throws IOException {
+        // Likely to be provider dependent
+        JSONArrayReader accountsArray = accountData.getArray("accounts");
+        while (accountsArray.hasMore()) {
+            JSONObjectReader accountEntry = accountsArray.getObject();
+            Account account = new Account();
+            accounts.put(account.accountId = 
+                    accountEntry.getString(APICore.PRIMARY_ACCOUNT_TYPE), account);
+            if (accountEntry.hasProperty("balances")) {
+                JSONObjectReader balance = 
+                        accountEntry.getArray("balances").getObject().getObject("balanceAmount");
+                account.balance = new BigDecimal(balance.getString("amount"));
+                account.currency = Currencies.valueOf(balance.getString("currency"));
+            }
+        }
     }
 
     LinkedHashMap<String, Account> accounts = new LinkedHashMap<String, Account>();
 
     public static class Account {
         String accountId;
+        Currencies currency;
         BigDecimal balance;  // May be null
 
         public String getAccountId() {
@@ -45,6 +60,10 @@ public class Accounts {
 
         public BigDecimal getBalance() {
             return balance;
+        }
+        
+        public Currencies getCurrency() {
+            return currency;
         }
     }
 

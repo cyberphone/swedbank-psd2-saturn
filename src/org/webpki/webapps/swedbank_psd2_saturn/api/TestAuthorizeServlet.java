@@ -39,6 +39,10 @@ public class TestAuthorizeServlet extends APICore {
         
         HTML.standardPage(response, null, new StringBuilder(
             "<div class=\"header\">Internal API Test with GUI</div>" +
+            "<div class=\"centerbox\">" +
+              "<div style=\"padding-top:15pt\">Note that the \"sandbox\" " +
+              "login is a dummy, you can respond with anything.</div>" +
+            "</div>" +
             "<form name=\"authorize\" action=\"api.test\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<table>" +

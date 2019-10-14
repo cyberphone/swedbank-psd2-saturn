@@ -16,6 +16,7 @@
  */
 package org.webpki.webapps.swedbank_psd2_saturn.api;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import org.webpki.json.JSONObjectReader;
@@ -54,5 +55,22 @@ public class OpenBankingSessionData implements Serializable {
     
     public JSONObjectReader getAccountData() {
         return accountData;
+    }
+
+    void consistencyCheck(boolean withBalance) throws IOException {
+        if (withBalance && accountData == null) {
+            throw new IOException("Wrong order of account data calls");
+        }
+    }
+    
+    Object userObject;
+    
+    public Object getUserObject() {
+        return userObject;
+    }
+    
+    public OpenBankingSessionData setUserObject(Object userObject) {
+        this.userObject = userObject;
+        return this;
     }
 }

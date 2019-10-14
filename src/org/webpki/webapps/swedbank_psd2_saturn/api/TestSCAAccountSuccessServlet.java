@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 public class TestSCAAccountSuccessServlet extends APICore {
@@ -58,8 +59,33 @@ public class TestSCAAccountSuccessServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Now get rich account data (=with balances)                                 //
         ////////////////////////////////////////////////////////////////////////////////
-        getAccountData(true, obsd);
+        Accounts accounts = getAccountData(true, obsd);
 
-        response.sendRedirect("home");
+        StringBuilder html = new StringBuilder(
+                "<div class=\"header\">Internal API Test with GUI</div>" +
+                "<div class=\"centerbox\">" +
+                  "<table style=\"padding:15pt 0\">" +
+                    "<tr><th>Account ID</th><th>Balance</th></tr>");
+            for (String accountId : accounts.getAccountIds()) {
+                Accounts.Account account = accounts.getAccount(accountId);
+                html.append("<tr><td>")
+                    .append(accountId)
+                    .append("</td><td style=\"text-align:right\">")
+                    .append(account.balance.toPlainString() + " " + account.getCurrency().toString())
+                    .append("</td></tr>");
+            }
+            
+            HTML.standardPage(response, null, html.append(
+                  "</table>" +
+                "</div>" +
+                "<div class=\"centerbox\">" +
+                  "<table>" +
+                    "<tr><td><div class=\"multibtn\" " +
+                    "onclick=\"document.location.href = 'api.extendedaccount'\" " +
+                    "title=\"Get extended account data (consent needed)\">" +
+                    "Step #3: Get Extended Account Data" +
+                    "</div></td></tr>" +
+                  "</table>" +
+                "</div>"));
     }
 }

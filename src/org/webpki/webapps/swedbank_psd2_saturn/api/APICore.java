@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -63,6 +62,9 @@ public abstract class APICore extends HttpServlet {
     public static final String DEFAULT_USER              = "20010101-1234";
     
     public static final String HTTP_HEADER_USER_AGENT    = "User-Agent";
+
+    // Possibly provider dependent
+    static final String PRIMARY_ACCOUNT_TYPE             = "iban";
 
     static final String HTTP_HEADER_X_REQUEST_ID         = "X-Request-ID";
     static final String HTTP_HEADER_CONSENT_ID           = "Consent-ID";
@@ -139,8 +141,8 @@ public abstract class APICore extends HttpServlet {
         }
     }
     
-    protected static OpenBankingSessionData getObsd(HttpServletRequest request, 
-                                                    HttpServletResponse response) 
+    public static OpenBankingSessionData getObsd(HttpServletRequest request, 
+                                                 HttpServletResponse response) 
     throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -150,17 +152,16 @@ public abstract class APICore extends HttpServlet {
         return (OpenBankingSessionData)session.getAttribute(OBSD);
     }
 
-    static JSONObjectWriter createAccountConsent(JSONArrayReader jsonArrayReader) throws IOException {
+    static JSONObjectWriter createAccountConsent(String[] accountIds) throws IOException {
         JSONObjectWriter consentData = new JSONObjectWriter();
         JSONArrayWriter accountEntry = new JSONArrayWriter();
-        if (jsonArrayReader != null) {
-            while (jsonArrayReader.hasMore()) {
-                JSONObjectReader account = jsonArrayReader.getObject();
-                accountEntry.setObject().setString("iban", account.getString("iban"));
+        if (accountIds != null) {
+            for (String accountId : accountIds) {
+                accountEntry.setObject().setString(PRIMARY_ACCOUNT_TYPE, accountId);
             }
         }
         consentData.setObject("access")
-            .setDynamic((wr) -> jsonArrayReader == null ?
+            .setDynamic((wr) -> accountIds == null ?
                     wr.setString("availableAccounts", "allAccounts") :
                     wr.setArray("balances", accountEntry)
                       .setArray("accounts", accountEntry));
@@ -330,7 +331,7 @@ public abstract class APICore extends HttpServlet {
         return getJsonData(wrapper, expectedResponseCode);
     }
 
-    protected static String getConsent(JSONArrayReader accountData, 
+    static String getConsent(String[] accountIds, 
                              OpenBankingSessionData obsd) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
             .setBic()
@@ -348,21 +349,20 @@ public abstract class APICore extends HttpServlet {
         setAuthorization(wrapper, obsd);
         JSONObjectReader json = postJson(restUrl, 
                                          wrapper, 
-                                         createAccountConsent(accountData), 
+                                         createAccountConsent(accountIds), 
                                          HttpServletResponse.SC_CREATED);
         obsd.consentId = json.getString("consentId");
         String consentStatus = json.getString("consentStatus");
-        if (consentStatus.equals("valid")) {
-             return null;
-        } else {
-            if (accountData == null) {
-                throw new IOException("Unexpeded \"consentStatus\": " + consentStatus);
-            }
-            JSONObjectReader links = json.getObject("_links");
-            obsd.scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
-            obsd.consentStatusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
-            return links.getObject("scaRedirect").getString("href");
+        if (accountIds == null ^ consentStatus.equals("valid")) {
+            throw new IOException("Unexpeded \"consentStatus\": " + consentStatus);
         }
+        if (accountIds == null) {
+             return null;
+        }
+        JSONObjectReader links = json.getObject("_links");
+        obsd.scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
+        obsd.consentStatusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
+        return links.getObject("scaRedirect").getString("href");
     }
 
     static JSONObjectReader performGet(HTTPSWrapper wrapper, RESTUrl restUrl) throws IOException {
@@ -373,8 +373,9 @@ public abstract class APICore extends HttpServlet {
         return getJsonData(wrapper);        
     }
 
-    protected static JSONObjectReader getAccountData(boolean withBalance,
-                                           OpenBankingSessionData obsd) throws IOException {
+    static Accounts getAccountData(boolean withBalance,
+                                   OpenBankingSessionData obsd) throws IOException {
+        obsd.consistencyCheck(withBalance);
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
             .setBic()
             .addParameter("withBalance", String.valueOf(withBalance))
@@ -383,7 +384,8 @@ public abstract class APICore extends HttpServlet {
         setRequestId(wrapper);
         setConsentId(wrapper, obsd);
         setAuthorization(wrapper, obsd);
-        return performGet(wrapper, restUrl);
+        obsd.accountData = performGet(wrapper, restUrl);
+        return new Accounts(obsd.accountData);
     }
     
     static void setConsentId(HTTPSWrapper wrapper,

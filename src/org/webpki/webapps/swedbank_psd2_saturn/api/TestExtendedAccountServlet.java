@@ -23,23 +23,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
 
-public class TestAuthRedirectServlet extends APICore {
+public class TestExtendedAccountServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
-        
-        ////////////////////////////////////////////////////////////////////////////////
-        // This servlet is redirected to by the PSD2 service after a successful user  //
-        // authentication                                                             //
-        ////////////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
@@ -48,34 +42,17 @@ public class TestAuthRedirectServlet extends APICore {
         if (obsd == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We should now have the "code" parameter                                    //
+        // We should by now have an existing basic account listing                    //
         ////////////////////////////////////////////////////////////////////////////////
-        String code = request.getParameter("code");
-        if (code == null) {
-            throw new IOException("Didn't find 'code' object");
-        }
+        Accounts accounts = new Accounts(obsd.accountData);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Now get more details.  For that we need a consent                          //
+        ////////////////////////////////////////////////////////////////////////////////
+        String scaRedirectUrl = getConsent(accounts.getAccountIds(), obsd);
         if (LocalIntegrationService.logging) {
-            logger.info("code=" + code);
+            logger.info("Redirect to:\n" + scaRedirectUrl);
         }
-        
-        ////////////////////////////////////////////////////////////////////////////////
-        // We got the code, now we need to upgrade it to an oauth2 token              //
-        ////////////////////////////////////////////////////////////////////////////////
-        getOAuth2Token(obsd, code);
-        
-        HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Internal API Test with GUI</div>" +
-              "<div class=\"centerbox\">" +
-                "<div style=\"padding-top:15pt\">Login Succeeded!</div>" +
-              "</div>" +
-              "<div class=\"centerbox\">" +
-              "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href = 'api.basicaccount'\" " +
-                "title=\"Get Basic Account Data (no consent needed)\">" +
-                "Step #2: Get Basic Account Data" +
-                "</div></td></tr>" +
-              "</table>" +
-            "</div>"));
+        response.sendRedirect(scaRedirectUrl);
     }
 }

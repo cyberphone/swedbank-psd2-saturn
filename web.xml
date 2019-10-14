@@ -75,6 +75,16 @@
     </servlet>
 
     <servlet>
+        <servlet-name>TestBasicAccountServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestBasicAccountServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>TestExtendedAccountServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestExtendedAccountServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>TestSCAAccountSuccessServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAAccountSuccessServlet</servlet-class>
     </servlet>
@@ -112,6 +122,16 @@
     <servlet-mapping>
         <servlet-name>TestAuthRedirectServlet</servlet-name>
         <url-pattern>/api.authredirect</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>TestBasicAccountServlet</servlet-name>
+        <url-pattern>/api.basicaccount</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>TestExtendedAccountServlet</servlet-name>
+        <url-pattern>/api.extendedaccount</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
