@@ -54,7 +54,7 @@ public class TestBasicAccountServlet extends APICore {
         StringBuilder html = new StringBuilder(
             "<div class=\"header\">Internal API Test with GUI</div>" +
             "<div class=\"centerbox\">" +
-              "<table style=\"padding:15pt 0\"><tr><th>Account ID</th></tr>");
+              "<table class=\"tftable\"><tr><th>Account ID</th></tr>");
         for (String accountId : accounts.getAccountIds()) {
             html.append("<tr><td>")
                 .append(accountId)

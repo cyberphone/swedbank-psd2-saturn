@@ -62,30 +62,31 @@ public class TestSCAAccountSuccessServlet extends APICore {
         Accounts accounts = getAccountData(true, obsd);
 
         StringBuilder html = new StringBuilder(
-                "<div class=\"header\">Internal API Test with GUI</div>" +
-                "<div class=\"centerbox\">" +
-                  "<table style=\"padding:15pt 0\">" +
-                    "<tr><th>Account ID</th><th>Balance</th></tr>");
-            for (String accountId : accounts.getAccountIds()) {
-                Accounts.Account account = accounts.getAccount(accountId);
-                html.append("<tr><td>")
-                    .append(accountId)
-                    .append("</td><td style=\"text-align:right\">")
-                    .append(account.balance.toPlainString() + " " + account.getCurrency().toString())
-                    .append("</td></tr>");
-            }
-            
-            HTML.standardPage(response, null, html.append(
-                  "</table>" +
-                "</div>" +
-                "<div class=\"centerbox\">" +
-                  "<table>" +
-                    "<tr><td><div class=\"multibtn\" " +
-                    "onclick=\"document.location.href = 'api.extendedaccount'\" " +
-                    "title=\"Get extended account data (consent needed)\">" +
-                    "Step #3: Get Extended Account Data" +
-                    "</div></td></tr>" +
-                  "</table>" +
-                "</div>"));
+            "<div class=\"header\">Internal API Test with GUI</div>" +
+            "<div class=\"centerbox\">" +
+              "<table class=\"tftable\">" +
+                "<tr><th>Account ID</th><th>Balance</th></tr>");
+
+        for (String accountId : accounts.getAccountIds()) {
+            Accounts.Account account = accounts.getAccount(accountId);
+            html.append("<tr><td>")
+                .append(accountId)
+                .append("</td><td style=\"text-align:right\">")
+                .append(account.balance.toPlainString() + " " + account.getCurrency().toString())
+                .append("</td></tr>");
+        }
+        
+        HTML.standardPage(response, null, html.append(
+              "</table>" +
+            "</div>" +
+            "<div class=\"centerbox\">" +
+              "<table>" +
+                "<tr><td><div class=\"multibtn\" " +
+                "onclick=\"document.location.href = 'api.extendedaccount'\" " +
+                "title=\"Get extended account data (consent needed)\">" +
+                "Step #3: Get Extended Account Data" +
+                "</div></td></tr>" +
+              "</table>" +
+            "</div>"));
     }
 }

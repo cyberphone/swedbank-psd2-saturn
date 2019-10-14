@@ -42,7 +42,7 @@ public class HomeServlet extends APICore {
             "<div class=\"error\">Session Timed Out</div>")
         .append(
             "<div class=\"centerbox\">" +
-              "<div style=\"padding-top:15pt\">This site permits testing a system using " +
+              "<div class=\"description\">This site permits testing a system using " +
               "Swedbank's PSD2 API, running in an emulated local mode to support Saturn.  " +
               "For accessing the source code and documentation, click on the Saturn PSD2 logotype.</div>" +
             "</div>" +

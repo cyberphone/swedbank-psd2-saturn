@@ -33,7 +33,7 @@ public class AccountsServlet extends APICore {
     private static final long serialVersionUID = 1L;
     
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -43,34 +43,62 @@ public class AccountsServlet extends APICore {
         if (obsd == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We have the token, now we need a plain account listing                     //
+        // We have the token, now get a plain account listing                         //
         ////////////////////////////////////////////////////////////////////////////////
         Accounts accounts = emulatedAccountDataAccess(null, obsd);
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We got an account list, now get balances for the accounts.                 //
+        // We got an account list, now get balances for the found accounts            //
         ////////////////////////////////////////////////////////////////////////////////
         accounts = emulatedAccountDataAccess(accounts.getAccountIds(), obsd);
- //       response.sendRedirect("home");
-    }
 
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException {
-
-        HTML.standardPage(response, null, new StringBuilder(
+        StringBuilder html = new StringBuilder(
             "<div class=\"header\">Select Account</div>" +
-            "<form name=\"accounts\" action=\"accounts\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
-              "<div style=\"padding-top:15pt\">In a production setup you would need to login but " +
-                "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single user, " +
-                "this step is just a dummy.</div>" +
+              "<div class=\"description\">Select an account to be used for payments.</div>" +
             "</div>" +
+            "<div class=\"centerbox\">" +
+              "<table class=\"tftable\">" +
+                "<tr><th>Account ID</th><th>Balance</th></tr>");
+
+        int i = 0;
+        for (String accountId : accounts.getAccountIds()) {
+            Accounts.Account account = accounts.getAccount(accountId);
+            html.append("<tr id=\"")
+                .append(i)
+                .append("\" onclick=\"selectAccount('")
+                .append(i)
+                .append("')\"><td>")
+                .append(accountId)
+                .append("</td><td style=\"text-align:right\">")
+                .append(account.getBalance().toPlainString() + " " + account.getCurrency().toString())
+                .append("</td></tr>");
+            i++;
+        }
+        
+        HTML.standardPage(response,
+            "var curr = '1';\n" +
+            "function setColor(id, fg, bg) {\n" +
+            "  var e = document.getElementById(id);\n" +
+            "  e.style.color = fg;\n" +
+            "  e.style.backgroundColor = bg;\n" +
+            "}\n" +
+            "function selectAccount(id) {\n" +
+            "  setColor(curr, 'black', '#ffffe0');\n" +
+            "  setColor(curr = id, 'white', '#5a7dff');\n" +
+            "}\n" +
+            "document.addEventListener('DOMContentLoaded', function() {\n" +
+            "  selectAccount(curr);\n" +
+            "});\n", 
+            html.append(
+              "</table>" +
+            "</div>" +
+            "<form name=\"accounts\" action=\"accounts\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
                   "onclick=\"document.forms.accounts.submit()\" " +
-                  "title=\"Continue to account list\">" +
+                  "title=\"Continue\">" +
                   "Continue...</div></td></tr>" +
               "</table>" +
             "</div>"));

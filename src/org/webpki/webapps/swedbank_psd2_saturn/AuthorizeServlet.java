@@ -64,16 +64,16 @@ public class AuthorizeServlet extends APICore {
             "<div class=\"header\">Login to Application</div>" +
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
-              "<div style=\"padding-top:15pt\">In a production setup you would need to login but " +
-                "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single user, " +
-                "this step is just a dummy.</div>" +
+              "<div class=\"description\">In a production setup you would need to login but " +
+                "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single and unspecified user, " +
+                "<i>this step is just a dummy.</i></div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
                   "onclick=\"document.forms.authorize.submit()\" " +
                   "title=\"Continue to account list\">" +
-                  "Continue...</div></td></tr>" +
+                  "Continue to Account List...</div></td></tr>" +
               "</table>" +
             "</div>"));
     }

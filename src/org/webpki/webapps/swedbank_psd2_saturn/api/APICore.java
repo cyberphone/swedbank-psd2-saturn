@@ -113,9 +113,10 @@ public abstract class APICore extends HttpServlet {
             throw new IOException("Scraper: " + text);
         }
 
-        void scanTo(String tag) throws IOException {
+        Scraper scanTo(String tag) throws IOException {
             index = html.indexOf(tag, index);
             if (index++ < 0) bad(tag);
+            return this;
         }
         
         String findWithin(String what) throws IOException {
@@ -505,13 +506,38 @@ public abstract class APICore extends HttpServlet {
         getOAuth2Token(obsd, code);
         
         ////////////////////////////////////////////////////////////////////////////////
-        // Since this is an emulator using a single user we always succeed :-)        //
+        // Since this is an emulator supporting a single user we always succeed :-)   //
         ////////////////////////////////////////////////////////////////////////////////
         return true;
     }
     
-    public static Accounts emulatedAccountDataAccess(String[] accountList,
-                                                     OpenBankingSessionData obsd) {
-        return null;
+    public static Accounts emulatedAccountDataAccess(String[] accountIds,
+                                                     OpenBankingSessionData obsd)
+    throws IOException {
+        String location = getConsent(accountIds, obsd);
+        if (location == null) {
+            return getAccountData(false, obsd);
+        }
+        HTTPSWrapper wrapper = getBrowserEmulator(obsd);
+        wrapper.makeGetRequest(location);
+        Scraper scraper = new Scraper(wrapper);
+        String setCookie = wrapper.getHeaderValue("set-cookie");
+        obsd.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
+        scraper.scanTo("<form ").scanTo("<form ");
+        location = combineUrl(location, scraper.findWithin("action"));
+        FormData formData = new FormData()
+            .addScrapedNameValue(scraper, "token")
+            .addScrapedNameValue(scraper, "bic")
+            .addScrapedNameValue(scraper, "action");
+
+        wrapper = getBrowserEmulator(obsd);
+        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
+        logger.info(location);
+        wrapper.makePostRequest(location, formData.toByteArray());
+        scraper = new Scraper(wrapper);
+        if (!scraper.scanTo("<form ").findWithin("action").endsWith(SCA_ACCOUNT_SUCCESS_PATH)) {
+            throw new IOException("Internal error, consent did not succeed");
+        }
+        return getAccountData(true, obsd);
     }
 }
