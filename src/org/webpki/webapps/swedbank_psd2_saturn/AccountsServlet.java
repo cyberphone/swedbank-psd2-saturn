@@ -18,6 +18,8 @@ package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
 
+import java.math.BigDecimal;
+
 import javax.servlet.ServletException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,23 +63,28 @@ public class AccountsServlet extends APICore {
               "<table class=\"tftable\">" +
                 "<tr><th>Account ID</th><th>Balance</th></tr>");
 
-        int i = 0;
+        String preSelected = null;
+        BigDecimal highestAmount = BigDecimal.ZERO;
         for (String accountId : accounts.getAccountIds()) {
             Accounts.Account account = accounts.getAccount(accountId);
+            // Pre-select the account with most money :)
+            if (account.getBalance().compareTo(highestAmount) > 0) {
+                highestAmount = account.getBalance();
+                preSelected = accountId;
+            }
             html.append("<tr id=\"")
-                .append(i)
+                .append(accountId)
                 .append("\" onclick=\"selectAccount('")
-                .append(i)
+                .append(accountId)
                 .append("')\"><td>")
                 .append(accountId)
                 .append("</td><td style=\"text-align:right\">")
                 .append(account.getBalance().toPlainString() + " " + account.getCurrency().toString())
                 .append("</td></tr>");
-            i++;
         }
         
         HTML.standardPage(response,
-            "var curr = '1';\n" +
+            "var curr = '" + preSelected + "';\n" +
             "function setColor(id, fg, bg) {\n" +
             "  var e = document.getElementById(id);\n" +
             "  e.style.color = fg;\n" +
