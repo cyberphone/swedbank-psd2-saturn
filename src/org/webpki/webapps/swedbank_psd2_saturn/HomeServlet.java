@@ -55,7 +55,7 @@ public class HomeServlet extends APICore {
                 "</div></td></tr>" +
               "</table>" +
             "</div>" +
-            "<div style=\"padding-top:15pt\"><a href=\"api.test\">Internal Testing Only</a></div>" +
+            "<div style=\"padding-top:15pt;width:100%\"><a href=\"api.test\">&nbsp;&nbsp;Internal Testing Only</a></div>" +
             "<div class=\"sitefooter\">This system only uses session cookies.</div>"));
     }
 }

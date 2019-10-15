@@ -72,7 +72,7 @@ public class AccountsServlet extends APICore {
                 highestAmount = account.getBalance();
                 preSelected = accountId;
             }
-            html.append("<tr id=\"")
+            html.append("<tr style=\"cursor:pointer\" id=\"")
                 .append(accountId)
                 .append("\" onclick=\"selectAccount('")
                 .append(accountId)

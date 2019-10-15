@@ -80,18 +80,15 @@ public class HTML {
             html.append(javascript);
         }
         html.append("</script></head><body>" +
-            "<div style=\"display:flex;flex-wrap:wrap-reverse;justify-content:space-between\">" +
             "<img src=\"images/thelab.svg\" " +
-            "style=\"cursor:pointer;height:25pt;padding-bottom:10pt;margin-right:30pt\"" +
+            "style=\"cursor:pointer;position:absolute;height:25pt;top:15pt;left:15pt\"" +
             " onclick=\"document.location.href='home'\" title=\"Home of the lab...\"/>" +
-            "<div style=\"display:flex\">" +
             "<a href=\"https://github.com/cyberphone/swedbank-psd2-saturn\" target=\"_blank\">" +
             "<img src=\"images/saturn-psd2.svg\" " +
-            "style=\"height:30pt\" " +
+            "style=\"position:absolute;height:30pt;top:13pt;right:15pt\" " +
             "title=\"Specifications, source code, etc.\"/></a>" +
-            "</div>" +
-            "</div>")
-         .append(box).append("</body></html>");
+            "<div class=\"displayContainer\">")
+         .append(box).append("<div style=\"height:2em\"/></div></body></html>");
         return html.toString();
     }
 

@@ -60,7 +60,14 @@ public class AuthorizeServlet extends APICore {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
 
-        HTML.standardPage(response, null, new StringBuilder(
+        HTML.standardPage(response, 
+            "var active = true;\n" +
+            "function shoot() {\n" +
+            "  document.getElementById('act').style.display = 'block';\n" +
+            "  if (active) document.forms.authorize.submit();\n" +
+            "  active = false;\n" +
+            "}\n",
+            new StringBuilder(
             "<div class=\"header\">Login to Application</div>" +
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
@@ -68,10 +75,11 @@ public class AuthorizeServlet extends APICore {
                 "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single and unspecified user, " +
                 "<i>this step is just a dummy.</i></div>" +
             "</div>" +
+            "<img id=\"act\" src=\"images/waiting.gif\" style=\"padding-top:10pt;display:none\">" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                  "onclick=\"document.forms.authorize.submit()\" " +
+                  "onclick=\"shoot()\" " +
                   "title=\"Continue to account list\">" +
                   "Continue to Account List...</div></td></tr>" +
               "</table>" +
