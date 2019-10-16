@@ -100,7 +100,7 @@ public class AccountsServlet extends APICore {
             html.append(
               "</table>" +
             "</div>" +
-            "<form name=\"accounts\" action=\"accounts\" method=\"POST\"></form>" +
+            "<form name=\"accounts\" action=\"tbd\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +

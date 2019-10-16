@@ -64,11 +64,11 @@ public class TestAuthRedirectServlet extends APICore {
         getOAuth2Token(obsd, code);
         
         HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Internal API Test with GUI</div>" +
-              "<div class=\"centerbox\">" +
-                "<div style=\"padding-top:15pt\">Login Succeeded!</div>" +
-              "</div>" +
-              "<div class=\"centerbox\">" +
+            HTML_HEADER +
+            "<div class=\"centerbox\">" +
+              "<div style=\"padding-top:15pt\">Login Succeeded!</div>" +
+            "</div>" +
+            "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
                 "onclick=\"document.location.href = 'api.basicaccount'\" " +

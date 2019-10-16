@@ -38,7 +38,7 @@ public class TestAuthorizeServlet extends APICore {
             throws IOException, ServletException {
         
         HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Internal API Test with GUI</div>" +
+            HTML_HEADER +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">Note that the \"sandbox\" " +
               "login is a dummy, you can respond with anything.</div>" +

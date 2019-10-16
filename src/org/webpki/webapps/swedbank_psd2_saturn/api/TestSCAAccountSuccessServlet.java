@@ -62,7 +62,7 @@ public class TestSCAAccountSuccessServlet extends APICore {
         Accounts accounts = getAccountData(true, obsd);
 
         StringBuilder html = new StringBuilder(
-            "<div class=\"header\">Internal API Test with GUI</div>" +
+            HTML_HEADER +
             "<div class=\"centerbox\">" +
               "<table class=\"tftable\">" +
                 "<tr><th>Account ID</th><th>Balance</th></tr>");
@@ -82,9 +82,9 @@ public class TestSCAAccountSuccessServlet extends APICore {
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href = 'api.extendedaccount'\" " +
-                "title=\"Get extended account data (consent needed)\">" +
-                "Step #3: Get Extended Account Data" +
+                "onclick=\"document.location.href = 'tbd'\" " +
+                "title=\"Perform a payment operation\">" +
+                "Step #4: Perform a Payment" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>"));

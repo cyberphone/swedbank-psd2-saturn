@@ -62,6 +62,9 @@ public abstract class APICore extends HttpServlet {
     public static final String DEFAULT_USER              = "20010101-1234";
     
     public static final String HTTP_HEADER_USER_AGENT    = "User-Agent";
+    
+    static final String HTML_HEADER = "<div class=\"header\">Internal API Test with GUI</div>";
+
 
     // Possibly provider dependent
     static final String PRIMARY_ACCOUNT_TYPE             = "iban";

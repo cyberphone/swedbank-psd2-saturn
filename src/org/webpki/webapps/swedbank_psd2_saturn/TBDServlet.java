@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.webapps.swedbank_psd2_saturn.api;
+package org.webpki.webapps.swedbank_psd2_saturn;
 
 import java.io.IOException;
 
@@ -23,20 +23,27 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.webapps.swedbank_psd2_saturn.HTML;
+import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
-public class TestSCAFailedServlet extends APICore {
+
+public class TBDServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
+            throws IOException, ServletException {
+        doGet(request, response);
+    }
+    
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
         HTML.standardPage(response, null, new StringBuilder(
-            HTML_HEADER +
+            "<div class=\"header\">TBD (To Be Defined)</div>" +
             "<div class=\"centerbox\">" +
-              "<div class=\"description\">The process either failed or " +
-              "was aborted by the user.</div>" +
+              "<div class=\"description\">This function has not yet been implemented &#x1f60e;</div>" +
             "</div>"));
     }
 }

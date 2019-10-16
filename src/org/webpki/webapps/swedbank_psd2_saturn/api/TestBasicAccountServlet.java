@@ -52,7 +52,7 @@ public class TestBasicAccountServlet extends APICore {
         Accounts accounts = getAccountData(false, obsd);
         
         StringBuilder html = new StringBuilder(
-            "<div class=\"header\">Internal API Test with GUI</div>" +
+            HTML_HEADER +
             "<div class=\"centerbox\">" +
               "<table class=\"tftable\"><tr><th>Account ID</th></tr>");
         for (String accountId : accounts.getAccountIds()) {
