@@ -23,9 +23,9 @@
     </context-param>
 
     <context-param>
-        <description>Application Base URI</description>
-        <param-name>base_uri</param-name>
-        <param-value>@base-uri@</param-value>
+        <description>Bank (Application) Base URI</description>
+        <param-name>bank_base_uri</param-name>
+        <param-value>@bank-base-uri@</param-value>
     </context-param>
 
     <context-param>
@@ -35,11 +35,53 @@
     </context-param>
 
     <context-param>
-        <description>Keygen2 Key Management Key</description>
-        <param-name>kg2_kmk</param-name>
-        <param-value>@kg2-kmk@</param-value>
+        <description>Bank Common Name</description>
+        <param-name>bank_common_name</param-name>
+        <param-value>@bank-common-name@</param-value>
     </context-param>
     
+    <context-param>
+        <description>Bank Keygen2 Key Management Key</description>
+        <param-name>bank_kg2kmk</param-name>
+        <param-value>@bank-kg2kmk@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Bank EE Certificate and Key</description>
+        <param-name>bank_eecert</param-name>
+        <param-value>@bank-eecert@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Bank Encryption Key</description>
+        <param-name>bank_encrypt</param-name>
+        <param-value>@bank-encrypt@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Fixed Client Key</description>
+        <param-name>fixed_clientkey</param-name>
+        <param-value>@fixed-clientkey@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Payment Root</description>
+        <param-name>payment_root</param-name>
+        <param-value>@payment-root@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Acquirer Root</description>
+        <param-name>acquirer_root</param-name>
+        <param-value>@acquirer-root@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Saturn Extensions (JSON)</description>
+        <param-name>saturn_extensions</param-name>
+        <param-value>@saturn-extensions@</param-value>
+    </context-param>
+
     <listener>
         <listener-class>org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService</listener-class>
     </listener>
@@ -62,6 +104,11 @@
     <servlet>
         <servlet-name>AccountsServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AccountsServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>ProviderAuthorityServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.prv.ProviderAuthorityServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -117,6 +164,11 @@
     <servlet-mapping>
         <servlet-name>AccountsServlet</servlet-name>
         <url-pattern>/accounts</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ProviderAuthorityServlet</servlet-name>
+        <url-pattern>/prv.authority</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

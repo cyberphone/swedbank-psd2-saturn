@@ -19,11 +19,11 @@ package org.webpki.webapps.swedbank_psd2_saturn.api;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
 

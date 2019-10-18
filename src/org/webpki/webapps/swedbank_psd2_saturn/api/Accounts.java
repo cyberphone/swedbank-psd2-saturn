@@ -30,6 +30,8 @@ import org.webpki.saturn.common.Currencies;
 
 public class Accounts implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     Accounts(JSONObjectReader accountData) throws IOException {
         // Likely to be provider dependent
         JSONArrayReader accountsArray = accountData.getArray("accounts");

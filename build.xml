@@ -7,11 +7,20 @@
     oauth2_client_id=
     oauth2_client_secret=
   -->
-  <property file="secret.properties"/>
+  <property name="application.secrets" location="secret.properties"/>
+  <condition property="app_secrets_set">
+    <available file="${application.secrets}"/>
+  </condition>
+  <fail message="'${application.secrets}' not found!" unless="app_secrets_set"/>
+  <property file="${application.secrets}"/>
 
-  <property name="openkeystore.dir" location="${openkeystore}"/>
+  <property name="openkeystore.dir" location="${@openkeystore}"/>
+  <property name="saturn.dir" location="${@saturn}"/>
+    
+  <property name="payment-network-root" value="${saturn.dir}/resources/keys/payment-network-rootca.cer"/>
+  <property name="acquirer-network-root" value="${saturn.dir}/resources/keys/acquirer-network-rootca.cer"/>
+
   <property name="src.dir" value="src"/>
-  <property name="common.dir" location="../saturn/resources/common"/>
   <property name="temp.dir" value=".tmp"/>
   <property name="dist.dir" location="dist"/>
   <property name="keys.dir" location="keys"/>
@@ -21,6 +30,13 @@
   <property name="bouncycastle" value="true"/>
   
   <property name="application" value="${service_path}.war"/>
+
+  <!--
+    Since there are no users in Swedbank's "sandbox", all testers will have
+    to share a single key.
+  -->
+  <property name="fixed_clientkey" value="fixed_client_ec_key.p12"/>
+  <property name="saturn-extensions" value="saturn-extensions.json"/>
   
   <property name="hashalg" value=""/>
   <property name="webpki.lib.dir" location="${openkeystore.dir}/library/dist"/>
@@ -33,7 +49,7 @@
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
 
   <target name="help">
-      <echo message="build tomcat createkg2kmk"/>
+     <echo message="build tomcat createkeys"/>
   </target>
 
   <target name="_init" unless="app_path">
@@ -52,6 +68,8 @@
   <target name="build">
     <property name="zip.webpki.lib.dir" value="${webpki.lib.dir}"/>
     <property name="zip.bcprovider.lib.dir" value="${bcprovider.lib.dir}"/>
+    <basename property="payment-network-root.base" file="${payment-network-root}"/>
+    <basename property="acquirer-network-root.base" file="${acquirer-network-root}"/>
     <mkdir dir="${dist.dir}"/>
     <delete dir="${temp.dir}"/>
     <mkdir dir="${temp.dir}"/>
@@ -65,7 +83,7 @@
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src.dir}:${common.dir}"
+           srcdir="${src.dir}:${saturn.dir}/resources/common:${saturn.dir}/methods/src"
            destdir="${temp.dir}"
            includeAntRuntime="false">
         <include name="org/webpki/webapps/**/*.java"/>
@@ -82,9 +100,16 @@
     <replace file="${temp.dir}/web.xml">
       <replacefilter token="@oauth2-client-id@" value="${oauth2_client_id}"/>
       <replacefilter token="@oauth2-client-secret@" value="${oauth2_client_secret}"/>
-      <replacefilter token="@base-uri@" value="${base_uri}"/>
+      <replacefilter token="@bank-base-uri@" value="${bank_base_uri}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
-      <replacefilter token="@kg2-kmk@" value="${kg2kmk}"/>
+      <replacefilter token="@fixed-clientkey@" value="${fixed_clientkey}"/>
+      <replacefilter token="@payment-root@" value="${payment-network-root.base}"/>
+      <replacefilter token="@acquirer-root@" value="${acquirer-network-root.base}"/>
+      <replacefilter token="@saturn-extensions@" value="${saturn-extensions}"/>
+      <replacefilter token="@bank-common-name@" value="${bank_common_name}"/>
+      <replacefilter token="@bank-eecert@" value="${bank_eecert}"/>
+      <replacefilter token="@bank-encrypt@" value="${bank_encrypt}"/>
+      <replacefilter token="@bank-kg2kmk@" value="${bank_kg2kmk}"/>
       <replacefilter token="@logging@" value="${logging}"/>
     </replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
@@ -97,10 +122,13 @@
       </lib>
       <fileset dir="web"/>
       <zipfileset dir="${keys.dir}" prefix="${class_war_path}"/>
+      <zipfileset file="${payment-network-root}" prefix="${class_war_path}"/>
+      <zipfileset file="${acquirer-network-root}" prefix="${class_war_path}"/>
+      <zipfileset file="${saturn-extensions}" prefix="${class_war_path}"/>
     </war>
   </target>
 
-  <target name="createkg2kmk">
+  <target name="_createonekey">
     <java fork="yes"
           classname="org.webpki.ca.CommandLineCA"
           dir="${keys.dir}"
@@ -117,8 +145,23 @@
             <include name="bcprov*.jar"/>
           </fileset>
         </classpath>
-        <arg line="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+        <arg line="${cmd}"/>
     </java>
   </target>
-    
+
+  <target name="createkeys">
+    <antcall target="_createonekey">
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+    </antcall>
+    <antcall target="_createonekey">
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Encryption Key&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_encrypt} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+    </antcall>
+    <antcall target="_createonekey">
+      <param name="cmd" value="-out/keyalias mykey -ca/addpath all -ca/keypass ${keypassword} -ca/storetype PKCS12 -ca/storepass ${keypassword} -ca/keystore ${saturn.dir}/resources/keys/payment-network-subca.p12 -entity/ee -extension/ku digitalSignature -subject &quot;CN=Swedbank, O=PSD2, serialNumber=502017-7753, C=SE&quot; -validity/start 2019-01-01T00:00:00 -validity/end 2022-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_eecert} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
+    </antcall>
+    <antcall target="_createonekey">
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${fixed_clientkey} -out/storepass ${@keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
+    </antcall>
+  </target>
+  
 </project>

@@ -311,7 +311,7 @@ public abstract class APICore extends HttpServlet {
             .addElement("client_id", LocalIntegrationService.oauth2ClientId)
             .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret)
             .addElement("code", code)
-            .addElement("redirect_uri", LocalIntegrationService.baseUri + OAUTH2_REDIRECT_PATH);
+            .addElement("redirect_uri", LocalIntegrationService.bankBaseUri + OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         obsd.oauth2Token = getJsonData(wrapper).getString("access_token");
@@ -346,9 +346,9 @@ public abstract class APICore extends HttpServlet {
         wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
         wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, obsd.userAgent);
         wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
-                LocalIntegrationService.baseUri + SCA_ACCOUNT_SUCCESS_PATH);
+                LocalIntegrationService.bankBaseUri + SCA_ACCOUNT_SUCCESS_PATH);
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
-                LocalIntegrationService.baseUri + SCA_FAILED_PATH);
+                LocalIntegrationService.bankBaseUri + SCA_FAILED_PATH);
         setRequestId(wrapper);
         setAuthorization(wrapper, obsd);
         JSONObjectReader json = postJson(restUrl, 
@@ -422,7 +422,8 @@ public abstract class APICore extends HttpServlet {
             .addParameter("client_id", LocalIntegrationService.oauth2ClientId)
             .addParameter("response_type", "code")
             .addParameter("scope", "PSD2sandbox")
-            .addParameter("redirect_uri", LocalIntegrationService.baseUri + OAUTH2_REDIRECT_PATH);
+            .addParameter("redirect_uri",
+                          LocalIntegrationService.bankBaseUri + OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         setRequestId(wrapper);
         if (LocalIntegrationService.logging) {
