@@ -19,11 +19,14 @@
     
   <property name="payment-network-root" value="${saturn.dir}/resources/keys/payment-network-rootca.cer"/>
   <property name="acquirer-network-root" value="${saturn.dir}/resources/keys/acquirer-network-rootca.cer"/>
+  <property file="${saturn.dir}/resources/android.properties"/>
+  <property file="${saturn.dir}/resources/w3c.properties"/>
 
   <property name="src.dir" value="src"/>
   <property name="temp.dir" value=".tmp"/>
   <property name="dist.dir" location="dist"/>
   <property name="keys.dir" location="keys"/>
+  <property name="cards.dir" location="card-images"/>
   <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/swedbank_psd2_saturn"/>
 
   <property name="logging" value="true"/>
@@ -100,6 +103,12 @@
     <replace file="${temp.dir}/web.xml">
       <replacefilter token="@oauth2-client-id@" value="${oauth2_client_id}"/>
       <replacefilter token="@oauth2-client-secret@" value="${oauth2_client_secret}"/>
+      <replacefilter token="@android-webpki-versions@" value="${@android.webpki.versions}"/>
+      <replacefilter token="@svg-card-image@" value="${svg_card_image}"/>
+      <replacefilter token="@server-tls-certificate@" value="${kg2_tls_cert_file}"/>
+      <replacefilter token="@merchant-uri@" value="${merchant_host}/${merchant_path}"/>
+      <replacefilter token="@use-w3c-payment-request@" value="${@w3c.paymentrequest}"/>
+      <replacefilter token="@w3c-payment-request-uri@" value="${@w3c.manifesthost}/${@w3c.manifestpath}"/>
       <replacefilter token="@bank-base-uri@" value="${bank_base_uri}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
       <replacefilter token="@fixed-clientkey@" value="${fixed_clientkey}"/>
@@ -122,6 +131,7 @@
       </lib>
       <fileset dir="web"/>
       <zipfileset dir="${keys.dir}" prefix="${class_war_path}"/>
+      <zipfileset dir="${cards.dir}" prefix="${class_war_path}"/>
       <zipfileset file="${payment-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${acquirer-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${saturn-extensions}" prefix="${class_war_path}"/>

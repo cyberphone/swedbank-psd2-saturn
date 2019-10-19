@@ -23,6 +23,36 @@
     </context-param>
 
     <context-param>
+        <description>Merchant URI</description>
+        <param-name>merchant_uri</param-name>
+        <param-value>@merchant-uri@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Use W3C PaymentRequest Flag</description>
+        <param-name>use_w3c_payment_request</param-name>
+        <param-value>@use-w3c-payment-request@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>W3C PaymentRequest URI</description>
+        <param-name>w3c_payment_request_uri</param-name>
+        <param-value>@w3c-payment-request-uri@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Android Version Support</description>
+        <param-name>android_webpki_versions</param-name>
+        <param-value>@android-webpki-versions@</param-value>
+    </context-param>
+    
+    <context-param>
+        <description>SVG Card Image</description>
+        <param-name>svg_card_image</param-name>
+        <param-value>@svg-card-image@</param-value>
+    </context-param>
+
+    <context-param>
         <description>Bank (Application) Base URI</description>
         <param-name>bank_base_uri</param-name>
         <param-value>@bank-base-uri@</param-value>
@@ -112,6 +142,16 @@
     </servlet>
 
     <servlet>
+        <servlet-name>KeyProviderInitServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>KeyProviderServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>TBDServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.TBDServlet</servlet-class>
     </servlet>
@@ -169,6 +209,16 @@
     <servlet-mapping>
         <servlet-name>ProviderAuthorityServlet</servlet-name>
         <url-pattern>/prv.authority</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>KeyProviderInitServlet</servlet-name>
+        <url-pattern>/kg2.init</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>KeyProviderServlet</servlet-name>
+        <url-pattern>/kg2.runner</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

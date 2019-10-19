@@ -20,11 +20,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.SecureRandom;
 
 import java.security.cert.X509Certificate;
 
 import java.security.interfaces.RSAKey;
+
+import java.security.spec.ECGenParameterSpec;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,14 +38,22 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.webpki.crypto.CertificateUtil;
+import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyStoreVerifier;
 
 import org.webpki.json.DataEncryptionAlgorithms;
+import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONDecryptionDecoder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Verifier;
 import org.webpki.json.KeyEncryptionAlgorithms;
+
+import org.webpki.keygen2.CredentialDiscoveryResponseDecoder;
+import org.webpki.keygen2.InvocationResponseDecoder;
+import org.webpki.keygen2.KeyCreationResponseDecoder;
+import org.webpki.keygen2.ProvisioningFinalizationResponseDecoder;
+import org.webpki.keygen2.ProvisioningInitializationResponseDecoder;
 
 import org.webpki.util.ArrayUtil;
 
@@ -63,12 +76,12 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static boolean logging;
     
-    static final String LOGGING                 = "logging";
+    static final String LOGGING                     = "logging";
 
-    static final String KEYSTORE_PASSWORD       = "key_password";
+    static final String KEYSTORE_PASSWORD           = "key_password";
 
     // Swedbank's Open Banking API only supports a single user...
-    static final String FIXED_CLIENT_KEY        = "fixed_client_key";
+    static final String FIXED_CLIENT_KEY            = "fixed_client_key";
     
     /////////////////////////////////////////////////////////////////////////////
     // Saturn bank objects
@@ -76,19 +89,19 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static String bankBaseUri;
 
-    static final String BANK_BASE_URI           = "bank_base_uri";
+    static final String BANK_BASE_URI               = "bank_base_uri";
 
-    static final String BANK_COMMON_NAME        = "bank_common_name";
+    static final String BANK_COMMON_NAME            = "bank_common_name";
 
-    static final String BANK_EECERT             = "bank_eecert";
+    static final String BANK_EECERT                 = "bank_eecert";
     
-    static final String BANK_ENCRYPT            = "bank_encrypt";
+    static final String BANK_ENCRYPT                = "bank_encrypt";
     
-    static final String BANK_KG2KMK             = "bank_kg2kmk";
+    static final String BANK_KG2KMK                 = "bank_kg2kmk";
 
-    static final String PAYMENT_ROOT            = "payment_root";
+    static final String PAYMENT_ROOT                = "payment_root";
 
-    static final String ACQUIRER_ROOT           = "acquirer_root";
+    static final String ACQUIRER_ROOT               = "acquirer_root";
 
     public static JSONDecryptionDecoder.DecryptionKeyHolder decryptionKey;
     
@@ -108,6 +121,37 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     static final int PROVIDER_EXPIRATION_TIME = 3600;
 
+    
+    /////////////////////////////////////////////////////////////////////////////
+    // KeyGen2 JSON object cache
+    /////////////////////////////////////////////////////////////////////////////
+    public static JSONDecoderCache keygen2JSONCache;
+
+    static final String VERSION_CHECK               = "android_webpki_versions";
+
+    static final String MERCHANT_URL                = "merchant_url";
+
+    static final String KEYGEN2_BASE_URL            = "keygen2_base_url";
+
+    static final String TLS_CERTIFICATE             = "server_tls_certificate";
+
+    static final String USE_W3C_PAYMENT_REQUEST     = "use_w3c_payment_request";
+
+    static final String W3C_PAYMENT_REQUEST_HOST    = "w3c_payment_request_host";
+
+    public static X509Certificate serverCertificate;
+
+    public static String grantedVersions;
+    
+    public static String keygen2RunUri;
+
+    public static KeyStoreEnumerator keyManagementKey;
+
+    static final String SVG_CARD_IMAGE              = "svg_card_image";
+
+    public static String svgCardImage;
+
+    public static KeyPair carrierCaKeyPair;
 
     /////////////////////////////////////////////////////////////////////////////
     // Open Banking objects
@@ -117,11 +161,12 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     
     public static String oauth2ClientSecret;
 
-    static final String OAUTH2_CLIENT_ID        = "oauth2_client_id";
+    static final String OAUTH2_CLIENT_ID            = "oauth2_client_id";
     
-    static final String OAUTH2_CLIENT_SECRET    = "oauth2_client_secret";
+    static final String OAUTH2_CLIENT_SECRET        = "oauth2_client_secret";
 
-    static final String SATURN_EXTENSIONS       = "saturn_extensions";
+    static final String SATURN_EXTENSIONS           = "saturn_extensions";
+
 
     /////////////////////////////////////////////////////////////////////////////
     // Provider objects
@@ -208,6 +253,45 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
                                                  KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID,
                     null);            
 
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // KeyGen2 objects
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            keygen2JSONCache = new JSONDecoderCache();
+            keygen2JSONCache.addToCache(InvocationResponseDecoder.class);
+            keygen2JSONCache.addToCache(ProvisioningInitializationResponseDecoder.class);
+            keygen2JSONCache.addToCache(CredentialDiscoveryResponseDecoder.class);
+            keygen2JSONCache.addToCache(KeyCreationResponseDecoder.class);
+            keygen2JSONCache.addToCache(ProvisioningFinalizationResponseDecoder.class);
+            
+            keygen2RunUri = bankBaseUri + "/kg2.runner";
+
+            svgCardImage = getEmbeddedResourceString(SVG_CARD_IMAGE);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Create a CA keys.  Note Saturn payment credentials do not use PKI
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+            ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.NIST_P_256.getJceName());
+            generator.initialize(eccgen, new SecureRandom());
+            carrierCaKeyPair = generator.generateKeyPair();
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // SKS key management key
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            keyManagementKey = new KeyStoreEnumerator(getResource(getPropertyString(BANK_KG2KMK)),
+                                                      getPropertyString(KEYSTORE_PASSWORD));
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Android WebPKI version check (vlow-vhigh)
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            grantedVersions = getPropertyString(VERSION_CHECK);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Get TLS server certificate
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            serverCertificate = CertificateUtil.getCertificateFromBlob(
+                    ArrayUtil.readFile(getPropertyString(TLS_CERTIFICATE)));
+
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Saturn extensions
             /////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,20 +304,19 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Provider authority object
             /////////////////////////////////////////////////////////////////////////////////////////////
-            authorityObjectManager = 
-                new AuthorityObjectManager(
-                        providerAuthorityUri = bankBaseUri + "/prv.authority",
-                        bankBaseUri,
-                        serviceUri = bankBaseUri + "/sat.service",
-                        new ProviderAuthority.PaymentMethodDeclarations()
-                            .add(new ProviderAuthority
-                                    .PaymentMethodDeclaration(
-                                            PaymentMethods.BANK_DIRECT.getPaymentMethodUri())
-                                .add(org.payments.sepa.SEPAPaymentBackendMethodDecoder.class))
-                            .add(new ProviderAuthority
-                                    .PaymentMethodDeclaration(
-                                            PaymentMethods.SUPER_CARD.getPaymentMethodUri())
-                                .add(org.payments.sepa.SEPAPaymentBackendMethodDecoder.class)),
+            authorityObjectManager = new AuthorityObjectManager(
+                providerAuthorityUri = bankBaseUri + "/prv.authority",
+                bankBaseUri,
+                serviceUri = bankBaseUri + "/sat.service",
+                new ProviderAuthority.PaymentMethodDeclarations()
+                    .add(new ProviderAuthority
+                            .PaymentMethodDeclaration(
+                                    PaymentMethods.BANK_DIRECT.getPaymentMethodUri())
+                        .add(org.payments.sepa.SEPAPaymentBackendMethodDecoder.class))
+                    .add(new ProviderAuthority
+                            .PaymentMethodDeclaration(
+                                    PaymentMethods.SUPER_CARD.getPaymentMethodUri())
+                        .add(org.payments.sepa.SEPAPaymentBackendMethodDecoder.class)),
                 optionalProviderExtensions,
                 new SignatureProfiles[]{SignatureProfiles.P256_ES256},
                 new ProviderAuthority.EncryptionParameter[]{
