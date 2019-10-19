@@ -81,8 +81,10 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     static final String KEYSTORE_PASSWORD           = "key_password";
 
     // Swedbank's Open Banking API only supports a single user...
-    static final String FIXED_CLIENT_KEY            = "fixed_client_key";
+    static final String FIXED_CLIENT_PAYMENT_KEY    = "fixed_client_payment_key";
     
+    public static KeyStoreEnumerator fixedClientPaymentKey;
+
     /////////////////////////////////////////////////////////////////////////////
     // Saturn bank objects
     /////////////////////////////////////////////////////////////////////////////
@@ -135,10 +137,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     static final String TLS_CERTIFICATE             = "server_tls_certificate";
 
-    static final String USE_W3C_PAYMENT_REQUEST     = "use_w3c_payment_request";
-
-    static final String W3C_PAYMENT_REQUEST_HOST    = "w3c_payment_request_host";
-
     public static X509Certificate serverCertificate;
 
     public static String grantedVersions;
@@ -175,6 +173,18 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public static AuthorityObjectManager authorityObjectManager;
 
     static JSONObjectReader optionalProviderExtensions;
+
+    /////////////////////////////////////////////////////////////////////////////
+    // W3C PaymentRequest data
+    /////////////////////////////////////////////////////////////////////////////
+
+    static final String W3C_PAYMENT_REQUEST_URI   = "w3c_payment_request_uri";
+
+    public static String w3cPaymentRequestUri;
+
+    static final String USE_W3C_PAYMENT_REQUEST   = "use_w3c_payment_request";
+
+    public static boolean useW3cPaymentRequest;
 
     InputStream getResource(String name) throws IOException {
         InputStream is = this.getClass().getResourceAsStream(getPropertyString(name));
@@ -219,6 +229,13 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             oauth2ClientId = getPropertyString(OAUTH2_CLIENT_ID);
             oauth2ClientSecret = getPropertyString(OAUTH2_CLIENT_SECRET);
+            
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            // Note: a production version would be slightly more granular :)
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            fixedClientPaymentKey = 
+                    new KeyStoreEnumerator(getResource(FIXED_CLIENT_PAYMENT_KEY),
+                                           getPropertyString(KEYSTORE_PASSWORD));
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Where our app resides in Cyberspace
@@ -243,7 +260,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
             KeyStoreEnumerator keyStoreEnumerator =
                     new KeyStoreEnumerator(getResource(BANK_ENCRYPT),
-                    getPropertyString(KEYSTORE_PASSWORD));
+                                           getPropertyString(KEYSTORE_PASSWORD));
             decryptionKey = new JSONDecryptionDecoder.DecryptionKeyHolder(
                     keyStoreEnumerator.getPublicKey(),
                     keyStoreEnumerator.getPrivateKey(),
@@ -278,7 +295,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ////////////////////////////////////////////////////////////////////////////////////////////
             // SKS key management key
             ////////////////////////////////////////////////////////////////////////////////////////////
-            keyManagementKey = new KeyStoreEnumerator(getResource(getPropertyString(BANK_KG2KMK)),
+            keyManagementKey = new KeyStoreEnumerator(getResource(BANK_KG2KMK),
                                                       getPropertyString(KEYSTORE_PASSWORD));
 
             ////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,6 +317,12 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
                 extensions = extensions.replace("${host}", bankBaseUri);
                 optionalProviderExtensions = JSONParser.parse(extensions);
             }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // W3C PaymentRequest data
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            useW3cPaymentRequest = getPropertyBoolean(USE_W3C_PAYMENT_REQUEST);
+            w3cPaymentRequestUri = getPropertyString(W3C_PAYMENT_REQUEST_URI);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Provider authority object

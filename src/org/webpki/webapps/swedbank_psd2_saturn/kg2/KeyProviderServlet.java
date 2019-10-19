@@ -20,30 +20,40 @@ package org.webpki.webapps.swedbank_psd2_saturn.kg2;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+
 import java.util.Date;
 import java.util.Hashtable;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
+
 import java.security.cert.X509Certificate;
+
+import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.webpki.asn1.cert.DistinguishedName;
+
 import org.webpki.ca.CA;
 import org.webpki.ca.CertSpec;
+
 import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyUsageBits;
 import org.webpki.crypto.SignatureWrapper;
+
 import org.webpki.keygen2.ServerState;
 import org.webpki.keygen2.KeySpecifier;
 import org.webpki.keygen2.KeyGen2URIs;
@@ -57,18 +67,27 @@ import org.webpki.keygen2.ProvisioningInitializationRequestEncoder;
 import org.webpki.keygen2.CredentialDiscoveryRequestEncoder;
 import org.webpki.keygen2.KeyCreationRequestEncoder;
 import org.webpki.keygen2.ProvisioningFinalizationRequestEncoder;
+
 import org.webpki.sks.Grouping;
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.PassphraseFormat;
+
 import org.webpki.saturn.common.AuthorizationData;
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.CardDataEncoder;
 import org.webpki.saturn.common.CardImageData;
+import org.webpki.saturn.common.PaymentMethods;
+
 import org.webpki.util.MIMETypedObject;
+
 import org.webpki.webutil.ServletUtil;
+
+import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONOutputFormats;
+import org.webpki.json.KeyEncryptionAlgorithms;
+
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
@@ -259,7 +278,7 @@ logger.info("POST session=" + request.getSession(false).getId());
                     // now create Saturn payment credentials
                     // 1. Get key
                     key = keygen2State.getKeys()[0];
-
+/*
                     // 2. Create a "carrier" certificate for the signature key (SKS need that)
                     // In this unusual setup all certificates have the same public/private key.
                     CertSpec certSpec = new CertSpec();
@@ -300,20 +319,22 @@ logger.info("POST session=" + request.getSession(false).getId());
                                                 }
                                             }
                                         },
-                                        key.getPublicKey())});
+                                        LocalIntegrationService.fixedClientPaymentKey.getPublicKey())});
+                    key.setPrivateKey(LocalIntegrationService.fixedClientPaymentKey.getPrivateKey()
+                                                                                .getEncoded());
 
                     // 3. Add card data blob to the key entry
                     key.addExtension(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI,
-                            CardDataEncoder.encode(credentialTemplate.paymentMethod,
+                            CardDataEncoder.encode(PaymentMethods.BANK_DIRECT.getPaymentMethodUri(),
                                                    credentialId, 
-                                                   credentialTemplate.authorityUrl, 
-                                                   credentialTemplate.signatureAlgorithm, 
-                                                   credentialTemplate.dataEncryptionAlgorithm, 
-                                                   credentialTemplate.keyEncryptionAlgorithm, 
-                                                   credentialTemplate.encryptionKey,
+                                                   LocalIntegrationService.providerAuthorityUri, 
+                                                   AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                                   DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID, 
+                                                   KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID, 
+                                                   LocalIntegrationService.decryptionKey.getPublicKey(),
                                                    null,
                                                    null,
-                                                   credentialTemplate.tempBalanceFix)
+                                                   new BigDecimal("5302.00"))
                                                        .serializeToBytes(JSONOutputFormats.NORMALIZED));
 
                     // 4. Add personalized card image
@@ -347,7 +368,7 @@ logger.info("POST session=" + request.getSession(false).getId());
                         }
                        
                     });
-
+*/
                     keygen2JSONBody(response, 
                                     new ProvisioningFinalizationRequestEncoder(keygen2State));
                     return;
@@ -362,7 +383,7 @@ logger.info("POST session=" + request.getSession(false).getId());
                     // We are done, return an HTTP redirect taking 
                     // the client out of its KeyGen2 mode
                     ////////////////////////////////////////////////////////////////////////
-                    response.sendRedirect(LocalIntegrationService.keygen2RunUrl);
+                    response.sendRedirect(LocalIntegrationService.keygen2RunUri);
                     return;
 
                 default:
@@ -416,7 +437,7 @@ logger.info("GET session=" + request.getSession(false).getId() + " Q=" + request
                 html.append("You need to restart the session");
             } else {
                 session.invalidate();
-                html.append(LocalIntegrationService.successMessage);
+                html.append("OK");
             }
         }
         KeyProviderInitServlet.output(response, 

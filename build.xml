@@ -38,7 +38,7 @@
     Since there are no users in Swedbank's "sandbox", all testers will have
     to share a single key.
   -->
-  <property name="fixed_clientkey" value="fixed_client_ec_key.p12"/>
+  <property name="fixed_client_payment_key" value="fixed_client_ec_key.p12"/>
   <property name="saturn-extensions" value="saturn-extensions.json"/>
   
   <property name="hashalg" value=""/>
@@ -111,7 +111,7 @@
       <replacefilter token="@w3c-payment-request-uri@" value="${@w3c.manifesthost}/${@w3c.manifestpath}"/>
       <replacefilter token="@bank-base-uri@" value="${bank_base_uri}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
-      <replacefilter token="@fixed-clientkey@" value="${fixed_clientkey}"/>
+      <replacefilter token="@fixed-client-payment-key@" value="${fixed_client_payment_key}"/>
       <replacefilter token="@payment-root@" value="${payment-network-root.base}"/>
       <replacefilter token="@acquirer-root@" value="${acquirer-network-root.base}"/>
       <replacefilter token="@saturn-extensions@" value="${saturn-extensions}"/>
@@ -170,7 +170,7 @@
       <param name="cmd" value="-out/keyalias mykey -ca/addpath all -ca/keypass ${keypassword} -ca/storetype PKCS12 -ca/storepass ${keypassword} -ca/keystore ${saturn.dir}/resources/keys/payment-network-subca.p12 -entity/ee -extension/ku digitalSignature -subject &quot;CN=Swedbank, O=PSD2, serialNumber=502017-7753, C=SE&quot; -validity/start 2019-01-01T00:00:00 -validity/end 2022-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_eecert} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
     <antcall target="_createonekey">
-      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${fixed_clientkey} -out/storepass ${@keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${fixed_client_payment_key} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
   </target>
   

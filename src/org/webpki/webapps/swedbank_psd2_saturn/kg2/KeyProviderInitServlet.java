@@ -25,7 +25,6 @@ import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -274,7 +273,7 @@ public class KeyProviderInitServlet extends APICore {
             //==================================================================//
             "        const details = {total:{label:'total',amount:{currency:'USD',value:'1.00'}}};\n" +
             "        const supportedInstruments = [{\n" +
-            "          supportedMethods: '" + LocalIntegrationService.w3cPaymentRequestMethod + "',\n" +
+            "          supportedMethods: '" + LocalIntegrationService.w3cPaymentRequestUri + "',\n" +
 // Test data
 //            "          supportedMethods: 'weird-pay',\n" +
             "          data: {url: invocationUrl}\n" +
