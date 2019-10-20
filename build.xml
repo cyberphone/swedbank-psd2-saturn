@@ -108,7 +108,7 @@
       <replacefilter token="@server-tls-certificate@" value="${kg2_tls_cert_file}"/>
       <replacefilter token="@merchant-uri@" value="${merchant_host}/${merchant_path}"/>
       <replacefilter token="@use-w3c-payment-request@" value="${@w3c.paymentrequest}"/>
-      <replacefilter token="@w3c-payment-request-uri@" value="${@w3c.manifesthost}/${@w3c.manifestpath}"/>
+      <replacefilter token="@w3c-payment-request-uri@" value="${@w3c.manifesthost}/${@w3c.manifestpath}/method"/>
       <replacefilter token="@bank-base-uri@" value="${bank_base_uri}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
       <replacefilter token="@fixed-client-payment-key@" value="${fixed_client_payment_key}"/>

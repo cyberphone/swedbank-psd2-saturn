@@ -29,6 +29,7 @@ import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBankingSessionData;
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
+import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
 
 public class AccountsServlet extends APICore {
 
@@ -94,19 +95,31 @@ public class AccountsServlet extends APICore {
             "  setColor(curr, 'black', '#ffffe0');\n" +
             "  setColor(curr = id, 'white', '#5a7dff');\n" +
             "}\n" +
+            "function initiateEnrollment() {\n" +
+            "  document.getElementById('" +
+              KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
+              "').value = curr;\n" +
+            "  document.forms.accountSelector.submit();\n" +
+            "}\n" +
             "document.addEventListener('DOMContentLoaded', function() {\n" +
             "  selectAccount(curr);\n" +
             "});\n", 
             html.append(
               "</table>" +
             "</div>" +
-            "<form name=\"accounts\" action=\"tbd\" method=\"POST\"></form>" +
+            "<form name=\"accountSelector\" action=\"kg2.init\" method=\"POST\">" +
+            "<input type=\"hidden\" id=\"" +
+              KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
+              "\" name=\"" +
+              KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
+              "\">" +
+            "</form>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                  "onclick=\"document.forms.accounts.submit()\" " +
-                  "title=\"Continue\">" +
-                  "Continue...</div></td></tr>" +
+                  "onclick=\"initiateEnrollment()\" " +
+                  "title=\"Continue to enrollment\">" +
+                  "Next...</div></td></tr>" +
               "</table>" +
             "</div>"));
     }

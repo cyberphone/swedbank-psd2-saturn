@@ -33,6 +33,7 @@ import org.webpki.keygen2.ServerState;
 
 import org.webpki.net.MobileProxyParameters;
 
+import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
@@ -46,8 +47,9 @@ public class KeyProviderInitServlet extends APICore {
     static Logger logger = Logger.getLogger(KeyProviderInitServlet.class.getCanonicalName());
 
     static final String KEYGEN2_SESSION_ATTR           = "keygen2";
-    static final String USERNAME_SESSION_ATTR          = "userName";
-    static final String CHECK_SESSION_ATTR             = "check";
+    static final String USERNAME_SESSION_ATTR_PARM     = "userName";  // Dual use
+    static final String W3C_PAYMENT_REQUEST_MODE_PARM  = "w3cpr";
+    public static final String ACCOUNT_SET_MODE_PARM   = "account";
     
     static final int NAME_MAX_LENGTH                   = 50;  // Reflected in the DB
 
@@ -257,15 +259,15 @@ public class KeyProviderInitServlet extends APICore {
             // is added to the HttpSession to be created on the server.         //
             //==================================================================//
             "    var formData = new URLSearchParams();\n" +
-            "    formData.append('" + USERNAME_SESSION_ATTR +
-              "', document.forms.shoot.elements." + USERNAME_SESSION_ATTR + ".value);\n" +
-            "    formData.append('" + CHECK_SESSION_ATTR + "', 1);\n" +
+            "    formData.append('" + USERNAME_SESSION_ATTR_PARM +
+              "', document.forms.shoot.elements." + USERNAME_SESSION_ATTR_PARM + ".value);\n" +
+            "    formData.append('" + W3C_PAYMENT_REQUEST_MODE_PARM + "', 1);\n" +
             "    try {\n" +
-            "      const httpResponse = await fetch('init', {\n" +
+            "      const httpResponse = await fetch('kg2.init', {\n" +
             "        method: 'POST',\n" +
             "        body: formData\n" +
             "      });\n" +
-            "      if (httpResponse.status == 200) {\n" +
+            "      if (httpResponse.status == " + HttpServletResponse.SC_OK + ") {\n" +
             "        const invocationUrl = await httpResponse.text();\n" +
             //==================================================================//
             // Success! Now we can now hook into the W3C PaymentRequest using   //
@@ -294,6 +296,8 @@ public class KeyProviderInitServlet extends APICore {
             "        } else {\n" +
             "          paymentRequestError('App does not seem to be installed');\n" +
             "        }\n" +
+            "      } else if (httpResponse.status == " + HttpServletResponse.SC_FORBIDDEN + ") {\n" +
+            "        document.location.href = '" + HomeServlet.REDIRECT_TIMEOUT_URI + "';\n" +
             "      } else {\n" +
             "        paymentRequestError('Server error, try again');\n" +
             "      }\n" +
@@ -311,7 +315,7 @@ public class KeyProviderInitServlet extends APICore {
             "  document.forms.shoot.submit();\n" +
             "}"),
             null,
-            "<form name=\"shoot\" method=\"POST\" action=\"init\">" + 
+            "<form name=\"shoot\" method=\"POST\" action=\"kg2.init\">" + 
             "<div>" +
               "This proof-of-concept system provisions secure payment credentials<br>" + 
               "to be used in the Android version of the Saturn &quot;Wallet&quot;." +
@@ -319,7 +323,7 @@ public class KeyProviderInitServlet extends APICore {
             "<div style=\"display:flex;justify-content:center;padding-top:15pt\">" +
               "<table>" + 
                 "<tr><td>Your name (real or made up):</td></tr>" + 
-                "<tr><td><input type=\"text\" name=\"" + USERNAME_SESSION_ATTR + 
+                "<tr><td><input type=\"text\" name=\"" + USERNAME_SESSION_ATTR_PARM + 
                   "\" value=\"" + DEFAULT_USER_NAME_HTML + 
                   "\" size=\"30\" maxlength=\"50\" " + 
                   "style=\"background-color:#def7fc\"></td></tr>" + 
@@ -348,23 +352,48 @@ public class KeyProviderInitServlet extends APICore {
     }
 
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException {
+        // Note: there are three different ways to enter here.
+        // 1. From AccountServlet with a selected account parameter
+        // 2. From javascript "fetch()" when using W3C PaymentRequest
+        // 3. From javascript when using URL handler
+        // Case 2 & 3 comes with a user name parameter
         request.setCharacterEncoding("utf-8");
-        HttpSession session = request.getSession(true);
-        String userName = request.getParameter(USERNAME_SESSION_ATTR);
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            if (request.getParameter(W3C_PAYMENT_REQUEST_MODE_PARM) == null) {
+                // Case 3
+                response.sendRedirect(HomeServlet.REDIRECT_TIMEOUT_URI);
+            } else {
+                // Case 2
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            }
+            return;
+        }
+        String account = request.getParameter(ACCOUNT_SET_MODE_PARM);
+        String userName = request.getParameter(USERNAME_SESSION_ATTR_PARM);
+        if (account != null) {
+            // Case 1
+            ServerState serverState =
+                    new ServerState(new KeyGen2SoftHSM(LocalIntegrationService.keyManagementKey), 
+                                    LocalIntegrationService.keygen2RunUri,
+                                    LocalIntegrationService.serverCertificate,
+                                    null);
+            serverState.setServiceSpecificObject(ACCOUNT_SET_MODE_PARM, account);
+            session.setAttribute(KEYGEN2_SESSION_ATTR, serverState);
+            response.sendRedirect("kg2.init");
+            return;
+        }
         if (userName == null || (userName = userName.trim()).isEmpty()) {
             userName = ANONYMOUS_JAVA;
         }
         if (userName.length() > NAME_MAX_LENGTH) {
             userName = userName.substring(0, NAME_MAX_LENGTH);
         }
-        session.setAttribute(KEYGEN2_SESSION_ATTR,
-                new ServerState(new KeyGen2SoftHSM(LocalIntegrationService.keyManagementKey), 
-                                LocalIntegrationService.keygen2RunUri,
-                                LocalIntegrationService.serverCertificate,
-                                null));
-        session.setAttribute(USERNAME_SESSION_ATTR, userName);
-        if (request.getParameter(CHECK_SESSION_ATTR) == null) {
+        session.setAttribute(USERNAME_SESSION_ATTR_PARM, userName);
+        if (request.getParameter(W3C_PAYMENT_REQUEST_MODE_PARM) == null) {
+            // Case 3
             output(response,
                    getHTML(GO_HOME,
                 "onload=\"document.location.href = '" + 
@@ -377,6 +406,7 @@ public class KeyProviderInitServlet extends APICore {
                 "something wrong with the installation.</div>" +
                 "</div>"));
         } else {
+            // Case 2
 /*
             // This code makes the PaymentRequest "gesture" requirement open
             // Chrome's payment dialog which is very confusing for users.

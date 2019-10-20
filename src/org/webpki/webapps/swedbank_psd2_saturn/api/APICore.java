@@ -150,7 +150,7 @@ public abstract class APICore extends HttpServlet {
     throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            response.sendRedirect("home?" + HomeServlet.SESSION_TIMEOUT);
+            response.sendRedirect(HomeServlet.REDIRECT_TIMEOUT_URI);
             return null;
         }
         return (OpenBankingSessionData)session.getAttribute(OBSD);

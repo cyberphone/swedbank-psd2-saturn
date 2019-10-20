@@ -72,7 +72,6 @@ import org.webpki.sks.Grouping;
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.PassphraseFormat;
 
-import org.webpki.saturn.common.AuthorizationData;
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.CardDataEncoder;
 import org.webpki.saturn.common.CardImageData;
@@ -177,7 +176,8 @@ logger.info("POST session=" + request.getSession(false).getId());
             JSONDecoder jsonObject = LocalIntegrationService.keygen2JSONCache.parse(jsonData);
             switch (keygen2State.getProtocolPhase()) {
                 case INVOCATION:
-                    InvocationResponseDecoder invocationResponse = (InvocationResponseDecoder) jsonObject;
+                    InvocationResponseDecoder invocationResponse = 
+                        (InvocationResponseDecoder) jsonObject;
                     keygen2State.update(invocationResponse);
 
                     // Now we really start doing something
@@ -191,7 +191,8 @@ logger.info("POST session=" + request.getSession(false).getId());
                     return;
 
                 case PROVISIONING_INITIALIZATION:
-                    ProvisioningInitializationResponseDecoder provisioningInitResponse = (ProvisioningInitializationResponseDecoder) jsonObject;
+                    ProvisioningInitializationResponseDecoder provisioningInitResponse = 
+                        (ProvisioningInitializationResponseDecoder) jsonObject;
                     keygen2State.update(provisioningInitResponse);
 
                     logger.info("Device Certificate=" +
@@ -226,10 +227,11 @@ logger.info("POST session=" + request.getSession(false).getId());
                             X509Certificate endEntityCertificate = 
                                     matchingCredential.getCertificatePath()[0];
                             keygen2State
-                                .addPostDeleteKey(matchingCredential.getClientSessionId(), 
-                                                  matchingCredential.getServerSessionId(),
-                                                  endEntityCertificate,
-                                                  LocalIntegrationService.keyManagementKey.getPublicKey());
+                                .addPostDeleteKey(
+                                    matchingCredential.getClientSessionId(), 
+                                    matchingCredential.getServerSessionId(),
+                                    endEntityCertificate,
+                                    LocalIntegrationService.keyManagementKey.getPublicKey());
                           logger.info("Deleting key=" + certificateData(endEntityCertificate));
                         }
                     }
@@ -271,14 +273,14 @@ logger.info("POST session=" + request.getSession(false).getId());
                     
                     // Note, user name is just an "alias"
                     // so it does NOT function as a user ID...
-                    String userName = 
-                            (String) session.getAttribute(KeyProviderInitServlet.USERNAME_SESSION_ATTR);
-                    String credentialId;
+                    String userName = (String) session.getAttribute(
+                            KeyProviderInitServlet.USERNAME_SESSION_ATTR_PARM);
+                    String credentialId = (String) keygen2State.getServiceSpecificObject(
+                            KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM);
 
                     // now create Saturn payment credentials
                     // 1. Get key
                     key = keygen2State.getKeys()[0];
-/*
                     // 2. Create a "carrier" certificate for the signature key (SKS need that)
                     // In this unusual setup all certificates have the same public/private key.
                     CertSpec certSpec = new CertSpec();
@@ -287,55 +289,58 @@ logger.info("POST session=" + request.getSession(false).getId());
                     Hashtable<String,String> issuer = new Hashtable<String,String>();
                     issuer.put("CN", "Saturn SKS Carrier Certificate");
                     long startTime = System.currentTimeMillis();
-                    key.setCertificatePath(new X509Certificate[]{new CA().
-                             createCert(certSpec,
-                                        new DistinguishedName(issuer),
-                                        BigInteger.ONE,
-                                        new Date(startTime),
-                                        new Date(startTime + (20 * 365 * 24 * 3600 * 1000l)),
-                                        AsymSignatureAlgorithms.ECDSA_SHA256,
-                                        new AsymKeySignerInterface() {
+                    key.setCertificatePath(new X509Certificate[]{new CA().createCert(
+                        certSpec,
+                        new DistinguishedName(issuer),
+                        BigInteger.ONE,
+                        new Date(startTime),
+                        new Date(startTime + (20 * 365 * 24 * 3600 * 1000l)),
+                        AsymSignatureAlgorithms.ECDSA_SHA256,
+                        new AsymKeySignerInterface() {
 
-                                            @Override
-                                            public PublicKey getPublicKey() throws IOException {
-                                                return LocalIntegrationService
-                                                           .carrierCaKeyPair.getPublic();
-                                            }
+                            @Override
+                            public PublicKey getPublicKey() throws IOException {
+                                return LocalIntegrationService
+                                           .carrierCaKeyPair.getPublic();
+                            }
 
-                                            @Override
-                                            public byte[] signData(
-                                                    byte[] data,
-                                                    AsymSignatureAlgorithms algorithm)
-                                                    throws IOException {
-                                                try {
-                                                    return new SignatureWrapper(algorithm,
-                                                                                LocalIntegrationService
-                                                                     .carrierCaKeyPair.getPrivate())
-                                                        .setEcdsaSignatureEncoding(true)
-                                                        .update(data)
-                                                        .sign();
-                                                } catch (GeneralSecurityException e) {
-                                                    throw new IOException(e);
-                                                }
-                                            }
-                                        },
-                                        LocalIntegrationService.fixedClientPaymentKey.getPublicKey())});
-                    key.setPrivateKey(LocalIntegrationService.fixedClientPaymentKey.getPrivateKey()
-                                                                                .getEncoded());
+                            @Override
+                            public byte[] signData(
+                                    byte[] data,
+                                    AsymSignatureAlgorithms algorithm)
+                                    throws IOException {
+                                try {
+                                    return new SignatureWrapper(algorithm,
+                                                                LocalIntegrationService
+                                                     .carrierCaKeyPair.getPrivate())
+                                        .setEcdsaSignatureEncoding(true)
+                                        .update(data)
+                                        .sign();
+                                } catch (GeneralSecurityException e) {
+                                    throw new IOException(e);
+                                }
+                            }
+                        },
+                        // Note: in a "normal" setup you would use the generated public key
+                        LocalIntegrationService.fixedClientPaymentKey.getPublicKey())});
+                    // Import fixed private key
+                    key.setPrivateKey(LocalIntegrationService.fixedClientPaymentKey
+                            .getPrivateKey().getEncoded());
 
                     // 3. Add card data blob to the key entry
                     key.addExtension(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI,
-                            CardDataEncoder.encode(PaymentMethods.BANK_DIRECT.getPaymentMethodUri(),
-                                                   credentialId, 
-                                                   LocalIntegrationService.providerAuthorityUri, 
-                                                   AsymSignatureAlgorithms.ECDSA_SHA256, 
-                                                   DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID, 
-                                                   KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID, 
-                                                   LocalIntegrationService.decryptionKey.getPublicKey(),
-                                                   null,
-                                                   null,
-                                                   new BigDecimal("5302.00"))
-                                                       .serializeToBytes(JSONOutputFormats.NORMALIZED));
+                        CardDataEncoder.encode(
+                            PaymentMethods.BANK_DIRECT.getPaymentMethodUri(),
+                            credentialId, 
+                            LocalIntegrationService.providerAuthorityUri, 
+                            AsymSignatureAlgorithms.ECDSA_SHA256, 
+                            DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID, 
+                            KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID, 
+                            LocalIntegrationService.decryptionKey.getPublicKey(),
+                            null,
+                            null,
+                            new BigDecimal("5302.00"))
+                                .serializeToBytes(JSONOutputFormats.NORMALIZED));
 
                     // 4. Add personalized card image
                     key.addLogotype(KeyGen2URIs.LOGOTYPES.CARD, new MIMETypedObject() {
@@ -368,7 +373,6 @@ logger.info("POST session=" + request.getSession(false).getId());
                         }
                        
                     });
-*/
                     keygen2JSONBody(response, 
                                     new ProvisioningFinalizationRequestEncoder(keygen2State));
                     return;

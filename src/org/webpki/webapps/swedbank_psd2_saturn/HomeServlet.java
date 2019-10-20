@@ -30,7 +30,9 @@ public class HomeServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     
-    public static final String SESSION_TIMEOUT = "timeout";
+    static final String SESSION_TIMEOUT = "timeout";
+    
+    public static final String REDIRECT_TIMEOUT_URI = "home?" + SESSION_TIMEOUT;
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
