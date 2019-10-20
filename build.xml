@@ -70,7 +70,6 @@
 
   <target name="build">
     <property name="zip.webpki.lib.dir" value="${webpki.lib.dir}"/>
-    <property name="zip.bcprovider.lib.dir" value="${bcprovider.lib.dir}"/>
     <basename property="payment-network-root.base" file="${payment-network-root}"/>
     <basename property="acquirer-network-root.base" file="${acquirer-network-root}"/>
     <mkdir dir="${dist.dir}"/>
