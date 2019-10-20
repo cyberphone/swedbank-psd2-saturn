@@ -131,7 +131,9 @@
       </lib>
       <fileset dir="web"/>
       <zipfileset dir="${keys.dir}" prefix="${class_war_path}"/>
-      <zipfileset dir="${cards.dir}" prefix="${class_war_path}"/>
+      <zipfileset dir="${cards.dir}" prefix="${class_war_path}">
+        <include name="${svg_card_image}"/>
+      </zipfileset>
       <zipfileset file="${payment-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${acquirer-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${saturn-extensions}" prefix="${class_war_path}"/>
