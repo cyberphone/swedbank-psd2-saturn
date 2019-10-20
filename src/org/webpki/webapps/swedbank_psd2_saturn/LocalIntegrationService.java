@@ -84,6 +84,10 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     static final String FIXED_CLIENT_PAYMENT_KEY    = "fixed_client_payment_key";
     
     public static KeyStoreEnumerator fixedClientPaymentKey;
+    
+    static final String TEST_MERCHANT_URI           = "test_merchant_uri";
+
+    public static String testMerchantUri;
 
     /////////////////////////////////////////////////////////////////////////////
     // Saturn bank objects
@@ -130,10 +134,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public static JSONDecoderCache keygen2JSONCache;
 
     static final String VERSION_CHECK               = "android_webpki_versions";
-
-    static final String MERCHANT_URL                = "merchant_url";
-
-    static final String KEYGEN2_BASE_URL            = "keygen2_base_url";
 
     static final String TLS_CERTIFICATE             = "server_tls_certificate";
 
@@ -236,6 +236,10 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             fixedClientPaymentKey = 
                     new KeyStoreEnumerator(getResource(FIXED_CLIENT_PAYMENT_KEY),
                                            getPropertyString(KEYSTORE_PASSWORD));
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            // Test merchant
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            testMerchantUri = getPropertyString(TEST_MERCHANT_URI);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Where our app resides in Cyberspace

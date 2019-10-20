@@ -70,7 +70,8 @@ public class HTML {
     }
 
     public static String getHTML(String javascript, String box) {
-        StringBuilder html = new StringBuilder(HTML_INIT + 
+        StringBuilder html = new StringBuilder(
+            HTML_INIT + 
             "<script>\"use strict\";\n" +
             "history.pushState(null, null, 'home');\n" +
             "window.addEventListener('popstate', function(event) {\n" +
@@ -79,7 +80,8 @@ public class HTML {
         if (javascript != null) {
             html.append(javascript);
         }
-        html.append("</script></head><body>" +
+        html.append(
+            "</script></head><body>" +
             "<img src=\"images/thelab.svg\" " +
             "style=\"cursor:pointer;position:absolute;height:25pt;top:15pt;left:15pt\"" +
             " onclick=\"document.location.href='home'\" title=\"Home of the lab...\"/>" +
@@ -88,13 +90,13 @@ public class HTML {
             "style=\"position:absolute;height:30pt;top:13pt;right:15pt\" " +
             "title=\"Specifications, source code, etc.\"/></a>" +
             "<div class=\"displayContainer\">")
-         .append(box).append("<div style=\"height:2em\"/></div></body></html>");
+        .append(box).append("</div></body></html>");
         return html.toString();
     }
 
     public static void output(HttpServletResponse response, String html)
             throws IOException, ServletException {
-//      logger.info(html);
+  //    logger.info(html);
         response.setContentType("text/html; charset=utf-8");
         response.setHeader("Pragma", "No-Cache");
         response.setDateHeader("EXPIRES", 0);
@@ -139,8 +141,14 @@ public class HTML {
     
     public static void standardPage(HttpServletResponse response, 
                                     String javaScript,
-                                    StringBuilder html) throws IOException, ServletException {
-        HTML.output(response, HTML.getHTML(javaScript, html.toString()));
+                                    StringBuilder htmlBuffer) throws IOException, ServletException {
+        standardPage(response, javaScript, htmlBuffer.toString());
+    }
+
+    public static void standardPage(HttpServletResponse response, 
+                                    String javaScript,
+                                    String html) throws IOException, ServletException {
+        HTML.output(response, HTML.getHTML(javaScript, html));
     }
 
     static String javaScript(String string) {

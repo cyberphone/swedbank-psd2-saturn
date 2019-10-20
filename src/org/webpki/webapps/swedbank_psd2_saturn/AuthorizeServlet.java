@@ -31,6 +31,9 @@ public class AuthorizeServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     
+    private static final String WAITING_ID = "wai";
+    private static final String BUTTON_ID  = "btn";
+    
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
@@ -61,13 +64,11 @@ public class AuthorizeServlet extends APICore {
     throws IOException, ServletException {
 
         HTML.standardPage(response, 
-            "var active = true;\n" +
             "function shoot() {\n" +
-            "  document.getElementById('act').style.display = 'block';\n" +
-            "  if (active) document.forms.authorize.submit();\n" +
-            "  active = false;\n" +
+            "  document.getElementById('" + WAITING_ID + "').style.display = 'block';\n" +
+            "  document.getElementById('" + BUTTON_ID + "').style.display = 'none';\n" +
+            "  document.forms.authorize.submit();\n" +
             "}\n",
-            new StringBuilder(
             "<div class=\"header\">Login to Application</div>" +
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
@@ -75,14 +76,15 @@ public class AuthorizeServlet extends APICore {
                 "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single and unspecified user, " +
                 "<i>this step is just a dummy.</i></div>" +
             "</div>" +
-            "<img id=\"act\" src=\"images/waiting.gif\" style=\"padding-top:10pt;display:none\">" +
-            "<div class=\"centerbox\">" +
+            "<img id=\"" + WAITING_ID + 
+              "\" src=\"images/waiting.gif\" style=\"padding-top:1em;display:none\">" +
+            "<div id=\"" + BUTTON_ID + "\" class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
                   "onclick=\"shoot()\" " +
                   "title=\"Continue to account list\">" +
                   "Continue to Account List...</div></td></tr>" +
               "</table>" +
-            "</div>"));
+            "</div>");
     }
 }

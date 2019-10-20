@@ -23,9 +23,9 @@
     </context-param>
 
     <context-param>
-        <description>Merchant URI</description>
-        <param-name>merchant_uri</param-name>
-        <param-value>@merchant-uri@</param-value>
+        <description>Test Merchant URI</description>
+        <param-name>test_merchant_uri</param-name>
+        <param-value>@test-merchant-uri@</param-value>
     </context-param>
 
     <context-param>

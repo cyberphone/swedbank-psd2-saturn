@@ -34,6 +34,7 @@ import org.webpki.keygen2.ServerState;
 import org.webpki.net.MobileProxyParameters;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
+import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
@@ -58,7 +59,8 @@ public class KeyProviderInitServlet extends APICore {
     static final String PARAM_TAG = "msg";
     static final String ERROR_TAG = "err";
     
-    static final String BUTTON_ID = "gokg2";
+    private static final String BUTTON_ID  = "gokg2";
+    private static final String WAITING_ID = "wait";
     
     static final String DEFAULT_USER_NAME_HTML = "Luke Skywalker &#x1f984;";    // Unicorn emoji
     
@@ -68,124 +70,6 @@ public class KeyProviderInitServlet extends APICore {
                  new String(Character.toChars(Integer.parseInt("1f47d", 16)));  // E.T. emoji
     
     static final int MINIMUM_CHROME_VERSION    = 75;
-
-    static final String GO_HOME =              
-            "history.pushState(null, null, 'init');\n" +
-            "window.addEventListener('popstate', function(event) {\n" +
-            "    history.pushState(null, null, 'init');\n" +
-            "});\n";
-
-    static final String HTML_INIT = 
-            "<!DOCTYPE html><html>" + 
-            "<head>" + 
-            "<link rel=\"icon\" href=\"saturn.png\" sizes=\"192x192\">" + 
-            "<title>Payment Credential Enrollment</title>" + 
-            "<meta charset=\"utf-8\">" + 
-            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" + 
-            "<style type=\"text/css\">" + 
-            ".displayContainer {" + 
-            "    display: block;" + 
-            "    height: 100%;" + 
-            "    width: 100%;" + 
-            "    align-items: center;" + 
-            "    display: flex;" + 
-            "    flex-direction: column;" + 
-            "    justify-content: center;" + 
-            "}" +
-            
-            ".link {" +
-            "  font-weight:bold;" +
-            "  font-size:8pt;" +
-            "  color:blue;" +
-            "  font-family:arial,verdana;text-decoration:none;" +
-            "}" +
-
-            ".stdbtn {" + 
-            "  cursor:pointer;" + 
-            "  background:linear-gradient(to bottom, #eaeaea 14%,#fcfcfc 52%,#e5e5e5 89%);" + 
-            "  border-width:1px;" + 
-            "  border-style:solid;" + 
-            "  border-color:#a9a9a9;" + 
-            "  border-radius:5pt;" + 
-            "  padding:3pt 10pt;" + 
-            "  box-shadow:3pt 3pt 3pt #d0d0d0;" + 
-            "}" +
- 
-            ".label, .stdbtn {" +
-            "  font-family:Arial,'Liberation Sans',Verdana,'Bitstream Vera Sans','DejaVu Sans';" + 
-            "  font-size:11pt;" + 
-            "}" +
-            
-            "body {" + 
-            "    font-size:10pt;" + 
-            "    color:#000000;" + 
-            "    font-family:verdana,arial;" + 
-            "    background-color: white;" + 
-            "    height: 100%;" + 
-            "    margin: 0;" + 
-            "    width: 100%;" + 
-            "}" + 
-
-            "html {" + 
-            "    height: 100%;" + 
-            "    width: 100%;" + 
-            "}" +
-
-            ".sitefooter {" + 
-            "  display:flex;" + 
-            "  align-items:center;" + 
-            "  border-width:1px 0 0 0;" + 
-            "  border-style:solid;" + 
-            "  border-color:#a9a9a9;" + 
-            "  position:absolute;" + 
-            "  z-index:5;" + 
-            "  left:0px;" + 
-            "  bottom:0px;" + 
-            "  right:0px;" + 
-            "  background-color:#ffffe0;" + 
-            "  padding:0.3em 0.7em;" + 
-            "}" +
-
-            "@media (max-width:768px) {" +
- 
-            "  .stdbtn {" + 
-            "    box-shadow:2pt 2pt 2pt #d0d0d0;" + 
-            "  }" +
-
-            "  body {" + 
-            "    font-size:8pt;" + 
-            "  }" +
-
-            "}" +
-
-            "</style>";
-
-    static String getHTML(String javascript, String bodyscript, String box) {
-        StringBuilder s = new StringBuilder(HTML_INIT);
-        if (javascript != null) {
-            s.append("<script type=\"text/javascript\">").append(javascript)
-                    .append("</script>");
-        }
-        s.append("</head><body");
-        if (bodyscript != null) {
-            s.append(' ').append(bodyscript);
-        }
-        s.append(
-                "><div style=\"cursor:pointer;position:absolute;top:15pt;left:15pt;z-index:5;width:100pt\"" +
-                " onclick=\"document.location.href='http://cyberphone.github.io/doc/saturn'\" title=\"Home of Saturn\">")
-          .append ("</div><div class=\"displayContainer\">")
-                .append(box).append("</div></body></html>");
-        return s.toString();
-    }
-  
-    static void output(HttpServletResponse response, String html) throws IOException, ServletException {
-        response.setContentType("text/html; charset=utf-8");
-        response.setHeader("Pragma", "No-Cache");
-        response.setDateHeader("EXPIRES", 0);
-        byte[] data = html.getBytes("utf-8");
-        response.setContentLength(data.length);
-        response.getOutputStream().write(data);
-    }
     
     static String getInvocationUrl(String scheme, HttpSession session) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -215,22 +99,21 @@ public class KeyProviderInitServlet extends APICore {
             }
         }
         if (notOk) {
-            output(response, 
-                    getHTML(null,
-                            null,
+            HTML.standardPage(
+                response,
+                null,
                 "<div class=\"label\">This proof-of-concept system only supports " +
                   "Android and using the \"Chrome\" browser (min version: " + 
                   MINIMUM_CHROME_VERSION + ")" +
-                "</div>"));
+                "</div>");
             return;
         }
-        output(response, 
-               getHTML(GO_HOME +
+        HTML.standardPage(response, 
             (LocalIntegrationService.useW3cPaymentRequest ?
             "function paymentRequestError(msg) {\n" +
             "  console.info('Payment request error:' + msg);\n" +
-            "  document.getElementById('" + BUTTON_ID + 
-            "').outerHTML = '<div style=\"color:red;font-weight:bold\">' + " +
+            "  document.getElementById('" + WAITING_ID + 
+            "').outerHTML = '<div style=\"color:red;font-weight:bold;padding-top:1.2em\">' + " +
               "msg + '</div>';\n" +
             "}\n\n" +
 
@@ -249,8 +132,8 @@ public class KeyProviderInitServlet extends APICore {
             // It may take a second or two to get PaymentRequest up and         //
             // running.  Indicate that to the user.                             //
             //==================================================================//
-            "    document.getElementById('" + BUTTON_ID + "').outerHTML = " +
-              "'<img id=\"" + BUTTON_ID + "\" src=\"waiting.gif\">';\n" +
+            "    document.getElementById('" + BUTTON_ID + "').style.display = 'none';\n" +
+            "    document.getElementById('" + WAITING_ID + "').style.display = 'block';\n" +
             //==================================================================//
             // The following code may seem strange but the Web application      //
             // does not create an HttpSession so we do this immediately after   //
@@ -314,41 +197,40 @@ public class KeyProviderInitServlet extends APICore {
             "function enroll() {\n" +
             "  document.forms.shoot.submit();\n" +
             "}"),
-            null,
-            "<form name=\"shoot\" method=\"POST\" action=\"kg2.init\">" + 
-            "<div>" +
-              "This proof-of-concept system provisions secure payment credentials<br>" + 
-              "to be used in the Android version of the Saturn &quot;Wallet&quot;." +
-            "</div>" + 
-            "<div style=\"display:flex;justify-content:center;padding-top:15pt\">" +
-              "<table>" + 
+            "<div class=\"header\">Create Virtual Payment Card</div>" + 
+            "<div class=\"centerbox\">" +
+              "<table style=\"border-collapse:collapse\">" + 
                 "<tr><td>Your name (real or made up):</td></tr>" + 
-                "<tr><td><input type=\"text\" name=\"" + USERNAME_SESSION_ATTR_PARM + 
-                  "\" value=\"" + DEFAULT_USER_NAME_HTML + 
-                  "\" size=\"30\" maxlength=\"50\" " + 
-                  "style=\"background-color:#def7fc\"></td></tr>" + 
+                "<tr><td>" +
+                  "<form name=\"shoot\" method=\"POST\" action=\"kg2.init\">" + 
+                    "<input type=\"text\" name=\"" + USERNAME_SESSION_ATTR_PARM + 
+                    "\" value=\"" + DEFAULT_USER_NAME_HTML + 
+                    "\" size=\"30\" maxlength=\"50\" " + 
+                    "style=\"background-color:#def7fc\">" +
+                  "</form>" +
+                "</td></tr>" + 
               "</table>" +
             "</div>" + 
-            "<div style=\"text-align:center\">" +
+            "<div class=\"centerbox\">" +
               "This name will be printed on your virtual payment cards." +
             "</div>" + 
+            "<img id=\"" + WAITING_ID + 
+              "\" src=\"images/waiting.gif\" style=\"padding-top:1em;display:none\">" +
             "<div style=\"display:flex;justify-content:center;padding-top:15pt\">" +
               "<div id=\"" + BUTTON_ID + "\" class=\"stdbtn\" onclick=\"enroll()\">" +
                 BUTTON_TEXT_HTML + 
               "</div>" +
             "</div>" + 
-            "<div style=\"padding-top:40pt;padding-bottom:10pt\">If you have yet " +
+            "<div style=\"padding-top:1.5em;padding-bottom:1em\" class=\"centerbox\">" +
+              "<div class=\"description\">If you have not yet " +
               "installed WebPKI, this is the time to do it!</div>" +
+            "</div>" +
             "<div style=\"cursor:pointer;display:flex;justify-content:center;align-items:center\">" +
-              "<img src=\"google-play-badge.png\" style=\"height:25pt;padding:0 15pt\" alt=\"image\" " +
+              "<img src=\"images/google-play-badge.png\" style=\"height:25pt;padding:0 15pt\" alt=\"image\" " +
                 "title=\"Android\" onclick=\"document.location.href = " +
                 "'https://play.google.com/store/apps/details?id=" +
                 MobileProxyParameters.ANDROID_PACKAGE_NAME + "'\">" +
-            "</div>" + 
-            "</form>" + 
-            "</div>" + // Main window end tag
-            "<div class=\"sitefooter\">Note: in a real configuration you would also need to " +
-            "authenticate as a part of the enrollment."));
+            "</div>");
     }
 
     @Override
@@ -394,17 +276,20 @@ public class KeyProviderInitServlet extends APICore {
         session.setAttribute(USERNAME_SESSION_ATTR_PARM, userName);
         if (request.getParameter(W3C_PAYMENT_REQUEST_MODE_PARM) == null) {
             // Case 3
-            output(response,
-                   getHTML(GO_HOME,
-                "onload=\"document.location.href = '" + 
+            HTML.standardPage(
+                response,
+                "document.addEventListener('DOMContentLoaded', function() {\n" +
+                "  document.location.href = '" + 
                     getInvocationUrl(MobileProxyParameters.SCHEME_URLHANDLER, session) + 
                     "#Intent;scheme=webpkiproxy;package=" +  
                     MobileProxyParameters.ANDROID_PACKAGE_NAME +
-                    ";end';\"", 
-                "<div><div class=\"label\" style=\"text-align:center\">Saturn App Bootstrap</div>" +
-                "<div style=\"padding-top:15pt\">If this is all you get there is " +
-                "something wrong with the installation.</div>" +
-                "</div>"));
+                    ";end';\n" +
+                "});\n",
+                "<div class=\"header\">Saturn App Bootstrap</div>" +
+                "<div class=\"centerbox\">" +
+                  "<div class=\"description\">If this is all you get there is " +
+                  "probably something wrong with the installation.</div>" +
+                "</div>");
         } else {
             // Case 2
 /*
@@ -417,7 +302,7 @@ public class KeyProviderInitServlet extends APICore {
 */
             String invocationUrl = getInvocationUrl(MobileProxyParameters.SCHEME_W3CPAY, session);
             logger.info("POST return=" + invocationUrl);
-            output(response, invocationUrl);
+            HTML.output(response, invocationUrl);
         }
     }
 }

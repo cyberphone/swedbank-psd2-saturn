@@ -1,23 +1,23 @@
 body {
   width:100%;
-  height:100%; 
+  height:100%;
   margin:0;
   font-size:10pt;
   font-family:Verdana,'Bitstream Vera Sans','DejaVu Sans',Arial,'Liberation Sans';
 }
 
 html {
-  width:100%; 
+  width:100%;
   height:100%;
 }
 
 .displayContainer { 
-  width:100%; 
-  height:100%; 
-  display:block; 
-  align-items:center; 
-  display:flex; 
-  flex-direction:column; 
+  width:100%;
+  height:100%;
+  display:block;
+  align-items:center;
+  display:flex;
+  flex-direction:column;
   justify-content:center;
 }
 
@@ -32,7 +32,7 @@ li {
 }
 
 .description {
-    padding:15pt 1em 0 1em;
+    padding:0 1em;
     max-width:40em;
 }
 
@@ -76,22 +76,25 @@ li {
 }
 
 .centerbox {
-    display:flex;
-    justify-content:center;
+  display:flex;
+  justify-content:center;
 }
 
 .textbox {
   background:#ffffea;
 }
 
-.header, .error, .tftable th {
+.error, .header, .error, .tftable th {
   text-align:center;
   font-weight:bolder;
   font-size:1.1em;
 }
 
+.error, .header {
+  padding-bottom:1.2em;
+}
+
 .error {
-  padding-top:15pt;
   color:red;
 }
 

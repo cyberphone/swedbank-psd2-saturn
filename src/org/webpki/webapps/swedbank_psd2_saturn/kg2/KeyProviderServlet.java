@@ -87,7 +87,9 @@ import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
+import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
 // KeyGen2 protocol runner that creates Saturn wallet keys.
@@ -423,32 +425,38 @@ logger.info("GET session=" + request.getSession(false).getId() + " Q=" + request
             executeRequest(request, response, true);
             return;
         }
-        StringBuilder html = new StringBuilder("<div class=\"label\">");
+        StringBuilder html = new StringBuilder();
         StringBuilder result = new StringBuilder();
         if (foundData(request, result, KeyProviderInitServlet.ERROR_TAG)) {
-            html.append("<table><tr><td>Failure Report:</td></tr><tr><td>" +
-                        "<pre style=\"color:red;font-size:10pt\">")
+            html.append(
+                    "<div class=\"centerbox\">" +
+                      "<table><tr><td>Failure Report:</td></tr><tr><td>" +
+                      "<pre style=\"color:red;font-size:10pt\">")
                 .append(result)
                 .append("</pre></td></tr></table>");
         } else if (foundData(request, result, KeyProviderInitServlet.PARAM_TAG)) {
             html.append(result);
         } else if (foundData(request, result, KeyProviderInitServlet.ABORT_TAG)) {
             logger.info("KeyGen2 run aborted by the user");
-            html.append("Aborted by the user!");
+            html.append("<div class=\"centerbox\">Aborted by the user!");
         } else {
             HttpSession session = request.getSession(false);
             if (session == null) {
-                html.append("You need to restart the session");
+                html.append("<div>You need to restart the session");
             } else {
                 session.invalidate();
-                html.append("OK");
+                html.append(
+                    "<div class=\"header\">Successful Enrollment!</div>" +
+                    "<div class=\"centerbox\">" +
+                      "<div class=\"description\">" +
+                        "You may now pay with the card at a merchant like:<br>" +
+                        "<a href=\"" + LocalIntegrationService.testMerchantUri +
+                        "\">" + LocalIntegrationService.testMerchantUri + "</a></div>");
             }
         }
-        KeyProviderInitServlet.output(response, 
-                          KeyProviderInitServlet.getHTML(
-                                 KeyProviderInitServlet.GO_HOME,
-                                 null,
-                                 html.append("</div>").toString()));
+        HTML.standardPage(response,
+                          null,
+                          html.append("</div>"));
     }
 
 }
