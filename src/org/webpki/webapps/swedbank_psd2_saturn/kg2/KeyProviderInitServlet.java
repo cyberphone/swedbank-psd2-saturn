@@ -216,11 +216,13 @@ public class KeyProviderInitServlet extends APICore {
             "</div>" + 
             "<img id=\"" + WAITING_ID + 
               "\" src=\"images/waiting.gif\" style=\"padding-top:1em;display:none\">" +
-            "<div style=\"display:flex;justify-content:center;padding-top:15pt\">" +
-              "<div id=\"" + BUTTON_ID + "\" class=\"stdbtn\" onclick=\"enroll()\">" +
-                BUTTON_TEXT_HTML + 
-              "</div>" +
-            "</div>" + 
+            "<div id=\"" + BUTTON_ID + "\" class=\"centerbox\">" +
+              "<table>" +
+                "<tr><td><div id=\"" + BUTTON_ID + 
+                "\" class=\"multibtn\" onclick=\"enroll()\">" + BUTTON_TEXT_HTML + 
+                "</div></td></tr>" +
+              "</table>" +
+            "</div>" +
             "<div style=\"padding-top:1.5em;padding-bottom:1em\" class=\"centerbox\">" +
               "<div class=\"description\">If you have not yet " +
               "installed WebPKI, this is the time to do it!</div>" +

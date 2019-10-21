@@ -111,7 +111,7 @@ li {
   padding:0.5em 0.7em;
 }
 
-.stdbtn, .multibtn {
+.multibtn {
   cursor:pointer;
   background:linear-gradient(to bottom, #eaeaea 14%,#fcfcfc 52%,#e5e5e5 89%);
   border-width:1px;
@@ -126,64 +126,28 @@ li {
   padding:0 5pt 5pt 5pt;
 }
 
-.sigparmhead {
-  border-radius:3pt;
-  padding:3pt 5pt;
-  z-index:5;
-  position:relative;
-  top:-10pt;
-  margin-bottom:-3pt;
-}
-
-.defbtn {
-  border-radius:2pt;
-  display:inline-block;
-  cursor:pointer;
-  padding:1pt 3pt;
-  background-color:#f0f5fd;
-  border-color:#2a53ea;
-}
-
-.sigparmbox, .sigparmhead, .defbtn {
-  border-width:1px;
-  border-style:solid;
-}
-
-.sigparmhead, .sitefooter {
+.sitefooter {
   border-color:#c85000;
   background-color:#fffcfc;
 }
 
-.sigparmbox {
-  border-color:#008040;
-  background-color:#fbfff7;
-}
-
-.stdbtn, .multibtn, .sigparmhead {
+.multibtn {
   font-family:Arial,'Liberation Sans',Verdana,'Bitstream Vera Sans','DejaVu Sans';
   font-size:1.2em;
 }
 
-.stdbtn, .multibtn, .sigparmbox, .staticbox, .textbox {
+.multibtn, .staticbox, .textbox {
   box-shadow:3pt 3pt 3pt #d0d0d0;
 }
 
-.stdbtn {
-  display:inline-block;
-}
-
-.stdbtn {
-  margin-top:15pt;
-}
-
 .multibtn {
-  margin-top:12pt;
+  margin-top:1.2em;
   text-align:center;
 }
 
 @media (max-width:768px) {
 
-  .stdbtn, .multibtn, .sigparmbox, .staticbox, .textbox {
+  .multibtn, .staticbox, .textbox {
     box-shadow:2pt 2pt 2pt #d0d0d0;
   }
 
