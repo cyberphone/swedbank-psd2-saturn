@@ -438,7 +438,7 @@ logger.info("GET session=" + request.getSession(false).getId() + " Q=" + request
             html.append(result);
         } else if (foundData(request, result, KeyProviderInitServlet.ABORT_TAG)) {
             logger.info("KeyGen2 run aborted by the user");
-            html.append("<div class=\"centerbox\">Aborted by the user!");
+            html.append("<div class=\"header\">Aborted by the User!");
         } else {
             HttpSession session = request.getSession(false);
             if (session == null) {
