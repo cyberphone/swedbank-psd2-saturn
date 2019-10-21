@@ -105,7 +105,7 @@
       <replacefilter token="@android-webpki-versions@" value="${@android.webpki.versions}"/>
       <replacefilter token="@svg-card-image@" value="${svg_card_image}"/>
       <replacefilter token="@server-tls-certificate@" value="${kg2_tls_cert_file}"/>
-      <replacefilter token="@test-merchant-uri@" value="${merchant_host}/${merchant_path}"/>
+      <replacefilter token="@test-merchant-uri@" value="${test_merchant_uri}"/>
       <replacefilter token="@use-w3c-payment-request@" value="${@w3c.paymentrequest}"/>
       <replacefilter token="@w3c-payment-request-uri@" value="${@w3c.manifesthost}/${@w3c.manifestpath}/method"/>
       <replacefilter token="@bank-base-uri@" value="${bank_base_uri}"/>
