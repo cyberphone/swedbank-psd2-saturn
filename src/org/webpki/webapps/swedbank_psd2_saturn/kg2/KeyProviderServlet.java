@@ -420,7 +420,6 @@ logger.info("POST session=" + request.getSession(false).getId());
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
            throws IOException, ServletException {
-logger.info("GET session=" + request.getSession(false).getId() + " Q=" + request.getQueryString());
        if (request.getParameter(KeyProviderInitServlet.INIT_TAG) != null) {
             executeRequest(request, response, true);
             return;
