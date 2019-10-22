@@ -87,6 +87,7 @@ import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
+import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
@@ -441,17 +442,17 @@ logger.info("POST session=" + request.getSession(false).getId());
         } else {
             HttpSession session = request.getSession(false);
             if (session == null) {
-                html.append("<div>You need to restart the session");
-            } else {
-                session.invalidate();
-                html.append(
-                    "<div class=\"header\">Successful Enrollment!</div>" +
-                    "<div class=\"centerbox\">" +
-                      "<div class=\"description\">" +
-                        "You may now pay with the card at a merchant like:<br>" +
-                        "<a href=\"" + LocalIntegrationService.testMerchantUri +
-                        "\">" + LocalIntegrationService.testMerchantUri + "</a></div>");
+                response.sendRedirect(HomeServlet.REDIRECT_TIMEOUT_URI);
+                return;
             }
+            session.invalidate();
+            html.append(
+                "<div class=\"header\">Successful Enrollment!</div>" +
+                "<div class=\"centerbox\">" +
+                  "<div class=\"description\">" +
+                    "You may now pay with the card at a merchant like:<br>" +
+                    "<a href=\"" + LocalIntegrationService.testMerchantUri +
+                    "\">" + LocalIntegrationService.testMerchantUri + "</a></div>");
         }
         HTML.standardPage(response,
                           null,
