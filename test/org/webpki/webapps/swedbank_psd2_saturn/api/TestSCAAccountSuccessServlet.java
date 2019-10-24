@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.webapps.swedbank_psd2_saturn;
+package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 
@@ -25,19 +25,22 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
-import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBankingSessionData;
-import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
+import org.webpki.webapps.swedbank_psd2_saturn.HTML;
+import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
-
-public class AccountsServlet extends APICore {
-
+public class TestSCAAccountSuccessServlet extends APICore {
+    
     private static final long serialVersionUID = 1L;
     
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+        ////////////////////////////////////////////////////////////////////////////////
+        // Successful return after SCA (a dummy in the Sandbox)                       //
+        ////////////////////////////////////////////////////////////////////////////////
+        if (LocalIntegrationService.logging) {
+            logger.info("Successful return after SCA");
+        }
 
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
@@ -46,19 +49,24 @@ public class AccountsServlet extends APICore {
         if (obsd == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We have the token, now get a plain account listing                         //
+        // Verify that SCA is OK                                                      //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = emulatedAccountDataAccess(null, obsd);
+        verifyOkStatus(true, obsd);
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        // Verify that Consent status is OK                                           //
+        ////////////////////////////////////////////////////////////////////////////////
+        verifyOkStatus(false, obsd);
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We got an account list, now get balances for the found accounts            //
+        // Now get rich account data (=with balances)                                 //
         ////////////////////////////////////////////////////////////////////////////////
-        accounts = emulatedAccountDataAccess(accounts.getAccountIds(), obsd);
+        Accounts accounts = getAccountData(true, obsd);
 
         StringBuilder html = new StringBuilder(
-            "<div class=\"header\">Select Account</div>" +
+            HTML_HEADER +
             "<div class=\"centerbox\">" +
-              "<div class=\"description\">Select account to be used for Saturn payments.</div>" +
+              "<div class=\"description\">Select source account for payment.</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table class=\"tftable\">" +
@@ -84,7 +92,7 @@ public class AccountsServlet extends APICore {
                 .append("</td></tr>");
         }
         
-        HTML.standardPage(response,
+        HTML.standardPage(response, 
             "var curr = '" + preSelected + "';\n" +
             "function setColor(id, fg, bg) {\n" +
             "  var e = document.getElementById(id);\n" +
@@ -95,32 +103,32 @@ public class AccountsServlet extends APICore {
             "  setColor(curr, 'black', '#ffffe0');\n" +
             "  setColor(curr = id, 'white', '#5a7dff');\n" +
             "}\n" +
-            "function initiateEnrollment() {\n" +
-            "  document.getElementById('" +
-              KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
-              "').value = curr;\n" +
-            "  document.forms.accountSelector.submit();\n" +
+            "function spawnPaymentSetup() {\n" +
+            "  document.getElementById('" + 
+               TestPaymentSetupServlet.ACCOUNT_ID_PARM + "').value = curr;\n" +
+            "  document.forms.paymentSetup.submit();\n" +
             "}\n" +
             "document.addEventListener('DOMContentLoaded', function() {\n" +
             "  selectAccount(curr);\n" +
-            "});\n", 
+            "});\n",
 
             html.append(
               "</table>" +
             "</div>" +
-            "<form name=\"accountSelector\" action=\"kg2.init\" method=\"POST\">" +
+            "<form name=\"paymentSetup\" action=\"api.paymentsetup\" method=\"POST\">" +
             "<input type=\"hidden\" id=\"" +
-              KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
+              TestPaymentSetupServlet.ACCOUNT_ID_PARM +
               "\" name=\"" +
-              KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
+              TestPaymentSetupServlet.ACCOUNT_ID_PARM +
               "\">" +
             "</form>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                  "onclick=\"initiateEnrollment()\" " +
-                  "title=\"Continue to enrollment\">" +
-                  "Next...</div></td></tr>" +
+                "onclick=\"spawnPaymentSetup()\" " +
+                "title=\"Prepare for a payment operation\">" +
+                "Step #4: Payment Operation Setup" +
+                "</div></td></tr>" +
               "</table>" +
             "</div>"));
     }

@@ -24,16 +24,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
+import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-// This servlet is only called in the Test mode (using Open Banking GUI)
-
-public class TestBasicAccountServlet extends APICore {
-
+public class TestSCAPaymentSuccessServlet extends APICore {
+    
     private static final long serialVersionUID = 1L;
-
+    
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+        ////////////////////////////////////////////////////////////////////////////////
+        // Successful return after SCA (a dummy in the Sandbox)                       //
+        ////////////////////////////////////////////////////////////////////////////////
+        if (LocalIntegrationService.logging) {
+            logger.info("Successful return after SCA");
+        }
 
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
@@ -42,22 +47,32 @@ public class TestBasicAccountServlet extends APICore {
         if (obsd == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We have the token, now we need a consent for basic listing our accounts    //
+        // Verify that SCA is OK                                                      //
         ////////////////////////////////////////////////////////////////////////////////
-        getConsent(null, obsd);
+        verifyOkStatus(true, obsd);
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        // Verify that Consent status is OK                                           //
+        ////////////////////////////////////////////////////////////////////////////////
+        verifyOkStatus(false, obsd);
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We got the consent, now use it!                                            //
+        // Now get rich account data (=with balances)                                 //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = getAccountData(false, obsd);
-        
+        Accounts accounts = getAccountData(true, obsd);
+
         StringBuilder html = new StringBuilder(
             HTML_HEADER +
             "<div class=\"centerbox\">" +
-              "<table class=\"tftable\"><tr><th>Account ID</th></tr>");
+              "<table class=\"tftable\">" +
+                "<tr><th>Account ID</th><th>Balance</th></tr>");
+
         for (String accountId : accounts.getAccountIds()) {
+            Accounts.Account account = accounts.getAccount(accountId);
             html.append("<tr><td>")
                 .append(accountId)
+                .append("</td><td style=\"text-align:right\">")
+                .append(account.balance.toPlainString() + " " + account.getCurrency().toString())
                 .append("</td></tr>");
         }
         
@@ -67,9 +82,9 @@ public class TestBasicAccountServlet extends APICore {
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href = 'api.extendedaccount'\" " +
-                "title=\"Get extended account data (consent needed)\">" +
-                "Step #3: Get Extended Account Data" +
+                "onclick=\"document.location.href = 'tbd'\" " +
+                "title=\"Perform a payment operation\">" +
+                "Step #4: Perform a Payment" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>"));

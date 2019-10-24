@@ -23,6 +23,7 @@
   <property file="${saturn.dir}/resources/w3c.properties"/>
 
   <property name="src.dir" value="src"/>
+  <property name="test.dir" value="test"/>
   <property name="temp.dir" value=".tmp"/>
   <property name="dist.dir" location="dist"/>
   <property name="keys.dir" location="keys"/>
@@ -85,7 +86,7 @@
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src.dir}:${saturn.dir}/resources/common:${saturn.dir}/methods/src"
+           srcdir="${src.dir}:${test.dir}:${saturn.dir}/resources/common:${saturn.dir}/methods/src"
            destdir="${temp.dir}"
            includeAntRuntime="false">
         <include name="org/webpki/webapps/**/*.java"/>

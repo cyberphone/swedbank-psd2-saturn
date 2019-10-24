@@ -26,19 +26,20 @@ import javax.servlet.http.HttpServletResponse;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-public class TestSCAAccountSuccessServlet extends APICore {
-    
+// This servlet is only called in the Test mode (using Open Banking GUI)
+
+public class TestAuthRedirectServlet extends APICore {
+
     private static final long serialVersionUID = 1L;
-    
+
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException {
+        
         ////////////////////////////////////////////////////////////////////////////////
-        // Successful return after SCA (a dummy in the Sandbox)                       //
+        // This servlet is redirected to by the PSD2 service after a successful user  //
+        // authentication                                                             //
         ////////////////////////////////////////////////////////////////////////////////
-        if (LocalIntegrationService.logging) {
-            logger.info("Successful return after SCA");
-        }
 
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
@@ -47,44 +48,32 @@ public class TestSCAAccountSuccessServlet extends APICore {
         if (obsd == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
-        // Verify that SCA is OK                                                      //
+        // We should now have the "code" parameter                                    //
         ////////////////////////////////////////////////////////////////////////////////
-        verifyOkStatus(true, obsd);
-        
-        ////////////////////////////////////////////////////////////////////////////////
-        // Verify that Consent status is OK                                           //
-        ////////////////////////////////////////////////////////////////////////////////
-        verifyOkStatus(false, obsd);
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // Now get rich account data (=with balances)                                 //
-        ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = getAccountData(true, obsd);
-
-        StringBuilder html = new StringBuilder(
-            HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<table class=\"tftable\">" +
-                "<tr><th>Account ID</th><th>Balance</th></tr>");
-
-        for (String accountId : accounts.getAccountIds()) {
-            Accounts.Account account = accounts.getAccount(accountId);
-            html.append("<tr><td>")
-                .append(accountId)
-                .append("</td><td style=\"text-align:right\">")
-                .append(account.balance.toPlainString() + " " + account.getCurrency().toString())
-                .append("</td></tr>");
+        String code = request.getParameter("code");
+        if (code == null) {
+            throw new IOException("Didn't find 'code' object");
+        }
+        if (LocalIntegrationService.logging) {
+            logger.info("code=" + code);
         }
         
-        HTML.standardPage(response, null, html.append(
-              "</table>" +
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got the code, now we need to upgrade it to an oauth2 token              //
+        ////////////////////////////////////////////////////////////////////////////////
+        getOAuth2Token(obsd, code);
+        
+        HTML.standardPage(response, null, new StringBuilder(
+            HTML_HEADER +
+            "<div class=\"centerbox\">" +
+              "<div class=\"description\">Login Succeeded!</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href = 'tbd'\" " +
-                "title=\"Perform a payment operation\">" +
-                "Step #4: Perform a Payment" +
+                "onclick=\"document.location.href = 'api.basicaccount'\" " +
+                "title=\"Get Basic Account Data (no consent needed)\">" +
+                "Step #2: Get Basic Account Data" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>"));

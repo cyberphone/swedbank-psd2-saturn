@@ -18,6 +18,8 @@ package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 
+import java.math.BigDecimal;
+
 import java.net.URLEncoder;
 
 import java.util.Date;
@@ -46,6 +48,7 @@ import org.webpki.json.JSONParser;
 import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.saturn.common.BaseProperties;
+import org.webpki.saturn.common.Currencies;
 import org.webpki.saturn.common.HttpSupport;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
@@ -84,6 +87,7 @@ public abstract class APICore extends HttpServlet {
     // by the Open Banking API
     static final String OAUTH2_REDIRECT_PATH             = "/api.authredirect";
     static final String SCA_ACCOUNT_SUCCESS_PATH         = "/api.scaaccountsuccess";
+    static final String SCA_PAYMENT_SUCCESS_PATH         = "/api.scapaymentsuccess";
     static final String SCA_FAILED_PATH                  = "/api.scafailed";
 
     protected static Logger logger = Logger.getLogger(APICore.class.getName());
@@ -543,5 +547,32 @@ public abstract class APICore extends HttpServlet {
             throw new IOException("Internal error, consent did not succeed");
         }
         return getAccountData(true, obsd);
+    }
+
+    static JSONObjectWriter createPaymentMessage(String debtorAccount,
+                                                 String creditorAccount,
+                                                 BigDecimal amount,
+                                                 Currencies currency,
+                                                 String creditorName,
+                                                 String reference) throws IOException {
+        JSONObjectWriter paymentMessage = new JSONObjectWriter()
+            .setObject("creditorAccount",
+                new JSONObjectWriter().setString("bban", creditorAccount))
+            .setObject("debtorAccount",
+                new JSONObjectWriter().setString("iban", debtorAccount))
+            .setString("debtorAccountStatementText", creditorName)
+            .setObject("instructedAmount",
+                new JSONObjectWriter()
+                    .setString("amount", amount.toPlainString())
+                    .setString("currency", currency.toString()))
+             .setObject("remittanceInformationStructured",
+                new JSONObjectWriter()
+                    .setString("reference", reference)
+                    .setString("referenceType", "MSG"));    
+        return paymentMessage;
+    }
+    
+    static void initiatePayment(OpenBankingSessionData obsd, JSONObjectWriter paymentData) {
+    	
     }
 }

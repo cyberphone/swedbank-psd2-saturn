@@ -24,22 +24,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
 
-public class TestAuthRedirectServlet extends APICore {
+public class TestBasicAccountServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
-        
-        ////////////////////////////////////////////////////////////////////////////////
-        // This servlet is redirected to by the PSD2 service after a successful user  //
-        // authentication                                                             //
-        ////////////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
@@ -48,32 +42,37 @@ public class TestAuthRedirectServlet extends APICore {
         if (obsd == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
-        // We should now have the "code" parameter                                    //
+        // We have the token, now we need a consent for basic listing our accounts    //
         ////////////////////////////////////////////////////////////////////////////////
-        String code = request.getParameter("code");
-        if (code == null) {
-            throw new IOException("Didn't find 'code' object");
-        }
-        if (LocalIntegrationService.logging) {
-            logger.info("code=" + code);
-        }
+        getConsent(null, obsd);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // We got the consent, now use it!                                            //
+        ////////////////////////////////////////////////////////////////////////////////
+        Accounts accounts = getAccountData(false, obsd);
         
-        ////////////////////////////////////////////////////////////////////////////////
-        // We got the code, now we need to upgrade it to an oauth2 token              //
-        ////////////////////////////////////////////////////////////////////////////////
-        getOAuth2Token(obsd, code);
-        
-        HTML.standardPage(response, null, new StringBuilder(
+        StringBuilder html = new StringBuilder(
             HTML_HEADER +
             "<div class=\"centerbox\">" +
-              "<div style=\"padding-top:15pt\">Login Succeeded!</div>" +
+              "<div class=\"description\">Basic Account Information</div>" +
+            "</div>" +
+            "<div class=\"centerbox\">" +
+              "<table class=\"tftable\"><tr><th>Account ID</th></tr>");
+        for (String accountId : accounts.getAccountIds()) {
+            html.append("<tr><td>")
+                .append(accountId)
+                .append("</td></tr>");
+        }
+        
+        HTML.standardPage(response, null, html.append(
+              "</table>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href = 'api.basicaccount'\" " +
-                "title=\"Get Basic Account Data (no consent needed)\">" +
-                "Step #2: Get Basic Account Data" +
+                "onclick=\"document.location.href = 'api.extendedaccount'\" " +
+                "title=\"Get extended account data (consent needed)\">" +
+                "Step #3: Get Extended Account Data" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>"));
