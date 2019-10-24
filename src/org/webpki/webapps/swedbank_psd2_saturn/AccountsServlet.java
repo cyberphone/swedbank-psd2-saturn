@@ -48,12 +48,12 @@ public class AccountsServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // We have the token, now get a plain account listing                         //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = emulatedAccountDataAccess(null, obsd);
+        Accounts accounts = obsd.basicAccountList();
 
         ////////////////////////////////////////////////////////////////////////////////
         // We got an account list, now get balances for the found accounts            //
         ////////////////////////////////////////////////////////////////////////////////
-        accounts = emulatedAccountDataAccess(accounts.getAccountIds(), obsd);
+        accounts = obsd.detailedAccountData(accounts.getAccountIds());
 
         StringBuilder html = new StringBuilder(
             "<div class=\"header\">Select Account</div>" +

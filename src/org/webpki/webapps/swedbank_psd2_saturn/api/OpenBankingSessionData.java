@@ -75,4 +75,16 @@ public class OpenBankingSessionData implements Serializable {
         this.userObject = userObject;
         return this;
     }
+
+    public boolean authorize() throws IOException {
+        return APICore.emulatedAuthorize(this);
+    }
+
+    public Accounts basicAccountList() throws IOException {
+        return APICore.emulatedAccountDataAccess(null, this);
+    }
+
+    public Accounts detailedAccountData(String[] accountIds) throws IOException {
+        return APICore.emulatedAccountDataAccess(accountIds, this);
+    }
 }

@@ -458,7 +458,7 @@ public abstract class APICore extends HttpServlet {
         return getLocation(wrapper);
     }
     
-    public static boolean emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
+    static boolean emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
@@ -540,8 +540,8 @@ public abstract class APICore extends HttpServlet {
         return true;
     }
     
-    public static Accounts emulatedAccountDataAccess(String[] accountIds,
-                                                     OpenBankingSessionData obsd)
+    static Accounts emulatedAccountDataAccess(String[] accountIds,
+                                              OpenBankingSessionData obsd)
     throws IOException {
         String location = getConsent(accountIds, obsd);
         if (location == null) {
@@ -617,16 +617,32 @@ public abstract class APICore extends HttpServlet {
         
         String transactionStatus = json.getString("transactionStatus");
         for (String expectedStatus : PAYMENT_STATUSES) {
-        	if (transactionStatus.equals(expectedStatus)) {
+            if (transactionStatus.equals(expectedStatus)) {
                 obsd.paymentId = json.getString("paymentId");
                 JSONObjectReader links = json.getObject("_links");
                 obsd.scaStatusUrl = OPEN_BANKING_HOST + 
-                		links.getObject("scaStatus").getString("href");
+                        links.getObject("scaStatus").getString("href");
                 obsd.statusUrl = OPEN_BANKING_HOST + 
-                		links.getObject("status").getString("href");
+                        links.getObject("status").getString("href");
                 return links.getObject("scaRedirect").getString("href");
-        	}
+            }
         }
         throw new IOException("Unexpected \"transactionStatus\": " + transactionStatus);
+    }
+    
+    public static String emulatedPaymentRequest(OpenBankingSessionData obsd,
+                                                String debtorAccount,
+                                                String creditorAccount,
+                                                BigDecimal amount,
+                                                Currencies currency,
+                                                String creditorName,
+                                                String reference) throws IOException {
+        createPaymentMessage(debtorAccount,
+                             creditorAccount,
+                             amount,
+                             currency,
+                             creditorName,
+                             reference);
+        return null;
     }
 }

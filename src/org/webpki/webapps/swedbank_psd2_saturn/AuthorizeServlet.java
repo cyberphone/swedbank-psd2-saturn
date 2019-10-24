@@ -49,7 +49,7 @@ public class AuthorizeServlet extends APICore {
                 new OpenBankingSessionData(DEFAULT_USER,
                                            request.getRemoteAddr(),
                                            request.getHeader(HTTP_HEADER_USER_AGENT));
-        if(emulatedAuthorize(obsd)) {
+        if(obsd.authorize()) {
             // We did it!  Continue to the next step but first
             // create an HTTP session (cookie) holding the precious OAuth2 token etc.
             request.getSession().setAttribute(OBSD, obsd);
