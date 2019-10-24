@@ -196,6 +196,11 @@
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestPaymentSetupServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>TestSCAPaymentSuccessServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAPaymentSuccessServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>DebugServlet</servlet-name>
         <url-pattern>/debug</url-pattern>
@@ -269,6 +274,11 @@
     <servlet-mapping>
         <servlet-name>TestPaymentSetupServlet</servlet-name>
         <url-pattern>/api.paymentsetup</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>TestSCAPaymentSuccessServlet</servlet-name>
+        <url-pattern>/api.scapaymentsuccess</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

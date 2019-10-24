@@ -30,6 +30,7 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.saturn.common.Currencies;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
+import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
 
@@ -123,6 +124,14 @@ public class TestPaymentSetupServlet extends APICore {
         JSONObjectWriter paymentMessage = 
                 (JSONObjectWriter) request.getSession(false).getAttribute(PAYMENT_MESSAGE_ATTR);
         logger.info(paymentMessage.toString());
-        initiatePayment(obsd, paymentMessage);
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        // Now perform payment which should require SCA                               //
+        ////////////////////////////////////////////////////////////////////////////////
+        String scaRedirectUrl = initiatePayment(obsd, paymentMessage);
+        if (LocalIntegrationService.logging) {
+            logger.info("Redirect to:\n" + scaRedirectUrl);
+        }
+        response.sendRedirect(scaRedirectUrl);
     }
 }

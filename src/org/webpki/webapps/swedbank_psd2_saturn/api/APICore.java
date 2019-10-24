@@ -89,6 +89,10 @@ public abstract class APICore extends HttpServlet {
     static final String SCA_ACCOUNT_SUCCESS_PATH         = "/api.scaaccountsuccess";
     static final String SCA_PAYMENT_SUCCESS_PATH         = "/api.scapaymentsuccess";
     static final String SCA_FAILED_PATH                  = "/api.scafailed";
+    
+    static final String[] SCA_STATUSES                   = {"finalised"};
+    static final String[] CONSENT_STATUSES               = {"valid"};
+    static final String[] PAYMENT_STATUSES               = {"ACTC", "ACSC"};
 
     protected static Logger logger = Logger.getLogger(APICore.class.getName());
     
@@ -350,9 +354,9 @@ public abstract class APICore extends HttpServlet {
         wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
         wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, obsd.userAgent);
         wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
-                LocalIntegrationService.bankBaseUri + SCA_ACCOUNT_SUCCESS_PATH);
+                          LocalIntegrationService.bankBaseUri + SCA_ACCOUNT_SUCCESS_PATH);
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
-                LocalIntegrationService.bankBaseUri + SCA_FAILED_PATH);
+                          LocalIntegrationService.bankBaseUri + SCA_FAILED_PATH);
         setRequestId(wrapper);
         setAuthorization(wrapper, obsd);
         JSONObjectReader json = postJson(restUrl, 
@@ -369,7 +373,7 @@ public abstract class APICore extends HttpServlet {
         }
         JSONObjectReader links = json.getObject("_links");
         obsd.scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
-        obsd.consentStatusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
+        obsd.statusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
         return links.getObject("scaRedirect").getString("href");
     }
 
@@ -404,20 +408,37 @@ public abstract class APICore extends HttpServlet {
     static void setRequestId(HTTPSWrapper wrapper) throws IOException {
         wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
     }
-
-    static void verifyOkStatus(boolean scaFlag, OpenBankingSessionData obsd) throws IOException {
-        HTTPSWrapper scaStatus = getHTTPSWrapper();
-        setRequestId(scaStatus);
-        setConsentId(scaStatus, obsd);
-        setAuthorization(scaStatus, obsd);
-        RESTUrl restUrl = new RESTUrl(scaFlag ? obsd.scaStatusUrl : obsd.consentStatusUrl)
+    
+    private static void checkReturnStatus(boolean scaFlag,
+                                          OpenBankingSessionData obsd, 
+                                          String keyWord,
+                                          String[] expectedResults) throws IOException {
+        HTTPSWrapper checkStatus = getHTTPSWrapper();
+        setRequestId(checkStatus);
+        setConsentId(checkStatus, obsd);
+        setAuthorization(checkStatus, obsd);
+        RESTUrl restUrl = new RESTUrl(scaFlag ? obsd.scaStatusUrl : obsd.statusUrl)
             .setBic()
             .setAppId();
-        if (!performGet(scaStatus, restUrl)
-                .getString(scaFlag ? "scaStatus" : "consentStatus")
-                    .equals(scaFlag ? "finalised" : "valid")) {
-            throw new IOException("Status error");
+        String actualResult = performGet(checkStatus, restUrl).getString(keyWord);
+        for (String expectedResult : expectedResults) {
+            if (actualResult.equals(expectedResult)) {
+                return;
+            }
         }
+        throw new IOException("\"" + keyWord + "\" = " + actualResult);
+    }
+
+    static void verifyScaStatus(OpenBankingSessionData obsd) throws IOException {
+        checkReturnStatus(true, obsd, "scaStatus", SCA_STATUSES);
+    }
+
+    static void verifyConsentStatus(OpenBankingSessionData obsd) throws IOException {
+        checkReturnStatus(false, obsd, "consentStatus", CONSENT_STATUSES);
+    }
+
+    static void verifyPaymentStatus(OpenBankingSessionData obsd) throws IOException {
+        checkReturnStatus(false, obsd, "transactionStatus", PAYMENT_STATUSES);
     }
 
     static String initializeApi() throws IOException {
@@ -572,7 +593,40 @@ public abstract class APICore extends HttpServlet {
         return paymentMessage;
     }
     
-    static void initiatePayment(OpenBankingSessionData obsd, JSONObjectWriter paymentData) {
-    	
+    static String initiatePayment(OpenBankingSessionData obsd, 
+                                  JSONObjectWriter paymentData) throws IOException {
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
+                "/sandbox/v2/payments/se-domestic-credit-transfers")
+            .setBic()
+            .setAppId();
+        HTTPSWrapper wrapper = getHTTPSWrapper();
+        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, obsd.clientIpAddress);
+        wrapper.setHeader(HTTP_HEADER_PSU_IP_PORT, "8442");
+        wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
+        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, obsd.userAgent);
+        wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
+                          LocalIntegrationService.bankBaseUri + SCA_PAYMENT_SUCCESS_PATH);
+        wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
+                          LocalIntegrationService.bankBaseUri + SCA_FAILED_PATH);
+        setRequestId(wrapper);
+        setAuthorization(wrapper, obsd);
+        JSONObjectReader json = postJson(restUrl, 
+                                         wrapper, 
+                                         paymentData, 
+                                         HttpServletResponse.SC_CREATED);
+        
+        String transactionStatus = json.getString("transactionStatus");
+        for (String expectedStatus : PAYMENT_STATUSES) {
+        	if (transactionStatus.equals(expectedStatus)) {
+                obsd.paymentId = json.getString("paymentId");
+                JSONObjectReader links = json.getObject("_links");
+                obsd.scaStatusUrl = OPEN_BANKING_HOST + 
+                		links.getObject("scaStatus").getString("href");
+                obsd.statusUrl = OPEN_BANKING_HOST + 
+                		links.getObject("status").getString("href");
+                return links.getObject("scaRedirect").getString("href");
+        	}
+        }
+        throw new IOException("Unexpected \"transactionStatus\": " + transactionStatus);
     }
 }

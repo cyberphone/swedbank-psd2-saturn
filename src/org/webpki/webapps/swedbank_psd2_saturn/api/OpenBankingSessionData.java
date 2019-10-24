@@ -47,9 +47,11 @@ public class OpenBankingSessionData implements Serializable {
 
     String scaStatusUrl;
 
-    String consentStatusUrl;
+    String statusUrl;
     
     String emulatorModeCookie;
+    
+    String paymentId;
     
     JSONObjectReader accountData;
     

@@ -64,7 +64,7 @@ public class AuthorizeServlet extends APICore {
     throws IOException, ServletException {
 
         HTML.standardPage(response, 
-            "function shoot() {\n" +
+            "function beginAuthorization() {\n" +
             "  document.getElementById('" + WAITING_ID + "').style.display = 'block';\n" +
             "  document.getElementById('" + BUTTON_ID + "').style.display = 'none';\n" +
             "  document.forms.authorize.submit();\n" +
@@ -73,15 +73,15 @@ public class AuthorizeServlet extends APICore {
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">In a production setup you would need to login but " +
-                "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single and unspecified user, " +
-                "<i>this step is just a dummy.</i></div>" +
+                "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single " +
+                "and unspecified user, <i>this step is just a dummy.</i></div>" +
             "</div>" +
             "<img id=\"" + WAITING_ID + 
               "\" src=\"images/waiting.gif\" style=\"padding-top:1em;display:none\">" +
             "<div id=\"" + BUTTON_ID + "\" class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                  "onclick=\"shoot()\" " +
+                  "onclick=\"beginAuthorization()\" " +
                   "title=\"Continue to account list\">" +
                   "Continue to Account List...</div></td></tr>" +
               "</table>" +

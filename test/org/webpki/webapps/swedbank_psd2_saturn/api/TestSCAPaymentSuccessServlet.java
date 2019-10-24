@@ -49,43 +49,24 @@ public class TestSCAPaymentSuccessServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Verify that SCA is OK                                                      //
         ////////////////////////////////////////////////////////////////////////////////
-        verifyOkStatus(true, obsd);
+        verifyScaStatus(obsd);
         
         ////////////////////////////////////////////////////////////////////////////////
-        // Verify that Consent status is OK                                           //
+        // Verify that Payment status is OK                                           //
         ////////////////////////////////////////////////////////////////////////////////
-        verifyOkStatus(false, obsd);
+        verifyPaymentStatus(obsd);
 
-        ////////////////////////////////////////////////////////////////////////////////
-        // Now get rich account data (=with balances)                                 //
-        ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = getAccountData(true, obsd);
-
-        StringBuilder html = new StringBuilder(
+       
+        HTML.standardPage(response, null, new StringBuilder(
             HTML_HEADER +
             "<div class=\"centerbox\">" +
-              "<table class=\"tftable\">" +
-                "<tr><th>Account ID</th><th>Balance</th></tr>");
-
-        for (String accountId : accounts.getAccountIds()) {
-            Accounts.Account account = accounts.getAccount(accountId);
-            html.append("<tr><td>")
-                .append(accountId)
-                .append("</td><td style=\"text-align:right\">")
-                .append(account.balance.toPlainString() + " " + account.getCurrency().toString())
-                .append("</td></tr>");
-        }
-        
-        HTML.standardPage(response, null, html.append(
-              "</table>" +
+              "<div class=\"description\">" +
+                "Payment Succeeded!" +
+              "</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
-              "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href = 'tbd'\" " +
-                "title=\"Perform a payment operation\">" +
-                "Step #4: Perform a Payment" +
-                "</div></td></tr>" +
+              "<table class=\"tftable\">" +
+                "<tr><th>Account ID</th><th>Balance</th></tr>" +
               "</table>" +
             "</div>"));
     }
