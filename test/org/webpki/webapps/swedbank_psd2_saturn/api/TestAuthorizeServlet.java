@@ -67,11 +67,8 @@ public class TestAuthorizeServlet extends APICore {
         // closer to a production version using an enhanced Open Banking API          //
         ////////////////////////////////////////////////////////////////////////////////
         HttpSession session = request.getSession();
-        OpenBankingSessionData obsd = 
-                new OpenBankingSessionData(DEFAULT_USER,
-                                           request.getRemoteAddr(),
-                                           request.getHeader(HTTP_HEADER_USER_AGENT));
-        session.setAttribute(OBSD, obsd);
+        OpenBanking openBanking = new OpenBanking(DEFAULT_USER, request);
+        session.setAttribute(OBSD, openBanking);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //

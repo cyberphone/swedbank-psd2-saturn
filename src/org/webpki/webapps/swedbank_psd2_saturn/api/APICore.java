@@ -60,14 +60,16 @@ public abstract class APICore extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
 
-    public static final String OBSD                      = "obsd";
+    public static final String OBSD                      = "openBanking";
     
     public static final String DEFAULT_USER              = "20010101-1234";
     
-    public static final String HTTP_HEADER_USER_AGENT    = "User-Agent";
-    
+    static final String DEFAULT_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36";
+
     static final String HTML_HEADER = "<div class=\"header\">Internal API Test with GUI</div>";
 
+    static final String HTTP_HEADER_USER_AGENT           = "User-Agent";
 
     // Possibly provider dependent
     static final String PRIMARY_ACCOUNT_TYPE             = "iban";
@@ -153,7 +155,7 @@ public abstract class APICore extends HttpServlet {
         }
     }
     
-    public static OpenBankingSessionData getObsd(HttpServletRequest request, 
+    public static OpenBanking getOpenBanking(HttpServletRequest request, 
                                                  HttpServletResponse response) 
     throws IOException {
         HttpSession session = request.getSession(false);
@@ -161,7 +163,7 @@ public abstract class APICore extends HttpServlet {
             response.sendRedirect(HomeServlet.REDIRECT_TIMEOUT_URI);
             return null;
         }
-        return (OpenBankingSessionData)session.getAttribute(OBSD);
+        return (OpenBanking)session.getAttribute(OBSD);
     }
 
     static JSONObjectWriter createAccountConsent(String[] accountIds) throws IOException {
@@ -191,9 +193,9 @@ public abstract class APICore extends HttpServlet {
         return wrapper;
     }
     
-    static HTTPSWrapper getBrowserEmulator(OpenBankingSessionData obsd) throws IOException {
+    static HTTPSWrapper getBrowserEmulator(OpenBanking openBanking) throws IOException {
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_USER_AGENT, obsd.userAgent);
+        wrapper.setHeader(HTTP_HEADER_USER_AGENT, openBanking.userAgent);
         return wrapper;
     }
     
@@ -313,7 +315,7 @@ public abstract class APICore extends HttpServlet {
         return derivedUrl.substring(0, i + 1) + path;
     }
 
-    static void getOAuth2Token(OpenBankingSessionData obsd, String code) throws IOException {
+    static void getOAuth2Token(OpenBanking openBanking, String code) throws IOException {
         FormData formData = new FormData()
             .addElement("grant_type", "authorization_code")
             .addElement("client_id", LocalIntegrationService.oauth2ClientId)
@@ -322,12 +324,12 @@ public abstract class APICore extends HttpServlet {
             .addElement("redirect_uri", LocalIntegrationService.bankBaseUri + OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
-        obsd.oauth2Token = getJsonData(wrapper).getString("access_token");
+        openBanking.oauth2Token = getJsonData(wrapper).getString("access_token");
     }
 
     static void setAuthorization(HTTPSWrapper wrapper,
-                                 OpenBankingSessionData obsd) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + obsd.oauth2Token);
+                                 OpenBanking openBanking) throws IOException {
+        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + openBanking.oauth2Token);
     }
 
     static JSONObjectReader postJson(RESTUrl restUrl,
@@ -344,26 +346,26 @@ public abstract class APICore extends HttpServlet {
     }
 
     static String getConsent(String[] accountIds, 
-                             OpenBankingSessionData obsd) throws IOException {
+                             OpenBanking openBanking) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, obsd.clientIpAddress);
+        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, openBanking.clientIpAddress);
         wrapper.setHeader(HTTP_HEADER_PSU_IP_PORT, "8442");
         wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
-        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, obsd.userAgent);
+        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
         wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
                           LocalIntegrationService.bankBaseUri + SCA_ACCOUNT_SUCCESS_PATH);
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
                           LocalIntegrationService.bankBaseUri + SCA_FAILED_PATH);
         setRequestId(wrapper);
-        setAuthorization(wrapper, obsd);
+        setAuthorization(wrapper, openBanking);
         JSONObjectReader json = postJson(restUrl, 
                                          wrapper, 
                                          createAccountConsent(accountIds), 
                                          HttpServletResponse.SC_CREATED);
-        obsd.consentId = json.getString("consentId");
+        openBanking.consentId = json.getString("consentId");
         String consentStatus = json.getString("consentStatus");
         if (accountIds == null ^ consentStatus.equals("valid")) {
             throw new IOException("Unexpeded \"consentStatus\": " + consentStatus);
@@ -372,8 +374,8 @@ public abstract class APICore extends HttpServlet {
              return null;
         }
         JSONObjectReader links = json.getObject("_links");
-        obsd.scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
-        obsd.statusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
+        openBanking.scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
+        openBanking.statusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
         return links.getObject("scaRedirect").getString("href");
     }
 
@@ -386,23 +388,23 @@ public abstract class APICore extends HttpServlet {
     }
 
     static Accounts getAccountData(boolean withBalance,
-                                   OpenBankingSessionData obsd) throws IOException {
-        obsd.consistencyCheck(withBalance);
+                                   OpenBanking openBanking) throws IOException {
+        openBanking.consistencyCheck(withBalance);
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
             .setBic()
             .addParameter("withBalance", String.valueOf(withBalance))
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
         setRequestId(wrapper);
-        setConsentId(wrapper, obsd);
-        setAuthorization(wrapper, obsd);
-        obsd.accountData = performGet(wrapper, restUrl);
-        return new Accounts(obsd.accountData);
+        setConsentId(wrapper, openBanking);
+        setAuthorization(wrapper, openBanking);
+        openBanking.accountData = performGet(wrapper, restUrl);
+        return new Accounts(openBanking.accountData);
     }
     
     static void setConsentId(HTTPSWrapper wrapper,
-                             OpenBankingSessionData obsd) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_CONSENT_ID, obsd.consentId);
+                             OpenBanking openBanking) throws IOException {
+        wrapper.setHeader(HTTP_HEADER_CONSENT_ID, openBanking.consentId);
     }
     
     static void setRequestId(HTTPSWrapper wrapper) throws IOException {
@@ -410,14 +412,14 @@ public abstract class APICore extends HttpServlet {
     }
     
     private static void checkReturnStatus(boolean scaFlag,
-                                          OpenBankingSessionData obsd, 
+                                          OpenBanking openBanking, 
                                           String keyWord,
                                           String[] expectedResults) throws IOException {
         HTTPSWrapper checkStatus = getHTTPSWrapper();
         setRequestId(checkStatus);
-        setConsentId(checkStatus, obsd);
-        setAuthorization(checkStatus, obsd);
-        RESTUrl restUrl = new RESTUrl(scaFlag ? obsd.scaStatusUrl : obsd.statusUrl)
+        setConsentId(checkStatus, openBanking);
+        setAuthorization(checkStatus, openBanking);
+        RESTUrl restUrl = new RESTUrl(scaFlag ? openBanking.scaStatusUrl : openBanking.statusUrl)
             .setBic()
             .setAppId();
         String actualResult = performGet(checkStatus, restUrl).getString(keyWord);
@@ -429,16 +431,16 @@ public abstract class APICore extends HttpServlet {
         throw new IOException("\"" + keyWord + "\" = " + actualResult);
     }
 
-    static void verifyScaStatus(OpenBankingSessionData obsd) throws IOException {
-        checkReturnStatus(true, obsd, "scaStatus", SCA_STATUSES);
+    static void verifyScaStatus(OpenBanking openBanking) throws IOException {
+        checkReturnStatus(true, openBanking, "scaStatus", SCA_STATUSES);
     }
 
-    static void verifyConsentStatus(OpenBankingSessionData obsd) throws IOException {
-        checkReturnStatus(false, obsd, "consentStatus", CONSENT_STATUSES);
+    static void verifyConsentStatus(OpenBanking openBanking) throws IOException {
+        checkReturnStatus(false, openBanking, "consentStatus", CONSENT_STATUSES);
     }
 
-    static void verifyPaymentStatus(OpenBankingSessionData obsd) throws IOException {
-        checkReturnStatus(false, obsd, "transactionStatus", PAYMENT_STATUSES);
+    static void verifyPaymentStatus(OpenBanking openBanking) throws IOException {
+        checkReturnStatus(false, openBanking, "transactionStatus", PAYMENT_STATUSES);
     }
 
     static String initializeApi() throws IOException {
@@ -458,7 +460,7 @@ public abstract class APICore extends HttpServlet {
         return getLocation(wrapper);
     }
     
-    static boolean emulatedAuthorize(OpenBankingSessionData obsd) throws IOException {
+    static boolean emulatedAuthorize(OpenBanking openBanking) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
@@ -472,7 +474,7 @@ public abstract class APICore extends HttpServlet {
         // Now, this isn't actually true because the code below does "Web Scraping"   //
         // in a VERY provider specific way.                                           //                            
         ////////////////////////////////////////////////////////////////////////////////
-        HTTPSWrapper wrapper = getBrowserEmulator(obsd);
+        HTTPSWrapper wrapper = getBrowserEmulator(openBanking);
         wrapper.makeGetRequest(location);
         Scraper scraper = new Scraper(wrapper);
         scraper.scanTo("<form ");
@@ -480,13 +482,13 @@ public abstract class APICore extends HttpServlet {
             .addScrapedNameValue(scraper, "sessionID")
             .addScrapedNameValue(scraper, "sessionData")
             .addScrapedNameValue(scraper, "bic")
-            .addParameter("userId", obsd.userId);
+            .addParameter("userId", openBanking.userId);
         location = restUrl.toString();
         String setCookie = wrapper.getHeaderValue("set-cookie");
-        obsd.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
+        openBanking.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
  
-        wrapper = getBrowserEmulator(obsd);
-        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
+        wrapper = getBrowserEmulator(openBanking);
+        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makeGetRequest(location);
         scraper = new Scraper(wrapper);
@@ -497,8 +499,8 @@ public abstract class APICore extends HttpServlet {
             .addScrapedNameValue(scraper, "bic");
         location = restUrl.toString();
 
-        wrapper = getBrowserEmulator(obsd);
-        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
+        wrapper = getBrowserEmulator(openBanking);
+        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makeGetRequest(location);
         logger.info(String.valueOf(wrapper.getResponseCode()));
@@ -511,8 +513,8 @@ public abstract class APICore extends HttpServlet {
             .addScrapedNameValue(scraper, "action")
             .addScrapedNameValue(scraper, "bic");
 
-        wrapper = getBrowserEmulator(obsd);
-        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
+        wrapper = getBrowserEmulator(openBanking);
+        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makePostRequest(location, formData.toByteArray());
         location = getLocation(wrapper);
@@ -532,7 +534,7 @@ public abstract class APICore extends HttpServlet {
         ////////////////////////////////////////////////////////////////////////////////
         // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
-        getOAuth2Token(obsd, code);
+        getOAuth2Token(openBanking, code);
         
         ////////////////////////////////////////////////////////////////////////////////
         // Since this is an emulator supporting a single user we always succeed :-)   //
@@ -541,17 +543,17 @@ public abstract class APICore extends HttpServlet {
     }
     
     static Accounts emulatedAccountDataAccess(String[] accountIds,
-                                              OpenBankingSessionData obsd)
+                                              OpenBanking openBanking)
     throws IOException {
-        String location = getConsent(accountIds, obsd);
+        String location = getConsent(accountIds, openBanking);
         if (location == null) {
-            return getAccountData(false, obsd);
+            return getAccountData(false, openBanking);
         }
-        HTTPSWrapper wrapper = getBrowserEmulator(obsd);
+        HTTPSWrapper wrapper = getBrowserEmulator(openBanking);
         wrapper.makeGetRequest(location);
         Scraper scraper = new Scraper(wrapper);
         String setCookie = wrapper.getHeaderValue("set-cookie");
-        obsd.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
+        openBanking.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
         scraper.scanTo("<form ").scanTo("<form ");
         location = combineUrl(location, scraper.findWithin("action"));
         FormData formData = new FormData()
@@ -559,15 +561,15 @@ public abstract class APICore extends HttpServlet {
             .addScrapedNameValue(scraper, "bic")
             .addScrapedNameValue(scraper, "action");
 
-        wrapper = getBrowserEmulator(obsd);
-        wrapper.setHeader("cookie", obsd.emulatorModeCookie);
+        wrapper = getBrowserEmulator(openBanking);
+        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makePostRequest(location, formData.toByteArray());
         scraper = new Scraper(wrapper);
         if (!scraper.scanTo("<form ").findWithin("action").endsWith(SCA_ACCOUNT_SUCCESS_PATH)) {
             throw new IOException("Internal error, consent did not succeed");
         }
-        return getAccountData(true, obsd);
+        return getAccountData(true, openBanking);
     }
 
     static JSONObjectWriter createPaymentMessage(String debtorAccount,
@@ -593,23 +595,23 @@ public abstract class APICore extends HttpServlet {
         return paymentMessage;
     }
     
-    static String initiatePayment(OpenBankingSessionData obsd, 
+    static String initiatePayment(OpenBanking openBanking, 
                                   JSONObjectWriter paymentData) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
                 "/sandbox/v2/payments/se-domestic-credit-transfers")
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, obsd.clientIpAddress);
+        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, openBanking.clientIpAddress);
         wrapper.setHeader(HTTP_HEADER_PSU_IP_PORT, "8442");
         wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
-        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, obsd.userAgent);
+        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
         wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
                           LocalIntegrationService.bankBaseUri + SCA_PAYMENT_SUCCESS_PATH);
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
                           LocalIntegrationService.bankBaseUri + SCA_FAILED_PATH);
         setRequestId(wrapper);
-        setAuthorization(wrapper, obsd);
+        setAuthorization(wrapper, openBanking);
         JSONObjectReader json = postJson(restUrl, 
                                          wrapper, 
                                          paymentData, 
@@ -618,11 +620,11 @@ public abstract class APICore extends HttpServlet {
         String transactionStatus = json.getString("transactionStatus");
         for (String expectedStatus : PAYMENT_STATUSES) {
             if (transactionStatus.equals(expectedStatus)) {
-                obsd.paymentId = json.getString("paymentId");
+                openBanking.paymentId = json.getString("paymentId");
                 JSONObjectReader links = json.getObject("_links");
-                obsd.scaStatusUrl = OPEN_BANKING_HOST + 
+                openBanking.scaStatusUrl = OPEN_BANKING_HOST + 
                         links.getObject("scaStatus").getString("href");
-                obsd.statusUrl = OPEN_BANKING_HOST + 
+                openBanking.statusUrl = OPEN_BANKING_HOST + 
                         links.getObject("status").getString("href");
                 return links.getObject("scaRedirect").getString("href");
             }
@@ -630,19 +632,38 @@ public abstract class APICore extends HttpServlet {
         throw new IOException("Unexpected \"transactionStatus\": " + transactionStatus);
     }
     
-    public static String emulatedPaymentRequest(OpenBankingSessionData obsd,
-                                                String debtorAccount,
-                                                String creditorAccount,
-                                                BigDecimal amount,
-                                                Currencies currency,
-                                                String creditorName,
-                                                String reference) throws IOException {
-        createPaymentMessage(debtorAccount,
-                             creditorAccount,
-                             amount,
-                             currency,
-                             creditorName,
-                             reference);
-        return null;
+    static String emulatedPaymentRequest(OpenBanking openBanking,
+                                         String debtorAccount,
+                                         String creditorAccount,
+                                         BigDecimal amount,
+                                         Currencies currency,
+                                         String creditorName,
+                                         String reference) throws IOException {
+        String location = initiatePayment(openBanking,
+                                          createPaymentMessage(debtorAccount,
+                                                               creditorAccount,
+                                                               amount,
+                                                               currency,
+                                                               creditorName,
+                                                               reference));
+        HTTPSWrapper wrapper = getBrowserEmulator(openBanking);
+        wrapper.makeGetRequest(location);
+        Scraper scraper = new Scraper(wrapper);
+        String setCookie = wrapper.getHeaderValue("set-cookie");
+        openBanking.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
+        scraper.scanTo("<form ").scanTo("<form ");
+        location = combineUrl(location, scraper.findWithin("action"));
+        FormData formData = new FormData()
+            .addScrapedNameValue(scraper, "token")
+            .addScrapedNameValue(scraper, "bic")
+            .addScrapedNameValue(scraper, "action");
+        wrapper = getBrowserEmulator(openBanking);
+        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
+        wrapper.makePostRequest(location, formData.toByteArray());
+        scraper = new Scraper(wrapper);
+        if (!scraper.scanTo("<form ").findWithin("action").endsWith(SCA_PAYMENT_SUCCESS_PATH)) {
+            throw new IOException("Internal error, consent did not succeed");
+        }
+        return openBanking.paymentId;
     }
 }

@@ -157,11 +157,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>TBDServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.TBDServlet</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>TestAuthorizeServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthorizeServlet</servlet-class>
     </servlet>
@@ -239,11 +234,6 @@
     <servlet-mapping>
         <servlet-name>KeyProviderServlet</servlet-name>
         <url-pattern>/kg2.runner</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>TBDServlet</servlet-name>
-        <url-pattern>/tbd</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

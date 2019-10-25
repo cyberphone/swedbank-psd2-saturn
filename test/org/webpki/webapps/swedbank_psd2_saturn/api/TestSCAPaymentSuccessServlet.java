@@ -43,18 +43,18 @@ public class TestSCAPaymentSuccessServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // Verify that SCA is OK                                                      //
         ////////////////////////////////////////////////////////////////////////////////
-        verifyScaStatus(obsd);
+        verifyScaStatus(openBanking);
         
         ////////////////////////////////////////////////////////////////////////////////
         // Verify that Payment status is OK                                           //
         ////////////////////////////////////////////////////////////////////////////////
-        verifyPaymentStatus(obsd);
+        verifyPaymentStatus(openBanking);
 
        
         HTML.standardPage(response, null, new StringBuilder(

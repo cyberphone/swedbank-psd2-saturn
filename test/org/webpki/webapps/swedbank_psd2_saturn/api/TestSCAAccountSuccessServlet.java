@@ -45,23 +45,23 @@ public class TestSCAAccountSuccessServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // Verify that SCA is OK                                                      //
         ////////////////////////////////////////////////////////////////////////////////
-        verifyScaStatus(obsd);
+        verifyScaStatus(openBanking);
         
         ////////////////////////////////////////////////////////////////////////////////
         // Verify that Consent status is OK                                           //
         ////////////////////////////////////////////////////////////////////////////////
-        verifyConsentStatus(obsd);
+        verifyConsentStatus(openBanking);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Now get rich account data (=with balances)                                 //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = getAccountData(true, obsd);
+        Accounts accounts = getAccountData(true, openBanking);
 
         StringBuilder html = new StringBuilder(
             HTML_HEADER +

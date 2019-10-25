@@ -44,8 +44,8 @@ public class TestAuthRedirectServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // We should now have the "code" parameter                                    //
@@ -61,7 +61,7 @@ public class TestAuthRedirectServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
-        getOAuth2Token(obsd, code);
+        getOAuth2Token(openBanking, code);
         
         HTML.standardPage(response, null, new StringBuilder(
             HTML_HEADER +

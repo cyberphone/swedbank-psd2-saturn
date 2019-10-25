@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBankingSessionData;
+import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
 
@@ -45,14 +45,11 @@ public class AuthorizeServlet extends APICore {
         // but we do this anyway to obtain consistency between implementations and be //
         // closer to a production version using an enhanced Open Banking API          //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = 
-                new OpenBankingSessionData(DEFAULT_USER,
-                                           request.getRemoteAddr(),
-                                           request.getHeader(HTTP_HEADER_USER_AGENT));
-        if(obsd.authorize()) {
+        OpenBanking openBanking = new OpenBanking(DEFAULT_USER, request);
+        if(openBanking.authorize()) {
             // We did it!  Continue to the next step but first
             // create an HTTP session (cookie) holding the precious OAuth2 token etc.
-            request.getSession().setAttribute(OBSD, obsd);
+            request.getSession().setAttribute(OBSD, openBanking);
             response.sendRedirect("accounts");
         } else {
             doGet(request, response);

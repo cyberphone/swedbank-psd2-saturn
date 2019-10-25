@@ -38,18 +38,18 @@ public class TestBasicAccountServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // We have the token, now we need a consent for basic listing our accounts    //
         ////////////////////////////////////////////////////////////////////////////////
-        getConsent(null, obsd);
+        getConsent(null, openBanking);
 
         ////////////////////////////////////////////////////////////////////////////////
         // We got the consent, now use it!                                            //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = getAccountData(false, obsd);
+        Accounts accounts = getAccountData(false, openBanking);
         
         StringBuilder html = new StringBuilder(
             HTML_HEADER +

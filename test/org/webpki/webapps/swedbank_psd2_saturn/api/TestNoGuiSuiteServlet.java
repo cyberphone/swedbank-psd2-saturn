@@ -34,46 +34,53 @@ public class TestNoGuiSuiteServlet extends APICore {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
+
         ////////////////////////////////////////////////////////////////////////////////
-        // Before you can do anything you must be authenticated                       //
-        // Note: this servlet is called by the browser from LIS                       //
-        // The code below creates a session between LIS and the Open Banking service  //
-        // for a specific user.  Note: Swedbank's Sandbox only supports a single user //
-        // but we do this anyway to obtain consistency between implementations and be //
-        // closer to a production version using an enhanced Open Banking API          //
+        // Very limited "JUnit" like test for the emulated API                        // 
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = 
-                new OpenBankingSessionData(DEFAULT_USER,
-                                           request.getRemoteAddr(),
-                                           request.getHeader(HTTP_HEADER_USER_AGENT));
-        if(!obsd.authorize()) {
+        OpenBanking openBanking = new OpenBanking(DEFAULT_USER, request);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Create OAuth token                                                         //
+        ////////////////////////////////////////////////////////////////////////////////
+        if(!openBanking.authorize()) {
             throw new IOException("Authorize");
         }
+
         ////////////////////////////////////////////////////////////////////////////////
         // We have the token, now get a plain account listing                         //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = obsd.basicAccountList();
+        Accounts accounts = openBanking.basicAccountList();
 
         ////////////////////////////////////////////////////////////////////////////////
         // We got an account list, now get balances for the found accounts            //
         ////////////////////////////////////////////////////////////////////////////////
-        accounts = obsd.detailedAccountData(accounts.getAccountIds());
-        
-        String preSelected = null;
+        accounts = openBanking.detailedAccountData(accounts.getAccountIds());
+       
+        ////////////////////////////////////////////////////////////////////////////////
+        // Find a suitable payment account                                            //
+        ////////////////////////////////////////////////////////////////////////////////
+        String preSelectedAccount = null;
         BigDecimal highestAmount = BigDecimal.ZERO;
         for (String accountId : accounts.getAccountIds()) {
             Accounts.Account account = accounts.getAccount(accountId);
             // Pre-select the account with most money :)
             if (account.getBalance().compareTo(highestAmount) > 0) {
                 highestAmount = account.getBalance();
-                preSelected = accountId;
+                preSelectedAccount = accountId;
             }
         }
         
         ////////////////////////////////////////////////////////////////////////////////
         // Perform a payment operation                                                //
         ////////////////////////////////////////////////////////////////////////////////
-  //      String paymentId = emulatedPaymentRequest();
+        String paymentId = openBanking.paymentRequest(
+                preSelectedAccount, 
+                TestPaymentSetupServlet.FIXED_CREDITOR_ACCOUNT,
+                TestPaymentSetupServlet.FIXED_AMOUNT,
+                TestPaymentSetupServlet.FIXED_CURRENCY,
+                TestPaymentSetupServlet.FIXED_CREDITOR_NAME,
+                String.format("%010d", ++TestPaymentSetupServlet.reference));
 
         HTML.standardPage(response, 
             null,
@@ -81,7 +88,7 @@ public class TestNoGuiSuiteServlet extends APICore {
             "<div class=\"centerbox\">" +
               "<div class=\"description\">Success!</i></div>" +
             "</div>");
-        }
+    }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)

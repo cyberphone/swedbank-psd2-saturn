@@ -38,18 +38,18 @@ public class TestExtendedAccountServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // We should by now have an existing basic account listing                    //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = new Accounts(obsd.accountData);
+        Accounts accounts = new Accounts(openBanking.accountData);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Now get more details.  For that we need a consent                          //
         ////////////////////////////////////////////////////////////////////////////////
-        String scaRedirectUrl = getConsent(accounts.getAccountIds(), obsd);
+        String scaRedirectUrl = getConsent(accounts.getAccountIds(), openBanking);
         if (LocalIntegrationService.logging) {
             logger.info("Redirect to:\n" + scaRedirectUrl);
         }

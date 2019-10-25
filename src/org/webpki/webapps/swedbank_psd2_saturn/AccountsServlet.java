@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
-import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBankingSessionData;
+import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
 import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
@@ -42,18 +42,18 @@ public class AccountsServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // We have the token, now get a plain account listing                         //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = obsd.basicAccountList();
+        Accounts accounts = openBanking.basicAccountList();
 
         ////////////////////////////////////////////////////////////////////////////////
         // We got an account list, now get balances for the found accounts            //
         ////////////////////////////////////////////////////////////////////////////////
-        accounts = obsd.detailedAccountData(accounts.getAccountIds());
+        accounts = openBanking.detailedAccountData(accounts.getAccountIds());
 
         StringBuilder html = new StringBuilder(
             "<div class=\"header\">Select Account</div>" +

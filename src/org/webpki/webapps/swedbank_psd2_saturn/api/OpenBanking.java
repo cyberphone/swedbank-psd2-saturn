@@ -19,18 +19,29 @@ package org.webpki.webapps.swedbank_psd2_saturn.api;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.math.BigDecimal;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.webpki.json.JSONObjectReader;
 
+import org.webpki.saturn.common.Currencies;
 
-public class OpenBankingSessionData implements Serializable {
+
+public class OpenBanking implements Serializable {
     
-    static final String DEFAULT_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-           "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36";
-
-    public OpenBankingSessionData(String userId, String clientIpAddress, String userAgent) {
+     public OpenBanking(String userId,
+                        String clientIpAddress,
+                        String userAgentOrNull) {
         this.userId = userId;
         this.clientIpAddress = clientIpAddress;
-        this.userAgent = userAgent == null ? DEFAULT_BROWSER : userAgent;
+        this.userAgent = userAgent == null ? APICore.DEFAULT_BROWSER : userAgent;
+    }
+
+    public OpenBanking(String userId, HttpServletRequest request) {
+        this(userId, 
+             request.getRemoteAddr(),
+             request.getHeader(APICore.HTTP_HEADER_USER_AGENT));
     }
 
     private static final long serialVersionUID = 1L;
@@ -71,7 +82,7 @@ public class OpenBankingSessionData implements Serializable {
         return userObject;
     }
     
-    public OpenBankingSessionData setUserObject(Object userObject) {
+    public OpenBanking setUserObject(Object userObject) {
         this.userObject = userObject;
         return this;
     }
@@ -86,5 +97,20 @@ public class OpenBankingSessionData implements Serializable {
 
     public Accounts detailedAccountData(String[] accountIds) throws IOException {
         return APICore.emulatedAccountDataAccess(accountIds, this);
+    }
+
+    public String paymentRequest(String debtorAccount,
+                                 String creditorAccount,
+                                 BigDecimal amount,
+                                 Currencies currency,
+                                 String creditorName,
+                                 String reference) throws IOException {
+        return APICore.emulatedPaymentRequest(this, 
+                                              debtorAccount,
+                                              creditorAccount,
+                                              amount,
+                                              currency,
+                                              creditorName,
+                                              reference);
     }
 }

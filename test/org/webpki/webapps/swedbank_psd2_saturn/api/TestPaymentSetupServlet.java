@@ -59,8 +59,8 @@ public class TestPaymentSetupServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // Get selected account                                                       //
@@ -115,8 +115,8 @@ public class TestPaymentSetupServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBankingSessionData obsd = getObsd(request, response);
-        if (obsd == null) return;
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         // Get payment message                                       //
@@ -128,7 +128,7 @@ public class TestPaymentSetupServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Now perform payment which should require SCA                               //
         ////////////////////////////////////////////////////////////////////////////////
-        String scaRedirectUrl = initiatePayment(obsd, paymentMessage);
+        String scaRedirectUrl = initiatePayment(openBanking, paymentMessage);
         if (LocalIntegrationService.logging) {
             logger.info("Redirect to:\n" + scaRedirectUrl);
         }
