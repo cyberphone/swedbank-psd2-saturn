@@ -34,8 +34,13 @@ import java.security.spec.ECGenParameterSpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import javax.sql.DataSource;
 
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.KeyAlgorithms;
@@ -79,12 +84,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     static final String LOGGING                     = "logging";
 
     static final String KEYSTORE_PASSWORD           = "key_password";
-
-    // Swedbank's Open Banking API only supports a single user...
-    static final String FIXED_CLIENT_PAYMENT_KEY    = "fixed_client_payment_key";
-    
-    public static KeyStoreEnumerator fixedClientPaymentKey;
-    
+   
     static final String TEST_MERCHANT_URI           = "test_merchant_uri";
 
     public static String testMerchantUri;
@@ -186,6 +186,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static boolean useW3cPaymentRequest;
 
+    public static DataSource jdbcDataSource;
+
     InputStream getResource(String name) throws IOException {
         InputStream is = this.getClass().getResourceAsStream(getPropertyString(name));
         if (is == null) {
@@ -230,12 +232,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             oauth2ClientId = getPropertyString(OAUTH2_CLIENT_ID);
             oauth2ClientSecret = getPropertyString(OAUTH2_CLIENT_SECRET);
             
-            /////////////////////////////////////////////////////////////////////////////////////////////
-            // Note: a production version would be slightly more granular :)
-            /////////////////////////////////////////////////////////////////////////////////////////////
-            fixedClientPaymentKey = 
-                    new KeyStoreEnumerator(getResource(FIXED_CLIENT_PAYMENT_KEY),
-                                           getPropertyString(KEYSTORE_PASSWORD));
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Test merchant
             /////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,6 +323,13 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ////////////////////////////////////////////////////////////////////////////////////////////
             useW3cPaymentRequest = getPropertyBoolean(USE_W3C_PAYMENT_REQUEST);
             w3cPaymentRequestUri = getPropertyString(W3C_PAYMENT_REQUEST_URI);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Database
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            Context initContext = new InitialContext();
+            Context envContext  = (Context)initContext.lookup("java:/comp/env");
+            jdbcDataSource = (DataSource)envContext.lookup("jdbc/SWEDBANK_SATURN");
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Provider authority object

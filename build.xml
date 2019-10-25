@@ -35,11 +35,6 @@
   
   <property name="application" value="${service_path}.war"/>
 
-  <!--
-    Since there are no users in Swedbank's "sandbox", all testers will have
-    to share a single key.
-  -->
-  <property name="fixed_client_payment_key" value="fixed_client_ec_key.p12"/>
   <property name="saturn-extensions" value="saturn-extensions.json"/>
   
   <property name="hashalg" value=""/>
@@ -111,7 +106,6 @@
       <replacefilter token="@w3c-payment-request-uri@" value="${@w3c.manifesthost}/${@w3c.manifestpath}/method"/>
       <replacefilter token="@bank-base-uri@" value="${bank_base_uri}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
-      <replacefilter token="@fixed-client-payment-key@" value="${fixed_client_payment_key}"/>
       <replacefilter token="@payment-root@" value="${payment-network-root.base}"/>
       <replacefilter token="@acquirer-root@" value="${acquirer-network-root.base}"/>
       <replacefilter token="@saturn-extensions@" value="${saturn-extensions}"/>

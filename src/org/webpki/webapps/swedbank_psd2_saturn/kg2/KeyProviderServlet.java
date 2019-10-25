@@ -39,6 +39,7 @@ import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -87,15 +88,14 @@ import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
+import org.webpki.webapps.swedbank_psd2_saturn.DataBaseOperations;
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
-
 // KeyGen2 protocol runner that creates Saturn wallet keys.
 
-public class KeyProviderServlet extends APICore implements BaseProperties {
+public class KeyProviderServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
 
@@ -251,7 +251,7 @@ logger.info("POST session=" + request.getSession(false).getId());
                     standardPinPolicy.setGrouping(Grouping.SHARED);
 
                     // Since Swedbank's "sandbox" doesn't support a dynamic account concept
-                    // all testers must use the same key.
+                    // all testers use the same account but they get individual keys.
                     // For a fully dynamic solution, see the Saturn PoC.
                   
                     ServerState.Key key = 
@@ -278,24 +278,32 @@ logger.info("POST session=" + request.getSession(false).getId());
                     // so it does NOT function as a user ID...
                     String userName = (String) session.getAttribute(
                             KeyProviderInitServlet.USERNAME_SESSION_ATTR_PARM);
-                    String credentialId = (String) keygen2State.getServiceSpecificObject(
+                    String accountId = (String) keygen2State.getServiceSpecificObject(
                             KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM);
 
                     // now create Saturn payment credentials
-                    // 1. Get key
+                    // 1. Get key and other input data
                     key = keygen2State.getKeys()[0];
+                    String methodUri = PaymentMethods.BANK_DIRECT.getPaymentMethodUri();
+                    String credentialId = // A credentialId uniquely points to an account 
+                            DataBaseOperations.createCredential(accountId,
+                                                                userName,
+                                                                methodUri,
+                                                                key.getPublicKey(),
+                                                                null);
+
                     // 2. Create a "carrier" certificate for the signature key (SKS need that)
                     // In this unusual setup all certificates have the same public/private key.
                     CertSpec certSpec = new CertSpec();
                     certSpec.setKeyUsageBit(KeyUsageBits.DIGITAL_SIGNATURE);
-                    certSpec.setSubject("CN=" + userName + ", serialNumber=" + credentialId);
+                    certSpec.setSubject("CN=" + userName + ", serialNumber=" + accountId);
                     Hashtable<String,String> issuer = new Hashtable<String,String>();
                     issuer.put("CN", "Saturn SKS Carrier Certificate");
                     long startTime = System.currentTimeMillis();
                     key.setCertificatePath(new X509Certificate[]{new CA().createCert(
                         certSpec,
                         new DistinguishedName(issuer),
-                        BigInteger.ONE,
+                        new BigInteger(credentialId),
                         new Date(startTime),
                         new Date(startTime + (20 * 365 * 24 * 3600 * 1000l)),
                         AsymSignatureAlgorithms.ECDSA_SHA256,
@@ -324,16 +332,12 @@ logger.info("POST session=" + request.getSession(false).getId());
                                 }
                             }
                         },
-                        // Note: in a "normal" setup you would use the generated public key
-                        LocalIntegrationService.fixedClientPaymentKey.getPublicKey())});
-                    // Import fixed private key
-                    key.setPrivateKey(LocalIntegrationService.fixedClientPaymentKey
-                            .getPrivateKey().getEncoded());
+                        key.getPublicKey())});
 
                     // 3. Add card data blob to the key entry
                     key.addExtension(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI,
                         CardDataEncoder.encode(
-                            PaymentMethods.BANK_DIRECT.getPaymentMethodUri(),
+                            methodUri,
                             credentialId, 
                             LocalIntegrationService.providerAuthorityUri, 
                             AsymSignatureAlgorithms.ECDSA_SHA256, 
@@ -366,7 +370,7 @@ logger.info("POST session=" + request.getSession(false).getId());
                             }
                             return cardImage
                                 .replace(CardImageData.STANDARD_NAME, cardUserName)
-                                .replace(CardImageData.STANDARD_ACCOUNT,credentialId)
+                                .replace(CardImageData.STANDARD_ACCOUNT, accountId)
                                     .getBytes("utf-8");
                         }
 
