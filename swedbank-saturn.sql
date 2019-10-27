@@ -44,6 +44,8 @@ CREATE TABLE CREDENTIALS
     MethodUri   VARCHAR(50)   NOT NULL,                                  -- Payment method
 
     Name        VARCHAR(50)   NOT NULL,                                  -- Human name
+    
+    UserId      INT           NOT NULL,                                  -- For OAuth2 tokens
 
     Created     TIMESTAMP     NOT NULL  DEFAULT CURRENT_TIMESTAMP,       -- Administrator data
 
@@ -55,8 +57,29 @@ CREATE TABLE CREDENTIALS
 
     S256BalReq  BINARY(32)    NULL,                                      -- Optional: balance key hash 
 
-    PRIMARY KEY (Id)
+    PRIMARY KEY (Id),
+    FOREIGN KEY (UserId) REFERENCES OAUTH2TOKENS(UserId)
   ) AUTO_INCREMENT=200500123;                                            -- Brag about "users" :-)
+
+
+/*=============================================*/
+/*                OAUTH2TOKENS                 */
+/*=============================================*/
+
+CREATE TABLE OAUTH2TOKENS
+  (
+
+-- Note: since the Swedbank "sandbox" only supports a single user
+-- this table isn't terribly exciting
+
+    UserId      INT           NOT NULL  DEFAULT 1,                       -- Unique User ID
+
+    AccessToken VARCHAR(36)   NOT NULL,                                  -- The one we normally use
+    
+    RefreshToken VARCHAR(36)  NOT NULL,                                  -- Refreshing
+
+    PRIMARY KEY (UserId)
+  );
 
 
 /*=============================================*/
@@ -101,6 +124,8 @@ CREATE TABLE TRANSACTION_COUNTER
 
 INSERT INTO TRANSACTION_COUNTER(Next) VALUES(100345078);
 
+INSERT INTO OAUTH2TOKENS(AccessToken, RefreshToken) VALUES("", "");
+
 DELIMITER //
 
 
@@ -138,9 +163,9 @@ CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
         WHERE CREDENTIALS.Id = p_CredentialId AND CREDENTIALS.S256PayReq = p_S256PayReq;
     IF p_Name IS NULL THEN   -- Failed => Find reason
       IF EXISTS (SELECT * FROM CREDENTIALS WHERE CREDENTIALS.Id = p_CredentialId) THEN
-        SET p_Error = 1;       -- Key does not match account
+        SET p_Error = 1;       -- Key does not match credentialId
       ELSE
-        SET p_Error = 2;       -- Method does not match account type
+        SET p_Error = 2;       -- Credential not found
       END IF;
     ELSE                       
       SET p_Error = 0;         -- Success

@@ -460,7 +460,7 @@ public abstract class APICore extends HttpServlet {
         return getLocation(wrapper);
     }
     
-    static boolean emulatedAuthorize(OpenBanking openBanking) throws IOException {
+    static void emulatedAuthorize(OpenBanking openBanking) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
@@ -535,11 +535,6 @@ public abstract class APICore extends HttpServlet {
         // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
         getOAuth2Token(openBanking, code);
-        
-        ////////////////////////////////////////////////////////////////////////////////
-        // Since this is an emulator supporting a single user we always succeed :-)   //
-        ////////////////////////////////////////////////////////////////////////////////
-        return true;
     }
     
     static Accounts emulatedAccountDataAccess(String[] accountIds,

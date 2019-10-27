@@ -87,8 +87,9 @@ public class OpenBanking implements Serializable {
         return this;
     }
 
-    public boolean authorize() throws IOException {
-        return APICore.emulatedAuthorize(this);
+    public OpenBanking authorize() throws IOException {
+        APICore.emulatedAuthorize(this);
+        return this;
     }
 
     public Accounts basicAccountList() throws IOException {

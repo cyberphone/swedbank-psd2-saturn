@@ -43,9 +43,7 @@ public class TestNoGuiSuiteServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Create OAuth token                                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        if(!openBanking.authorize()) {
-            throw new IOException("Authorize");
-        }
+        openBanking.authorize();
 
         ////////////////////////////////////////////////////////////////////////////////
         // We have the token, now get a plain account listing                         //

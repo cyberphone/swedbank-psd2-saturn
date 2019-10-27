@@ -71,6 +71,7 @@ import org.webpki.keygen2.ProvisioningFinalizationRequestEncoder;
 
 import org.webpki.sks.Grouping;
 import org.webpki.sks.AppUsage;
+
 import org.webpki.sks.PassphraseFormat;
 
 import org.webpki.saturn.common.BaseProperties;
@@ -82,16 +83,14 @@ import org.webpki.util.MIMETypedObject;
 
 import org.webpki.webutil.ServletUtil;
 
-import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONOutputFormats;
-import org.webpki.json.KeyEncryptionAlgorithms;
 
-import org.webpki.webapps.swedbank_psd2_saturn.DataBaseOperations;
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.api.DataBaseOperations;
 
 // KeyGen2 protocol runner that creates Saturn wallet keys.
 
@@ -341,9 +340,9 @@ logger.info("POST session=" + request.getSession(false).getId());
                             credentialId, 
                             LocalIntegrationService.providerAuthorityUri, 
                             AsymSignatureAlgorithms.ECDSA_SHA256, 
-                            DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID, 
-                            KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID, 
-                            LocalIntegrationService.decryptionKey.getPublicKey(),
+                            LocalIntegrationService.dataEncryptionAlgorithm, 
+                            LocalIntegrationService.currentDecryptionKey.getKeyEncryptionAlgorithm(), 
+                            LocalIntegrationService.currentDecryptionKey.getPublicKey(),
                             null,
                             null,
                             new BigDecimal("5302.00"))

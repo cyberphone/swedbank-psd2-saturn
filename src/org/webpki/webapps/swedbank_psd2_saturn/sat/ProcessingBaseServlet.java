@@ -18,19 +18,25 @@ package org.webpki.webapps.swedbank_psd2_saturn.sat;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import java.sql.Connection;
+
 import java.math.BigDecimal;
+
 import java.security.GeneralSecurityException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+
 import org.webpki.saturn.common.AuthorizationData;
 import org.webpki.saturn.common.HttpSupport;
 import org.webpki.saturn.common.UserChallengeItem;
@@ -38,6 +44,7 @@ import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.PaymentRequest;
 import org.webpki.saturn.common.ProviderUserResponse;
 import org.webpki.saturn.common.UrlHolder;
+
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,18 +68,6 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
     static final String RBA_PARM_MOTHER             = "mother";
     static final String MOTHER_NAME                 = "garbo";
     
-    static String formatReferenceId(int referenceId) {
-        return String.format("#%010d", referenceId);
-    }
-    
-    static int decodeReferenceId(String referenceId) throws IOException {
-        int r = Integer.valueOf(referenceId.substring(1));
-        if (!formatReferenceId(r).equals(referenceId)) {
-            throw new IOException("Bad referenceId: " + referenceId);
-        }
-        return r;
-    }
-
     static String amountInHtml(PaymentRequest paymentRequest, BigDecimal amount) throws IOException {
         return "<span style=\"font-weight:bold;white-space:nowrap\">" + 
                paymentRequest.getCurrency().amountToDisplayString(amount, true) +
@@ -118,7 +113,8 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             // First control passed...                                                             //
             /////////////////////////////////////////////////////////////////////////////////////////
             if (LocalIntegrationService.logging) {
-                logger.info("Call from" + urlHolder.getCallerAddress() + "with data:\n" + providerRequest);
+                logger.info("Call from" + urlHolder.getCallerAddress() +
+                            "with data:\n" + providerRequest);
             }
 
             /////////////////////////////////////////////////////////////////////////////////////////
@@ -127,14 +123,16 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             if (LocalIntegrationService.jdbcDataSource != null) {
                 connection = LocalIntegrationService.jdbcDataSource.getConnection();
             }
-            JSONObjectWriter providerResponse = processCall(urlHolder, providerRequest, connection);
+            JSONObjectWriter providerResponse =
+                    processCall(urlHolder, providerRequest, connection);
             if (LocalIntegrationService.jdbcDataSource != null) {
                 connection.close();
                 connection = null;
             }
 
             if (LocalIntegrationService.logging) {
-                logger.info("Responded to caller"  + urlHolder.getCallerAddress() + "with data:\n" + providerResponse);
+                logger.info("Responded to caller"  + urlHolder.getCallerAddress() + 
+                            "with data:\n" + providerResponse);
             }
 
             /////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +148,8 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             // general connectivity problems.                                                      //
             /////////////////////////////////////////////////////////////////////////////////////////
             String message = (urlHolder == null ? "" : "From" + urlHolder.getCallerAddress() +
-                              (urlHolder.getUrl() == null ? "" : "URL=" + urlHolder.getUrl()) + "\n") + e.getMessage();
+                              (urlHolder.getUrl() == null ? "" : "URL=" + urlHolder.getUrl()) + 
+                              "\n") + e.getMessage();
             if (!(e instanceof NormalException)) {
                 logger.log(Level.SEVERE, message, e);
             }

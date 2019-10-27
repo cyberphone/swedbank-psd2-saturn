@@ -148,6 +148,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>AuthorizationServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.sat.AuthorizationServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>KeyProviderInitServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet</servlet-class>
     </servlet>
@@ -225,6 +230,11 @@
     <servlet-mapping>
         <servlet-name>ProviderAuthorityServlet</servlet-name>
         <url-pattern>/prv.authority</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AuthorizationServlet</servlet-name>
+        <url-pattern>/sat.service</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

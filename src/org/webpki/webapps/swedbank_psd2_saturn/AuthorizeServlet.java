@@ -46,14 +46,11 @@ public class AuthorizeServlet extends APICore {
         // closer to a production version using an enhanced Open Banking API          //
         ////////////////////////////////////////////////////////////////////////////////
         OpenBanking openBanking = new OpenBanking(DEFAULT_USER, request);
-        if(openBanking.authorize()) {
-            // We did it!  Continue to the next step but first
-            // create an HTTP session (cookie) holding the precious OAuth2 token etc.
-            request.getSession().setAttribute(OBSD, openBanking);
-            response.sendRedirect("accounts");
-        } else {
-            doGet(request, response);
-        }
+        openBanking.authorize();
+        // We did it!  Continue to the next step
+
+        request.getSession().setAttribute(OBSD, openBanking);
+        response.sendRedirect("accounts");
     }
 
     @Override

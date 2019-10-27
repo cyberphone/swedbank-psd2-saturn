@@ -31,6 +31,8 @@ import java.security.interfaces.RSAKey;
 
 import java.security.spec.ECGenParameterSpec;
 
+import java.util.Vector;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,6 +65,7 @@ import org.webpki.keygen2.ProvisioningInitializationResponseDecoder;
 import org.webpki.util.ArrayUtil;
 
 import org.webpki.saturn.common.AuthorityObjectManager;
+import org.webpki.saturn.common.ExternalCalls;
 import org.webpki.saturn.common.KeyStoreEnumerator;
 import org.webpki.saturn.common.PaymentMethods;
 import org.webpki.saturn.common.ProviderAuthority;
@@ -70,6 +73,8 @@ import org.webpki.saturn.common.ServerX509Signer;
 import org.webpki.saturn.common.SignatureProfiles;
 
 import org.webpki.webutil.InitPropertyReader;
+
+import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
 // This is the starting point for LIS (Local Integration Service)
 
@@ -90,9 +95,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public static String testMerchantUri;
 
     /////////////////////////////////////////////////////////////////////////////
-    // Saturn bank objects
+    // Bank objects
     /////////////////////////////////////////////////////////////////////////////
-
     public static String bankBaseUri;
 
     static final String BANK_BASE_URI               = "bank_base_uri";
@@ -105,11 +109,13 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     
     static final String BANK_KG2KMK                 = "bank_kg2kmk";
 
-    static final String PAYMENT_ROOT                = "payment_root";
-
-    static final String ACQUIRER_ROOT               = "acquirer_root";
-
-    public static JSONDecryptionDecoder.DecryptionKeyHolder decryptionKey;
+    public static JSONDecryptionDecoder.DecryptionKeyHolder currentDecryptionKey;
+    
+    public static Vector<JSONDecryptionDecoder.DecryptionKeyHolder> decryptionKeys = 
+            new Vector<JSONDecryptionDecoder.DecryptionKeyHolder>();
+    
+    public static final DataEncryptionAlgorithms dataEncryptionAlgorithm = 
+            DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID;
     
     public static X509Certificate[] bankCertificatePath;
 
@@ -117,19 +123,29 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static String bankCommonName;
 
-    static JSONX509Verifier paymentRoot;
+    /////////////////////////////////////////////////////////////////////////////
+    // Saturn service objects
+    /////////////////////////////////////////////////////////////////////////////
+    public static JSONDecoderCache knownPayeeMethods = new JSONDecoderCache();
 
-    static JSONX509Verifier acquirerRoot;
+    public static JSONDecoderCache knownAccountTypes = new JSONDecoderCache();
+
+    static final String PAYMENT_ROOT                = "payment_root";
+
+    static final String ACQUIRER_ROOT               = "acquirer_root";
+
+    public static JSONX509Verifier paymentRoot;
+
+    public static JSONX509Verifier acquirerRoot;
 
     public static String serviceUri;
 
     public static String providerAuthorityUri;
 
     static final int PROVIDER_EXPIRATION_TIME = 3600;
-
-    
+   
     /////////////////////////////////////////////////////////////////////////////
-    // KeyGen2 JSON object cache
+    // KeyGen2 objects
     /////////////////////////////////////////////////////////////////////////////
     public static JSONDecoderCache keygen2JSONCache;
 
@@ -154,7 +170,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     /////////////////////////////////////////////////////////////////////////////
     // Open Banking objects
     /////////////////////////////////////////////////////////////////////////////
-
     public static String oauth2ClientId;
     
     public static String oauth2ClientSecret;
@@ -165,11 +180,9 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     static final String SATURN_EXTENSIONS           = "saturn_extensions";
 
-
     /////////////////////////////////////////////////////////////////////////////
     // Provider objects
     /////////////////////////////////////////////////////////////////////////////
-    
     public static AuthorityObjectManager authorityObjectManager;
 
     static JSONObjectReader optionalProviderExtensions;
@@ -177,7 +190,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     /////////////////////////////////////////////////////////////////////////////
     // W3C PaymentRequest data
     /////////////////////////////////////////////////////////////////////////////
-
     static final String W3C_PAYMENT_REQUEST_URI   = "w3c_payment_request_uri";
 
     public static String w3cPaymentRequestUri;
@@ -186,7 +198,12 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static boolean useW3cPaymentRequest;
 
+    /////////////////////////////////////////////////////////////////////////////
+    // Miscellaneous
+    /////////////////////////////////////////////////////////////////////////////
     public static DataSource jdbcDataSource;
+    
+    public static ExternalCalls externalCalls;
 
     InputStream getResource(String name) throws IOException {
         InputStream is = this.getClass().getResourceAsStream(getPropertyString(name));
@@ -249,6 +266,12 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             acquirerRoot = getRoot(ACQUIRER_ROOT);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
+            // Payment network support
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            knownPayeeMethods.addToCache(org.payments.sepa.SEPAPaymentBackendMethodDecoder.class);
+            knownAccountTypes.addToCache(org.payments.sepa.SEPAAccountDataDecoder.class);
+
+            /////////////////////////////////////////////////////////////////////////////////////////////
             // Bank specific
             /////////////////////////////////////////////////////////////////////////////////////////////
             bankCommonName = getPropertyString(BANK_COMMON_NAME);
@@ -261,14 +284,15 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             KeyStoreEnumerator keyStoreEnumerator =
                     new KeyStoreEnumerator(getResource(BANK_ENCRYPT),
                                            getPropertyString(KEYSTORE_PASSWORD));
-            decryptionKey = new JSONDecryptionDecoder.DecryptionKeyHolder(
+            currentDecryptionKey = new JSONDecryptionDecoder.DecryptionKeyHolder(
                     keyStoreEnumerator.getPublicKey(),
                     keyStoreEnumerator.getPrivateKey(),
                     keyStoreEnumerator.getPublicKey() instanceof RSAKey ?
                                                  KeyEncryptionAlgorithms.JOSE_RSA_OAEP_256_ALG_ID
                                                                         :
                                                  KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID,
-                    null);            
+                    null);
+            decryptionKeys.add(currentDecryptionKey);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // KeyGen2 objects
@@ -351,9 +375,9 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
                 new SignatureProfiles[]{SignatureProfiles.P256_ES256},
                 new ProviderAuthority.EncryptionParameter[]{
                         new ProviderAuthority.EncryptionParameter(
-                                DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID,
-                        decryptionKey.getKeyEncryptionAlgorithm(), 
-                        decryptionKey.getPublicKey())},
+                                dataEncryptionAlgorithm,
+                                currentDecryptionKey.getKeyEncryptionAlgorithm(), 
+                                currentDecryptionKey.getPublicKey())},
                 null,
                 bankKey,
 
@@ -362,6 +386,20 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
                 PROVIDER_EXPIRATION_TIME,
                 logging);
+
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            // Generic Saturn call facility
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            externalCalls = new ExternalCalls(logging, logger, null);
+
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            // Finally, at each restart OAuth tokens for every enroll user must be checked for
+            // validity and potentially refreshed.
+            //
+            // For our Swedbank demo having a single use this is no big deal...
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            OpenBanking openBanking = new OpenBanking("1", "127.0.0.1", null);
+            openBanking.authorize();
 
             logger.info("Swedbank LIS Demo Successfully Initiated");
         } catch (Exception e) {
