@@ -18,8 +18,11 @@ package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 import java.io.Serializable;
+
 import java.math.BigDecimal;
+
 import java.security.PublicKey;
+
 import java.sql.SQLException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.webpki.json.JSONObjectReader;
+
 import org.webpki.saturn.common.Currencies;
 
 public class OpenBanking implements Serializable {
@@ -52,17 +56,8 @@ public class OpenBanking implements Serializable {
         this.userAgent = userAgentOrNull == null ? APICore.DEFAULT_BROWSER : userAgentOrNull;
     }
     
-    public OpenBanking(String userIdOrNull,
-                       String clientIpAddress,
-                       String userAgentOrNull) throws IOException {
-        this(clientIpAddress, userAgentOrNull);
-        this.accessToken = DataBaseOperations.getAccessToken(userIdOrNull == null ?
-                                      APICore.DEFAULT_USER : userIdOrNull);
-    }
-
-    public OpenBanking(String userIdOrNull, HttpServletRequest request) throws IOException {
-        this(userIdOrNull, 
-             request.getRemoteAddr(),
+    public OpenBanking(HttpServletRequest request) throws IOException {
+        this(request.getRemoteAddr(),
              request.getHeader(APICore.HTTP_HEADER_USER_AGENT));
     }
 
@@ -81,6 +76,10 @@ public class OpenBanking implements Serializable {
 
     String accessToken;
 
+    String refreshToken;
+    
+    long expires;
+    
     String consentId;
 
     String scaStatusUrl;
@@ -107,10 +106,10 @@ public class OpenBanking implements Serializable {
 
     private String currentAccountId;
 
-    private String userId;
-
     String loginSuccessUrl;
-    
+
+    String userId;
+
     public Object getUserObject() {
         return userObject;
     }
@@ -175,13 +174,7 @@ public class OpenBanking implements Serializable {
     }
 
     public String getAccountId() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public String getUserId() {
-        // TODO Auto-generated method stub
-        return null;
+        return currentAccountId;
     }
 
     public String createCredential(String userName,
@@ -207,7 +200,7 @@ public class OpenBanking implements Serializable {
                                      HttpServletResponse response,
                                      String loginSuccessUrl) throws IOException {
         HttpSession session = request.getSession(true);
-        OpenBanking openBanking = new OpenBanking(APICore.DEFAULT_USER, request);
+        OpenBanking openBanking = new OpenBanking(request);
         openBanking.loginSuccessUrl = loginSuccessUrl;
         session.setAttribute(APICore.OBSD, openBanking);
         response.sendRedirect(APICore.coreInit());

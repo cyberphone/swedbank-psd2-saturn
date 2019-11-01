@@ -113,10 +113,27 @@ CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
 
 CREATE PROCEDURE GetAccessTokenSP (OUT p_AccessToken CHAR(36),
 			                       IN p_UserId CHAR(13))
-    BEGIN
-	  SELECT OAUTH2TOKENS.AccessToken INTO p_AccessToken FROM OAUTH2TOKENS
-	      WHERE OAUTH2TOKENS.UserId = p_UserId;
-	END
+  BEGIN
+	SELECT OAUTH2TOKENS.AccessToken INTO p_AccessToken FROM OAUTH2TOKENS
+	    WHERE OAUTH2TOKENS.UserId = p_UserId;
+  END
+//
+
+CREATE PROCEDURE StoreAccessTokenSP (IN p_AccessToken CHAR(36),
+                                     IN p_RefreshToken CHAR(36),
+                                     IN p_Expires INT,
+                                     IN p_UserId CHAR(13))
+  BEGIN
+    IF EXISTS (SELECT * FROM OAUTH2TOKENS WHERE OAUTH2TOKENS.UserId = p_UserId) THEN
+      UPDATE OAUTH2TOKENS SET AccessToken = p_AccessToken, 
+                              RefreshToken = p_RefreshToken,
+                              Expires = p_Expires
+          WHERE OAUTH2TOKENS.UserId = p_UserId;
+    ELSE
+      INSERT INTO OAUTH2TOKENS(UserId, AccessToken, RefreshToken, Expires) 
+          VALUES(p_UserId, p_AccessToken, p_RefreshToken, p_Expires);
+    END IF;
+  END
 //
 
 CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,

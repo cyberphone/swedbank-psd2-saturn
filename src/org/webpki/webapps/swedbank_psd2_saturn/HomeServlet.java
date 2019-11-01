@@ -45,8 +45,8 @@ public class HomeServlet extends APICore {
         .append(
             "<div class=\"centerbox\">" +
               "<div class=\"description\">This site permits testing a system using " +
-              "Swedbank's PSD2 API, running in an emulated local mode to support Saturn.  " +
-              "For accessing the source code and documentation, click on the Saturn " +
+              "Swedbank's PSD2 API, running in a partially emulated local mode to support Saturn.  " +
+              "For accessing source code and documentation, click on the Saturn " +
               "PSD2 logotype.</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +

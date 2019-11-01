@@ -41,7 +41,6 @@ public class AuthorizeServlet extends HttpServlet {
         // but we do this anyway to obtain consistency between implementations and be //
         // closer to a production version using an enhanced Open Banking API          //
         ////////////////////////////////////////////////////////////////////////////////
-//        OpenBanking.authorize().setRequestParameters(request);
         OpenBanking.createSession(request, response, "accounts");
     }
 
@@ -55,14 +54,14 @@ public class AuthorizeServlet extends HttpServlet {
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">The login in the Swedbank Open Banking &quot;sandbox&quot; " +
-                "is rather primitive, respond with <i>any</i> data and proceeed&nbsp;&#x1f642;</div>" +
+                "is rather primitive, respond with <i>any</i> data and proceed&nbsp;&#x1f642;</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
                   "onclick=\"document.forms.authorize.submit()\" " +
                   "title=\"Login and retrieve account list\">" +
-                  "Login and Retrieve Accounts...</div></td></tr>" +
+                  "Login...</div></td></tr>" +
               "</table>" +
             "</div>");
     }

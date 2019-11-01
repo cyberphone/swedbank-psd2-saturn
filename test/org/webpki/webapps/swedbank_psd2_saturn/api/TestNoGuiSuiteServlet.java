@@ -38,7 +38,7 @@ public class TestNoGuiSuiteServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Very limited "JUnit" like test for the emulated API                        // 
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBanking openBanking = new OpenBanking(DEFAULT_USER, request);
+        OpenBanking openBanking = new OpenBanking(request);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Create OAuth token                                                         //

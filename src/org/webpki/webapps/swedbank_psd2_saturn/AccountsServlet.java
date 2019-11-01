@@ -35,7 +35,7 @@ public class AccountsServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -122,5 +122,20 @@ public class AccountsServlet extends HttpServlet {
                   "Next...</div></td></tr>" +
               "</table>" +
             "</div>"));
+    }
+
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException {
+
+        HTML.standardPage(response, 
+            "document.addEventListener('DOMContentLoaded', function() {\n" +
+            "  document.forms.accounts.submit();\n" +
+            "});\n",
+            "<div class=\"centerbox\">" +
+              "<div class=\"description\">Retrieving account information...</div>" +
+            "</div>" +
+            "<img src=\"images/waiting.gif\" style=\"padding-top:1em\">" +
+            "<form name=\"accounts\" action=\"accounts\" method=\"POST\"></form>");
     }
 }

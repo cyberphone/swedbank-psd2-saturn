@@ -314,7 +314,12 @@ public abstract class APICore extends HttpServlet {
             .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
-        openBanking.accessToken = getJsonData(wrapper).getString("access_token");
+        JSONObjectReader jsonResponse = getJsonData(wrapper);
+        openBanking.accessToken = jsonResponse.getString("access_token");
+        openBanking.refreshToken = jsonResponse.getString("refresh_token");
+        openBanking.expires = jsonResponse.getInt("expires_in") + System.currentTimeMillis() / 1000;
+        openBanking.userId = DEFAULT_USER;
+        DataBaseOperations.storeAccessToken(openBanking);
     }
 
     static void setAuthorization(HTTPSWrapper wrapper,
@@ -447,6 +452,7 @@ public abstract class APICore extends HttpServlet {
             logger.info("About to GET: " + restUrl.toString());
         }
         wrapper.makeGetRequest(restUrl.toString());
+        // In some way we need the logged in user's identity
         return getLocation(wrapper);        
     }
 

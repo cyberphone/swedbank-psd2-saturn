@@ -40,7 +40,7 @@ public class DataBaseOperations {
     static String createCredential(String accountId,         // IBAN
                                    String name,              // On the card
                                    String methodUri,         // Saturn method
-                                   String userIdOrNull,      // Just one
+                                   String userId,            // Just one
                                    PublicKey payReq,         // Payment authorization
                                    PublicKey optionalBalReq) // Not yet...
     throws SQLException, IOException {
@@ -58,12 +58,12 @@ public class DataBaseOperations {
 
             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
                  CallableStatement stmt = 
-                    connection.prepareCall("{call CreateCredentialSP(?,?,?,?,?,?)}");) {
+                    connection.prepareCall("{call CreateCredentialSP(?,?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
-                stmt.setString(2, accountId);
-                stmt.setString(3, name);
-                stmt.setString(4, methodUri);
-                stmt.setString(5, userIdOrNull == null ? APICore.DEFAULT_USER : userIdOrNull);
+                stmt.setString(2, userId);
+                stmt.setString(3, accountId);
+                stmt.setString(4, name);
+                stmt.setString(5, methodUri);
                 stmt.setBytes(6, s256(payReq));
                 stmt.setBytes(7, s256(optionalBalReq));
                 stmt.execute();
@@ -161,6 +161,29 @@ public class DataBaseOperations {
             logger.log(Level.SEVERE, "Database problem", e);
             throw new IOException(e);
         }
-        
+    }
+
+    static void storeAccessToken(OpenBanking openBanking) throws IOException {
+        try {
+
+/*
+            CREATE PROCEDURE StoreAccessTokenSP (IN p_AccessToken CHAR(36),
+                                                 IN p_RefreshToken CHAR(36),
+                                                 IN p_Expires INT,
+                                                 IN p_UserId CHAR(13))
+*/
+
+            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+                 CallableStatement stmt = connection.prepareCall("{call StoreAccessTokenSP(?,?,?,?)}");) {
+                stmt.setString(1, openBanking.accessToken);
+                stmt.setString(2, openBanking.refreshToken);
+                stmt.setLong(3, openBanking.expires);
+                stmt.setString(4, openBanking.userId);
+                stmt.execute();
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Database problem", e);
+            throw new IOException(e);
+        }
     }
 }
