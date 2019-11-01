@@ -46,7 +46,7 @@ import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This is the core API class.  It is both API and provider specific
 
-public abstract class APICore extends HttpServlet {
+abstract class APICore extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
 

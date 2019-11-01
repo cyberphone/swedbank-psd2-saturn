@@ -33,7 +33,7 @@ import org.webpki.crypto.HashAlgorithms;
 
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-public class DataBaseOperations {
+class DataBaseOperations {
 
     static Logger logger = Logger.getLogger(DataBaseOperations.class.getCanonicalName());
     
@@ -76,7 +76,7 @@ public class DataBaseOperations {
     }
 
     static OpenBanking.AuthenticationResult authenticatePayReq(String credentialId,
-                                                   PublicKey payReq)
+                                                               PublicKey payReq)
     throws SQLException, IOException {
         try {
 
@@ -91,7 +91,7 @@ public class DataBaseOperations {
 
             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
                  CallableStatement stmt = 
-                    connection.prepareCall("{call AuthenticatePayReqSP(?,?,?,?,?)}");) {
+                    connection.prepareCall("{call AuthenticatePayReqSP(?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
                 stmt.registerOutParameter(2, java.sql.Types.VARCHAR);
                 stmt.registerOutParameter(3, java.sql.Types.VARCHAR);

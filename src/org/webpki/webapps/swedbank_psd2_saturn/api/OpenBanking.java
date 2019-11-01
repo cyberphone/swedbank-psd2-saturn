@@ -171,6 +171,7 @@ public class OpenBanking implements Serializable {
 
 
     public void setAndValidateAccountId(String account) {
+        currentAccountId = account;
     }
 
     public String getAccountId() {

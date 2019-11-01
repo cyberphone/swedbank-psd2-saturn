@@ -22,8 +22,11 @@ import java.util.Enumeration;
 
 import javax.servlet.ServletException;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.util.logging.Logger;
 
 import org.webpki.json.JSONParser;
 
@@ -31,13 +34,13 @@ import org.webpki.saturn.common.BaseProperties;
 
 import org.webpki.webutil.ServletUtil;
 
-import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
-
 // Debug print
 
-public class DebugServlet extends APICore {
+public class DebugServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    
+    static Logger logger = Logger.getLogger(DebugServlet.class.getName());
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
