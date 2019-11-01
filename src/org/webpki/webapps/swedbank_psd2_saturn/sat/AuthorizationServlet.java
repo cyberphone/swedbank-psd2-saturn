@@ -22,8 +22,6 @@ import java.math.BigDecimal;
 
 import java.text.SimpleDateFormat;
 
-import java.sql.Connection;
-
 import java.util.Locale;
 
 import org.webpki.json.JSONObjectReader;
@@ -48,7 +46,7 @@ import org.webpki.util.ArrayUtil;
 import org.webpki.util.ISODateTime;
 
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
-import org.webpki.webapps.swedbank_psd2_saturn.api.DataBaseOperations;
+
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -63,14 +61,13 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
     
     @Override
     JSONObjectWriter processCall(UrlHolder urlHolder,
-                                 JSONObjectReader providerRequest,
-                                 Connection connection) throws Exception {
+                                 JSONObjectReader providerRequest) throws Exception {
  
         // Decode authorization request message
         AuthorizationRequest authorizationRequest = new AuthorizationRequest(providerRequest);
 
         // Check that we actually were the intended party
-        if (!LocalIntegrationService.serviceUri.equals(authorizationRequest.getRecepientUrl())) {
+        if (!LocalIntegrationService.serviceUrl.equals(authorizationRequest.getRecepientUrl())) {
             throw new IOException("Unexpected \"" + RECEPIENT_URL_JSON + "\" : " + authorizationRequest.getRecepientUrl());
         }
 
@@ -163,10 +160,9 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         // accountId for external consumption like an IBAN
         String credentialId = authorizationData.getAccountId();
         String authorizedPaymentMethod = authorizationData.getPaymentMethod();
-        DataBaseOperations.AuthenticationResult authenticationResult =
-                DataBaseOperations.authenticatePayReq(connection, 
-                                                      credentialId,
-                                                      authorizationData.getPublicKey());
+        OpenBanking.AuthenticationResult authenticationResult =
+                OpenBanking.authenticatePayReq(credentialId,
+                                               authorizationData.getPublicKey());
         if (authenticationResult.error != null) {
             logger.severe(authenticationResult.error + " " + credentialId + 
                     " " + authorizationData.getPublicKey().toString());
@@ -245,11 +241,9 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         if (cardPayment) {
             transactionId = "Card Authentication";
         } else {
-            OpenBanking openBanking = 
-                    new OpenBanking(org.webpki.webapps.swedbank_psd2_saturn.api.APICore.DEFAULT_USER,
-                                    authorizationRequest.getClientIpAddress(),
-                                    null);
-            openBanking.authorize();
+            OpenBanking openBanking = new OpenBanking(authenticationResult,
+                                                      authorizationRequest.getClientIpAddress(),
+                                                      null);
             transactionId = openBanking.paymentRequest(accountId,
                                                        "BG 5051-6905",
                                                        amount,

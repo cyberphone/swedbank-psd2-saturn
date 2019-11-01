@@ -90,16 +90,16 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     static final String KEYSTORE_PASSWORD           = "key_password";
    
-    static final String TEST_MERCHANT_URI           = "test_merchant_uri";
+    static final String TEST_MERCHANT_URL           = "test_merchant_url";
 
-    public static String testMerchantUri;
+    public static String testMerchantUrl;
 
     /////////////////////////////////////////////////////////////////////////////
     // Bank objects
     /////////////////////////////////////////////////////////////////////////////
-    public static String bankBaseUri;
+    public static String bankBaseUrl;
 
-    static final String BANK_BASE_URI               = "bank_base_uri";
+    static final String BANK_BASE_URL               = "bank_base_url";
 
     static final String BANK_COMMON_NAME            = "bank_common_name";
 
@@ -138,9 +138,9 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static JSONX509Verifier acquirerRoot;
 
-    public static String serviceUri;
+    public static String serviceUrl;
 
-    public static String providerAuthorityUri;
+    public static String providerAuthorityUrl;
 
     static final int PROVIDER_EXPIRATION_TIME = 3600;
    
@@ -157,7 +157,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static String grantedVersions;
     
-    public static String keygen2RunUri;
+    public static String keygen2RunUrl;
 
     public static KeyStoreEnumerator keyManagementKey;
 
@@ -190,9 +190,9 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     /////////////////////////////////////////////////////////////////////////////
     // W3C PaymentRequest data
     /////////////////////////////////////////////////////////////////////////////
-    static final String W3C_PAYMENT_REQUEST_URI   = "w3c_payment_request_uri";
+    static final String W3C_PAYMENT_REQUEST_URL   = "w3c_payment_request_url";
 
-    public static String w3cPaymentRequestUri;
+    public static String w3cPaymentRequestUrl;
 
     static final String USE_W3C_PAYMENT_REQUEST   = "use_w3c_payment_request";
 
@@ -252,12 +252,12 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Test merchant
             /////////////////////////////////////////////////////////////////////////////////////////////
-            testMerchantUri = getPropertyString(TEST_MERCHANT_URI);
+            testMerchantUrl = getPropertyString(TEST_MERCHANT_URL);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Where our app resides in Cyberspace
             /////////////////////////////////////////////////////////////////////////////////////////////
-            bankBaseUri = getPropertyString(BANK_BASE_URI);
+            bankBaseUrl = getPropertyString(BANK_BASE_URL);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Payment network root keys
@@ -304,7 +304,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             keygen2JSONCache.addToCache(KeyCreationResponseDecoder.class);
             keygen2JSONCache.addToCache(ProvisioningFinalizationResponseDecoder.class);
             
-            keygen2RunUri = bankBaseUri + "/kg2.runner";
+            keygen2RunUrl = bankBaseUrl + "/kg2.runner";
 
             svgCardImage = getEmbeddedResourceString(SVG_CARD_IMAGE);
 
@@ -338,7 +338,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             String extensions = getEmbeddedResourceString(SATURN_EXTENSIONS);
             if (!extensions.isEmpty()) {
-                extensions = extensions.replace("${host}", bankBaseUri);
+                extensions = extensions.replace("${host}", bankBaseUrl);
                 optionalProviderExtensions = JSONParser.parse(extensions);
             }
 
@@ -346,7 +346,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             // W3C PaymentRequest data
             ////////////////////////////////////////////////////////////////////////////////////////////
             useW3cPaymentRequest = getPropertyBoolean(USE_W3C_PAYMENT_REQUEST);
-            w3cPaymentRequestUri = getPropertyString(W3C_PAYMENT_REQUEST_URI);
+            w3cPaymentRequestUrl = getPropertyString(W3C_PAYMENT_REQUEST_URL);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Database
@@ -359,9 +359,9 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             // Provider authority object
             /////////////////////////////////////////////////////////////////////////////////////////////
             authorityObjectManager = new AuthorityObjectManager(
-                providerAuthorityUri = bankBaseUri + "/prv.authority",
-                bankBaseUri,
-                serviceUri = bankBaseUri + "/sat.service",
+                providerAuthorityUrl = bankBaseUrl + "/prv.authority",
+                bankBaseUrl,
+                serviceUrl = bankBaseUrl + "/sat.service",
                 new ProviderAuthority.PaymentMethodDeclarations()
                     .add(new ProviderAuthority
                             .PaymentMethodDeclaration(
@@ -394,12 +394,11 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Finally, at each restart OAuth tokens for every enroll user must be checked for
-            // validity and potentially refreshed.
+            // validity and potentially be refreshed.
             //
             // For our Swedbank demo having a single use this is no big deal...
             /////////////////////////////////////////////////////////////////////////////////////////////
-            OpenBanking openBanking = new OpenBanking("1", "127.0.0.1", null);
-            openBanking.authorize();
+            OpenBanking.initialize();
 
             logger.info("Swedbank LIS Demo Successfully Initiated");
         } catch (Exception e) {

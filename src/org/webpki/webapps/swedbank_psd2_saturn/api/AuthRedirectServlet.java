@@ -23,12 +23,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
 
-public class TestAuthRedirectServlet extends APICore {
+public class AuthRedirectServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
 
@@ -63,19 +62,9 @@ public class TestAuthRedirectServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         getOAuth2Token(openBanking, code);
         
-        HTML.standardPage(response, null, new StringBuilder(
-            HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Login Succeeded!</div>" +
-            "</div>" +
-            "<div class=\"centerbox\">" +
-              "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href = 'api.basicaccount'\" " +
-                "title=\"Get Basic Account Data (no consent needed)\">" +
-                "Step #2: Get Basic Account Data" +
-                "</div></td></tr>" +
-              "</table>" +
-            "</div>"));
+        ////////////////////////////////////////////////////////////////////////////////
+        // Go to the designated URL                                                   //
+        ////////////////////////////////////////////////////////////////////////////////
+        response.sendRedirect(openBanking.loginSuccessUrl);
     }
 }

@@ -22,28 +22,33 @@ import java.security.PublicKey;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.webpki.crypto.HashAlgorithms;
+
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 public class DataBaseOperations {
 
     static Logger logger = Logger.getLogger(DataBaseOperations.class.getCanonicalName());
     
-    public static String createCredential(String accountId,         // IBAN
-                                          String name,              // On the card
-                                          String methodUri,         // Saturn method
-                                          PublicKey payReq,         // Payment authorization
-                                          PublicKey optionalBalReq) // Not yet...
+    static String createCredential(String accountId,         // IBAN
+                                   String name,              // On the card
+                                   String methodUri,         // Saturn method
+                                   String userIdOrNull,      // Just one
+                                   PublicKey payReq,         // Payment authorization
+                                   PublicKey optionalBalReq) // Not yet...
     throws SQLException, IOException {
         try {
 
 /*
             CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
+                                                 IN p_UserId CHAR(13),
                                                  IN p_AccountId VARCHAR(30),
                                                  IN p_Name VARCHAR(50),
                                                  IN p_MethodUri VARCHAR(50),
@@ -58,8 +63,9 @@ public class DataBaseOperations {
                 stmt.setString(2, accountId);
                 stmt.setString(3, name);
                 stmt.setString(4, methodUri);
-                stmt.setBytes(5, s256(payReq));
-                stmt.setBytes(6, s256(optionalBalReq));
+                stmt.setString(5, userIdOrNull == null ? APICore.DEFAULT_USER : userIdOrNull);
+                stmt.setBytes(6, s256(payReq));
+                stmt.setBytes(7, s256(optionalBalReq));
                 stmt.execute();
                 return String.valueOf(stmt.getInt(1));
             }
@@ -69,15 +75,8 @@ public class DataBaseOperations {
         }            
     }
 
-    public static class AuthenticationResult {
-        public String error;
-        public String name;
-        public String accountId;
-    }
-    
-    public static AuthenticationResult authenticatePayReq(Connection connection,
-                                                          String credentialId,
-                                                          PublicKey payReq)
+    static OpenBanking.AuthenticationResult authenticatePayReq(String credentialId,
+                                                   PublicKey payReq)
     throws SQLException, IOException {
         try {
 
@@ -85,24 +84,28 @@ public class DataBaseOperations {
             CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
                                                    OUT p_Name VARCHAR(50),
                                                    OUT p_AccountId VARCHAR(30),
+                                                   OUT p_AccessToken CHAR(36),
                                                    IN p_CredentialId INT,
                                                    IN p_S256PayReq BINARY(32))
- 
 */
 
-            try (CallableStatement stmt = 
+            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+                 CallableStatement stmt = 
                     connection.prepareCall("{call AuthenticatePayReqSP(?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
                 stmt.registerOutParameter(2, java.sql.Types.VARCHAR);
                 stmt.registerOutParameter(3, java.sql.Types.VARCHAR);
-                stmt.setInt(4, Integer.valueOf(credentialId));
-                stmt.setBytes(5, s256(payReq));
+                stmt.registerOutParameter(4, java.sql.Types.CHAR);
+                stmt.setInt(5, Integer.valueOf(credentialId));
+                stmt.setBytes(6, s256(payReq));
                 stmt.execute();
-                AuthenticationResult authenticationResult = new AuthenticationResult();
+                OpenBanking.AuthenticationResult authenticationResult = 
+                        new OpenBanking.AuthenticationResult();
                 int errorCode = stmt.getInt(1);
                 if (errorCode  == 0) {
                     authenticationResult.name = stmt.getString(2);
                     authenticationResult.accountId = stmt.getString(3);
+                    authenticationResult.accessToken = stmt.getString(4);
                 } else {
                     authenticationResult.error = errorCode == 1 ?
                               "Key does not match credentialId" : "Credential not found";
@@ -117,5 +120,47 @@ public class DataBaseOperations {
 
     private static byte[] s256(PublicKey publicKey) throws IOException {
         return publicKey == null ? null : HashAlgorithms.SHA256.digest(publicKey.getEncoded());
+    }
+
+    static String getAccessToken(String userId) throws IOException {
+        try {
+
+/*
+            CREATE PROCEDURE GetAccessTokenSP (OUT p_AccessToken CHAR(36),
+                                               IN p_UserId CHAR(13))
+*/
+
+            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+                 CallableStatement stmt = connection.prepareCall("{call GetAccessTokenSP(?,?)}");) {
+                stmt.registerOutParameter(1, java.sql.Types.CHAR);
+                stmt.setString(2, userId);
+                stmt.execute();
+                return stmt.getString(1);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Database problem", e);
+            throw new IOException(e);
+        }
+    }
+
+    public static void scanAll(OpenBanking.CallBack callBack) throws IOException {
+        try {
+            long time = System.currentTimeMillis();
+            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+                 Statement stmt =
+                         connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, 
+                                                    ResultSet.CONCUR_UPDATABLE);
+                 ResultSet rs = stmt.executeQuery("SELECT * FROM OAUTH2TOKENS")) {
+                while (rs.next()) {
+                    if (rs.getLong("Expires") < time) {
+                        OpenBanking.Token token = callBack.getToken(rs.getString("UserId"),"");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Database problem", e);
+            throw new IOException(e);
+        }
+        
     }
 }

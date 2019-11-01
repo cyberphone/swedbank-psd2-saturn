@@ -54,7 +54,7 @@ public class TestBasicAccountServlet extends APICore {
         StringBuilder html = new StringBuilder(
             HTML_HEADER +
             "<div class=\"centerbox\">" +
-              "<div class=\"description\">Basic Account Information</div>" +
+              "<div class=\"description\">Basic Account information</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table class=\"tftable\"><tr><th>Account ID</th></tr>");

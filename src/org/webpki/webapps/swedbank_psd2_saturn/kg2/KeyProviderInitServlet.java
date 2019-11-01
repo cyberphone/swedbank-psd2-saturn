@@ -25,6 +25,7 @@ import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -37,11 +38,11 @@ import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
+import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
 // Initiation code for KeyGen2
 
-public class KeyProviderInitServlet extends APICore {
+public class KeyProviderInitServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
@@ -76,7 +77,7 @@ public class KeyProviderInitServlet extends APICore {
         // The following is the actual contract between an issuing server and a KeyGen2 client.
         // The PUP_INIT_URL argument bootstraps the protocol via an HTTP GET
         ////////////////////////////////////////////////////////////////////////////////////////////
-        String urlEncoded = URLEncoder.encode(LocalIntegrationService.keygen2RunUri, "utf-8");
+        String urlEncoded = URLEncoder.encode(LocalIntegrationService.keygen2RunUrl, "utf-8");
         return scheme + "://" + MobileProxyParameters.HOST_KEYGEN2 + 
                "?" + MobileProxyParameters.PUP_COOKIE     + "=" + "JSESSIONID%3D" + session.getId() +
                "&" + MobileProxyParameters.PUP_INIT_URL   + "=" + urlEncoded + "%3F" + INIT_TAG + "%3Dtrue" +
@@ -158,7 +159,7 @@ public class KeyProviderInitServlet extends APICore {
             //==================================================================//
             "        const details = {total:{label:'total',amount:{currency:'USD',value:'1.00'}}};\n" +
             "        const supportedInstruments = [{\n" +
-            "          supportedMethods: '" + LocalIntegrationService.w3cPaymentRequestUri + "',\n" +
+            "          supportedMethods: '" + LocalIntegrationService.w3cPaymentRequestUrl + "',\n" +
 // Test data
 //            "          supportedMethods: 'weird-pay',\n" +
             "          data: {url: invocationUrl}\n" +
@@ -238,7 +239,7 @@ public class KeyProviderInitServlet extends APICore {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
-        // Note: there are three different ways to enter here.
+        // Note: there are three(!) different ways to enter here.
         // 1. From AccountServlet with a selected account parameter
         // 2. From javascript "fetch()" when using W3C PaymentRequest
         // 3. From javascript when using URL handler
@@ -259,12 +260,17 @@ public class KeyProviderInitServlet extends APICore {
         String userName = request.getParameter(USERNAME_SESSION_ATTR_PARM);
         if (account != null) {
             // Case 1
+
+            // We are still talking Open Banking
+            // Client side provided data should always be validated
+            OpenBanking.getOpenBanking(request, response).setAndValidateAccountId(account);
+
+            // Initiate KeyGen2
             ServerState serverState =
                     new ServerState(new KeyGen2SoftHSM(LocalIntegrationService.keyManagementKey), 
-                                    LocalIntegrationService.keygen2RunUri,
+                                    LocalIntegrationService.keygen2RunUrl,
                                     LocalIntegrationService.serverCertificate,
                                     null);
-            serverState.setServiceSpecificObject(ACCOUNT_SET_MODE_PARM, account);
             session.setAttribute(KEYGEN2_SESSION_ATTR, serverState);
             response.sendRedirect("kg2.init");
             return;

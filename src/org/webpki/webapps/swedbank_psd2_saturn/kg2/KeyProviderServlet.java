@@ -71,7 +71,6 @@ import org.webpki.keygen2.ProvisioningFinalizationRequestEncoder;
 
 import org.webpki.sks.Grouping;
 import org.webpki.sks.AppUsage;
-
 import org.webpki.sks.PassphraseFormat;
 
 import org.webpki.saturn.common.BaseProperties;
@@ -90,7 +89,8 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
-import org.webpki.webapps.swedbank_psd2_saturn.api.DataBaseOperations;
+
+import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
 // KeyGen2 protocol runner that creates Saturn wallet keys.
 
@@ -109,7 +109,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Server errors are returned as HTTP redirects taking the client out of its KeyGen2 mode
         ////////////////////////////////////////////////////////////////////////////////////////////
-        response.sendRedirect(LocalIntegrationService.keygen2RunUri + 
+        response.sendRedirect(LocalIntegrationService.keygen2RunUrl + 
                               "?" +
                               KeyProviderInitServlet.ERROR_TAG +
                               "=" +
@@ -277,19 +277,18 @@ logger.info("POST session=" + request.getSession(false).getId());
                     // so it does NOT function as a user ID...
                     String userName = (String) session.getAttribute(
                             KeyProviderInitServlet.USERNAME_SESSION_ATTR_PARM);
-                    String accountId = (String) keygen2State.getServiceSpecificObject(
-                            KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM);
+                    OpenBanking openBanking = OpenBanking.getOpenBanking(request, response);
+                    String accountId = openBanking.getAccountId();
 
                     // now create Saturn payment credentials
                     // 1. Get key and other input data
                     key = keygen2State.getKeys()[0];
                     String methodUri = PaymentMethods.BANK_DIRECT.getPaymentMethodUri();
-                    String credentialId = // A credentialId uniquely points to an account 
-                            DataBaseOperations.createCredential(accountId,
-                                                                userName,
-                                                                methodUri,
-                                                                key.getPublicKey(),
-                                                                null);
+                    // A credentialId uniquely points to an account
+                    String credentialId = openBanking.createCredential(userName,
+                                                                       methodUri,
+                                                                       key.getPublicKey(),
+                                                                       null);
 
                     // 2. Create a "carrier" certificate for the signature key (SKS need that)
                     // In this unusual setup all certificates have the same public/private key.
@@ -338,7 +337,7 @@ logger.info("POST session=" + request.getSession(false).getId());
                         CardDataEncoder.encode(
                             methodUri,
                             credentialId, 
-                            LocalIntegrationService.providerAuthorityUri, 
+                            LocalIntegrationService.providerAuthorityUrl, 
                             AsymSignatureAlgorithms.ECDSA_SHA256, 
                             LocalIntegrationService.dataEncryptionAlgorithm, 
                             LocalIntegrationService.currentDecryptionKey.getKeyEncryptionAlgorithm(), 
@@ -393,7 +392,7 @@ logger.info("POST session=" + request.getSession(false).getId());
                     // We are done, return an HTTP redirect taking 
                     // the client out of its KeyGen2 mode
                     ////////////////////////////////////////////////////////////////////////
-                    response.sendRedirect(LocalIntegrationService.keygen2RunUri);
+                    response.sendRedirect(LocalIntegrationService.keygen2RunUrl);
                     return;
 
                 default:
@@ -454,8 +453,8 @@ logger.info("POST session=" + request.getSession(false).getId());
                 "<div class=\"centerbox\">" +
                   "<div class=\"description\">" +
                     "You may now pay with the card at a merchant like:<br>" +
-                    "<a href=\"" + LocalIntegrationService.testMerchantUri +
-                    "\">" + LocalIntegrationService.testMerchantUri + "</a></div>");
+                    "<a href=\"" + LocalIntegrationService.testMerchantUrl +
+                    "\">" + LocalIntegrationService.testMerchantUrl + "</a></div>");
         }
         HTML.standardPage(response,
                           null,

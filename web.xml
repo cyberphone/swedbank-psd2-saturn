@@ -30,9 +30,9 @@
     </context-param>
 
     <context-param>
-        <description>Test Merchant URI</description>
-        <param-name>test_merchant_uri</param-name>
-        <param-value>@test-merchant-uri@</param-value>
+        <description>Test Merchant URL</description>
+        <param-name>test_merchant_url</param-name>
+        <param-value>@test-merchant-url@</param-value>
     </context-param>
 
     <context-param>
@@ -42,9 +42,9 @@
     </context-param>
 
     <context-param>
-        <description>W3C PaymentRequest URI</description>
-        <param-name>w3c_payment_request_uri</param-name>
-        <param-value>@w3c-payment-request-uri@</param-value>
+        <description>W3C PaymentRequest URL</description>
+        <param-name>w3c_payment_request_url</param-name>
+        <param-value>@w3c-payment-request-url@</param-value>
     </context-param>
 
     <context-param>
@@ -60,9 +60,9 @@
     </context-param>
 
     <context-param>
-        <description>Bank (Application) Base URI</description>
-        <param-name>bank_base_uri</param-name>
-        <param-value>@bank-base-uri@</param-value>
+        <description>Bank (Application) Base URL</description>
+        <param-name>bank_base_url</param-name>
+        <param-value>@bank-base-url@</param-value>
     </context-param>
 
     <context-param>
@@ -163,13 +163,18 @@
     </servlet>
 
     <servlet>
+        <servlet-name>AuthRedirectServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.AuthRedirectServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>TestAuthorizeServlet</servlet-name>
         <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthorizeServlet</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>TestAuthRedirectServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthRedirectServlet</servlet-class>
+        <servlet-name>TestLoginSuccessServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestLoginSuccessServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -248,13 +253,18 @@
     </servlet-mapping>
 
     <servlet-mapping>
+        <servlet-name>AuthRedirectServlet</servlet-name>
+        <url-pattern>/api.authredirect</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
         <servlet-name>TestAuthorizeServlet</servlet-name>
         <url-pattern>/api.test</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>TestAuthRedirectServlet</servlet-name>
-        <url-pattern>/api.authredirect</url-pattern>
+        <servlet-name>TestLoginSuccessServlet</servlet-name>
+        <url-pattern>/api.loginsuccess</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

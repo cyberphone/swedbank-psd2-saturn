@@ -18,41 +18,68 @@ package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 import java.io.Serializable;
-
 import java.math.BigDecimal;
+import java.security.PublicKey;
+import java.sql.SQLException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.webpki.json.JSONObjectReader;
-
 import org.webpki.saturn.common.Currencies;
-
 
 public class OpenBanking implements Serializable {
     
-     public OpenBanking(String userId,
-                        String clientIpAddress,
-                        String userAgentOrNull) {
-        this.userId = userId;
-        this.clientIpAddress = clientIpAddress;
-        this.userAgent = userAgent == null ? APICore.DEFAULT_BROWSER : userAgent;
+    public static class AuthenticationResult {
+        public String error;
+        public String name;
+        public String accountId;
+        public String accessToken;
     }
 
-    public OpenBanking(String userId, HttpServletRequest request) {
-        this(userId, 
+    static class Token {
+        
+    }
+    
+    interface CallBack {
+        Token getToken(String userId, String accessToken);
+    }
+    
+    private OpenBanking(String clientIpAddress,
+                        String userAgentOrNull) {
+        this.clientIpAddress = clientIpAddress;
+        this.userAgent = userAgentOrNull == null ? APICore.DEFAULT_BROWSER : userAgentOrNull;
+    }
+    
+    public OpenBanking(String userIdOrNull,
+                       String clientIpAddress,
+                       String userAgentOrNull) throws IOException {
+        this(clientIpAddress, userAgentOrNull);
+        this.accessToken = DataBaseOperations.getAccessToken(userIdOrNull == null ?
+                                      APICore.DEFAULT_USER : userIdOrNull);
+    }
+
+    public OpenBanking(String userIdOrNull, HttpServletRequest request) throws IOException {
+        this(userIdOrNull, 
              request.getRemoteAddr(),
              request.getHeader(APICore.HTTP_HEADER_USER_AGENT));
     }
 
+    public OpenBanking(AuthenticationResult authenticationResult,
+                       String clientIpAddress,
+                       String userAgentOrNull) {
+        this(clientIpAddress, userAgentOrNull);
+        this.accessToken = authenticationResult.accessToken;
+    }
+
     private static final long serialVersionUID = 1L;
 
-    String userId;
-    
     String userAgent;
 
     String clientIpAddress;
 
-    String oauth2Token;
+    String accessToken;
 
     String consentId;
 
@@ -77,6 +104,12 @@ public class OpenBanking implements Serializable {
     }
     
     Object userObject;
+
+    private String currentAccountId;
+
+    private String userId;
+
+    String loginSuccessUrl;
     
     public Object getUserObject() {
         return userObject;
@@ -84,11 +117,6 @@ public class OpenBanking implements Serializable {
     
     public OpenBanking setUserObject(Object userObject) {
         this.userObject = userObject;
-        return this;
-    }
-
-    public OpenBanking authorize() throws IOException {
-        APICore.emulatedAuthorize(this);
         return this;
     }
 
@@ -113,5 +141,75 @@ public class OpenBanking implements Serializable {
                                               currency,
                                               creditorName,
                                               reference);
+    }
+
+    public static void initialize() throws IOException {
+        DataBaseOperations.scanAll(new CallBack() {
+
+            @Override
+            public Token getToken(String userId, String accessToken) {
+                Token token = new Token();
+                return token;
+            }
+            
+        });
+    }
+
+    public static OpenBanking authorize() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public OpenBanking setRequestParameters(HttpServletRequest request) {
+        request.getSession(true).setAttribute(APICore.OBSD, this);
+        return null;
+    }
+
+    public static OpenBanking getOpenBanking(HttpServletRequest request,
+                                             HttpServletResponse response) throws IOException {
+        return APICore.getOpenBanking(request, response);
+    }
+
+
+    public void setAndValidateAccountId(String account) {
+    }
+
+    public String getAccountId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String getUserId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String createCredential(String userName,
+                                   String methodUri,
+                                   PublicKey payReq,
+                                   PublicKey optionalBalReq)
+    throws SQLException, IOException {
+        return DataBaseOperations.createCredential(currentAccountId,
+                                                   userName,
+                                                   methodUri,
+                                                   userId,
+                                                   payReq,
+                                                   optionalBalReq);
+    }
+
+    public static AuthenticationResult authenticatePayReq(String credentialId,
+                                                          PublicKey payReq)
+    throws SQLException, IOException {
+        return DataBaseOperations.authenticatePayReq(credentialId, payReq);
+    }
+
+    public static void createSession(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     String loginSuccessUrl) throws IOException {
+        HttpSession session = request.getSession(true);
+        OpenBanking openBanking = new OpenBanking(APICore.DEFAULT_USER, request);
+        openBanking.loginSuccessUrl = loginSuccessUrl;
+        session.setAttribute(APICore.OBSD, openBanking);
+        response.sendRedirect(APICore.coreInit());
     }
 }

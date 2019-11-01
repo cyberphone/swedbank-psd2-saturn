@@ -19,8 +19,6 @@ package org.webpki.webapps.swedbank_psd2_saturn.sat;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.sql.Connection;
-
 import java.math.BigDecimal;
 
 import java.security.GeneralSecurityException;
@@ -86,10 +84,12 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
     }
 
     abstract JSONObjectWriter processCall(UrlHolder urlHolder, 
-                                          JSONObjectReader providerRequest,
-                                          Connection connection) throws Exception;
+                                          JSONObjectReader providerRequest) throws Exception;
     
     static class NormalException extends Exception {
+
+        private static final long serialVersionUID = 1L;
+
         NormalException(String message) {
             super(message);
         }
@@ -97,7 +97,6 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         UrlHolder urlHolder = null;
-        Connection connection = null;
         try {
 // TODO Here there should be a generic input/output cache to provide idempotent operation
 // because you don't want a retried request to pass the transaction mechanism.
@@ -120,15 +119,7 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             /////////////////////////////////////////////////////////////////////////////////////////
             // Each method has its own servlet in this setup but that is just an option            //
             /////////////////////////////////////////////////////////////////////////////////////////
-            if (LocalIntegrationService.jdbcDataSource != null) {
-                connection = LocalIntegrationService.jdbcDataSource.getConnection();
-            }
-            JSONObjectWriter providerResponse =
-                    processCall(urlHolder, providerRequest, connection);
-            if (LocalIntegrationService.jdbcDataSource != null) {
-                connection.close();
-                connection = null;
-            }
+            JSONObjectWriter providerResponse = processCall(urlHolder, providerRequest);
 
             if (LocalIntegrationService.logging) {
                 logger.info("Responded to caller"  + urlHolder.getCallerAddress() + 
@@ -157,11 +148,6 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             PrintWriter writer = response.getWriter();
             writer.print(message);
             writer.flush();
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (Exception sql) {}
-            }
         }
     }
 }

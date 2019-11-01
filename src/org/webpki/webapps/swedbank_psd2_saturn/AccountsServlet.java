@@ -22,16 +22,15 @@ import java.math.BigDecimal;
 
 import javax.servlet.ServletException;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
-import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
-
 import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
 
-public class AccountsServlet extends APICore {
+public class AccountsServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
@@ -42,7 +41,7 @@ public class AccountsServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Check that we still have a session                                         //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBanking openBanking = getOpenBanking(request, response);
+        OpenBanking openBanking = OpenBanking.getOpenBanking(request, response);
         if (openBanking == null) return;
 
         ////////////////////////////////////////////////////////////////////////////////

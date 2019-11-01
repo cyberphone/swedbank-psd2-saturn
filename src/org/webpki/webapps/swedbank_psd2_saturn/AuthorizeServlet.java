@@ -20,19 +20,15 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
-import org.webpki.webapps.swedbank_psd2_saturn.api.APICore;
 
-
-public class AuthorizeServlet extends APICore {
+public class AuthorizeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    
-    private static final String WAITING_ID = "wai";
-    private static final String BUTTON_ID  = "btn";
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -45,12 +41,8 @@ public class AuthorizeServlet extends APICore {
         // but we do this anyway to obtain consistency between implementations and be //
         // closer to a production version using an enhanced Open Banking API          //
         ////////////////////////////////////////////////////////////////////////////////
-        OpenBanking openBanking = new OpenBanking(DEFAULT_USER, request);
-        openBanking.authorize();
-        // We did it!  Continue to the next step
-
-        request.getSession().setAttribute(OBSD, openBanking);
-        response.sendRedirect("accounts");
+//        OpenBanking.authorize().setRequestParameters(request);
+        OpenBanking.createSession(request, response, "accounts");
     }
 
     @Override
@@ -58,26 +50,19 @@ public class AuthorizeServlet extends APICore {
     throws IOException, ServletException {
 
         HTML.standardPage(response, 
-            "function beginAuthorization() {\n" +
-            "  document.getElementById('" + WAITING_ID + "').style.display = 'block';\n" +
-            "  document.getElementById('" + BUTTON_ID + "').style.display = 'none';\n" +
-            "  document.forms.authorize.submit();\n" +
-            "}\n",
+            null,
             "<div class=\"header\">Login to Application</div>" +
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
-              "<div class=\"description\">In a production setup you would need to login but " +
-                "since the Swedbank Open Banking &quot;sandbox&quot; only supports a single " +
-                "and unspecified user, <i>this step is just a dummy.</i></div>" +
+              "<div class=\"description\">The login in the Swedbank Open Banking &quot;sandbox&quot; " +
+                "is rather primitive, respond with <i>any</i> data and proceeed&nbsp;&#x1f642;</div>" +
             "</div>" +
-            "<img id=\"" + WAITING_ID + 
-              "\" src=\"images/waiting.gif\" style=\"padding-top:1em;display:none\">" +
-            "<div id=\"" + BUTTON_ID + "\" class=\"centerbox\">" +
+            "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                  "onclick=\"beginAuthorization()\" " +
-                  "title=\"Continue to account list\">" +
-                  "Continue to Account List...</div></td></tr>" +
+                  "onclick=\"document.forms.authorize.submit()\" " +
+                  "title=\"Login and retrieve account list\">" +
+                  "Login and Retrieve Accounts...</div></td></tr>" +
               "</table>" +
             "</div>");
     }

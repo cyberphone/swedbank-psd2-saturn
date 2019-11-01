@@ -66,20 +66,10 @@ public class TestAuthorizeServlet extends APICore {
         // but we do this anyway to obtain consistency between implementations and be //
         // closer to a production version using an enhanced Open Banking API          //
         ////////////////////////////////////////////////////////////////////////////////
-        HttpSession session = request.getSession();
-        OpenBanking openBanking = new OpenBanking(DEFAULT_USER, request);
-        session.setAttribute(OBSD, openBanking);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Initial LIS to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
-        String location = initializeApi();
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // The returned "Location" is now returned to the browser as a redirect which //
-        // in turn is supposed to invoke a Web authentication UI which if successful  //
-        // should redirect back to the "redirect_uri" with an authentication code     //
-        ////////////////////////////////////////////////////////////////////////////////
-        response.sendRedirect(location);
+        OpenBanking.createSession(request, response, "api.loginsuccess");
     }
 }
