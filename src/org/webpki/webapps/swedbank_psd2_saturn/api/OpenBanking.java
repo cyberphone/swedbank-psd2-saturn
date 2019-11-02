@@ -154,9 +154,9 @@ public class OpenBanking implements Serializable {
         });
     }
 
-    public static OpenBanking authorize() {
-        // TODO Auto-generated method stub
-        return null;
+    public OpenBanking authorize() throws IOException {
+        APICore.emulatedAuthorize(this);
+        return this;
     }
 
     public OpenBanking setRequestParameters(HttpServletRequest request) {

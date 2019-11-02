@@ -17,12 +17,18 @@
 package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
+
 import java.net.URLEncoder;
+
 import java.util.Date;
 import java.util.Locale;
+
 import java.util.logging.Logger;
+
 import java.text.SimpleDateFormat;
+
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -37,10 +43,13 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.Currencies;
 import org.webpki.saturn.common.HttpSupport;
+
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
