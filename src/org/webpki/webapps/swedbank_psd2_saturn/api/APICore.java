@@ -473,7 +473,6 @@ abstract class APICore extends HttpServlet {
         // In some way we need the logged in user's identity
         return getLocation(wrapper);        
     }
-
     
     static void emulatedAuthorize(OpenBanking openBanking) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////
