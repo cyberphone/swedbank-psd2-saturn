@@ -30,6 +30,8 @@ import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
 
+// After authorization/login this servlet is called to enumerate accounts.
+
 public class AccountsServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -55,9 +57,9 @@ public class AccountsServlet extends HttpServlet {
         accounts = openBanking.detailedAccountData(accounts.getAccountIds());
 
         StringBuilder html = new StringBuilder(
-            "<div class=\"header\">Select Account</div>" +
+            "<div class=\"header\">Select Payment Account</div>" +
             "<div class=\"centerbox\">" +
-              "<div class=\"description\">Select account to be used for Saturn payments.</div>" +
+              "<div class=\"description\">Select account to be used for the virtual payment card.</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table class=\"tftable\">" +

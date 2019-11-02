@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
+// The first servlet to call during an enrollment is authorize/login
+
 public class AuthorizeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -40,6 +42,10 @@ public class AuthorizeServlet extends HttpServlet {
         // for a specific user.  Note: Swedbank's Sandbox only supports a single user //
         // but we do this anyway to obtain consistency between implementations and be //
         // closer to a production version using an enhanced Open Banking API          //
+        ////////////////////////////////////////////////////////////////////////////////
+    	
+        ////////////////////////////////////////////////////////////////////////////////
+        // After successful authorize/login we retrieve the user's accounts.          //
         ////////////////////////////////////////////////////////////////////////////////
         OpenBanking.createSession(request, response, "accounts");
     }

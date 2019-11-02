@@ -33,6 +33,7 @@ import java.util.UUID;
 
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
+
 import java.time.format.DateTimeFormatter;
 
 import javax.servlet.http.HttpServlet;
@@ -56,6 +57,9 @@ import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
 // This is the core API class.  It is both API and provider specific
+//
+// Methods starting with "emulated" use Web scraping to achieve what a
+// genuine Dual-mode Open Banking API implementation would do.
 
 abstract class APICore extends HttpServlet {
     
@@ -106,12 +110,12 @@ abstract class APICore extends HttpServlet {
 
     static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
 
-    static class Scraper {
+    static class WebScraper {
 
         String html;
         int index;
 
-        Scraper(HTTPSWrapper wrapper) throws IOException {
+        WebScraper(HTTPSWrapper wrapper) throws IOException {
             if (!wrapper.getContentType().startsWith("text/html")) {
                 throw new IOException("Unexpected content type: " + wrapper.getContentType());
             }
@@ -122,10 +126,10 @@ abstract class APICore extends HttpServlet {
         }
         
         void bad(String text) throws IOException {
-            throw new IOException("Scraper: " + text);
+            throw new IOException("WebScraper: " + text);
         }
 
-        Scraper scanTo(String tag) throws IOException {
+        WebScraper scanTo(String tag) throws IOException {
             index = html.indexOf(tag, index);
             if (index++ < 0) bad(tag);
             return this;
@@ -264,8 +268,8 @@ abstract class APICore extends HttpServlet {
             return addParameter("app-id", LocalIntegrationService.oauth2ClientId);
         }
 
-        RESTUrl addScrapedNameValue(Scraper scraper, String name) throws IOException {
-            return addParameter(name, scraper.inputNameValue(name));
+        RESTUrl addScrapedNameValue(WebScraper webScraper, String name) throws IOException {
+            return addParameter(name, webScraper.inputNameValue(name));
         }
         
         @Override
@@ -290,8 +294,8 @@ abstract class APICore extends HttpServlet {
             return this;
         }
         
-        FormData addScrapedNameValue(Scraper scraper, String name) throws IOException {
-            return addElement(name, scraper.inputNameValue(name));
+        FormData addScrapedNameValue(WebScraper webScraper, String name) throws IOException {
+            return addElement(name, webScraper.inputNameValue(name));
         }
 
         public byte[] toByteArray() throws IOException {
@@ -320,7 +324,8 @@ abstract class APICore extends HttpServlet {
             .addElement("client_id", LocalIntegrationService.oauth2ClientId)
             .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret)
             .addElement("code", code)
-            .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + OAUTH2_REDIRECT_PATH);
+            .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + 
+            		                    OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader jsonResponse = getJsonData(wrapper);
@@ -343,7 +348,8 @@ abstract class APICore extends HttpServlet {
         if (LocalIntegrationService.logging) {
             logger.info("JSON to be POSTed (" + restUrl + ")\n" + jsonRequestData.toString());
         }
-        wrapper.setHeader(HttpSupport.HTTP_CONTENT_TYPE_HEADER, BaseProperties.JSON_CONTENT_TYPE);
+        wrapper.setHeader(HttpSupport.HTTP_CONTENT_TYPE_HEADER,
+        		          BaseProperties.JSON_CONTENT_TYPE);
         wrapper.makePostRequest(restUrl.toString(), 
                                 jsonRequestData.serializeToBytes(JSONOutputFormats.NORMALIZED));
         return getJsonData(wrapper, expectedResponseCode);
@@ -378,12 +384,15 @@ abstract class APICore extends HttpServlet {
              return null;
         }
         JSONObjectReader links = json.getObject("_links");
-        openBanking.scaStatusUrl = OPEN_BANKING_HOST + links.getObject("scaStatus").getString("href");
-        openBanking.statusUrl = OPEN_BANKING_HOST + links.getObject("status").getString("href");
+        openBanking.scaStatusUrl = OPEN_BANKING_HOST + 
+        		links.getObject("scaStatus").getString("href");
+        openBanking.statusUrl = OPEN_BANKING_HOST + 
+        		links.getObject("status").getString("href");
         return links.getObject("scaRedirect").getString("href");
     }
 
-    static JSONObjectReader performGet(HTTPSWrapper wrapper, RESTUrl restUrl) throws IOException {
+    static JSONObjectReader performGet(HTTPSWrapper wrapper, 
+    		                           RESTUrl restUrl) throws IOException {
         if (LocalIntegrationService.logging) {
             logger.info("About to GET: " + restUrl.toString());
         }
@@ -482,12 +491,12 @@ abstract class APICore extends HttpServlet {
         ////////////////////////////////////////////////////////////////////////////////
         HTTPSWrapper wrapper = getBrowserEmulator(openBanking);
         wrapper.makeGetRequest(location);
-        Scraper scraper = new Scraper(wrapper);
-        scraper.scanTo("<form ");
-        RESTUrl restUrl = new RESTUrl(combineUrl(location, scraper.findWithin("action")))
-            .addScrapedNameValue(scraper, "sessionID")
-            .addScrapedNameValue(scraper, "sessionData")
-            .addScrapedNameValue(scraper, "bic")
+        WebScraper webScraper = new WebScraper(wrapper);
+        webScraper.scanTo("<form ");
+        RESTUrl restUrl = new RESTUrl(combineUrl(location, webScraper.findWithin("action")))
+            .addScrapedNameValue(webScraper, "sessionID")
+            .addScrapedNameValue(webScraper, "sessionData")
+            .addScrapedNameValue(webScraper, "bic")
             .addParameter("userId", DEFAULT_USER);
         location = restUrl.toString();
         String setCookie = wrapper.getHeaderValue("set-cookie");
@@ -497,12 +506,12 @@ abstract class APICore extends HttpServlet {
         wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makeGetRequest(location);
-        scraper = new Scraper(wrapper);
-        scraper.scanTo("<form ");
-        restUrl = new RESTUrl(combineUrl(location, scraper.findWithin("action")))
-            .addScrapedNameValue(scraper, "sessionID")
-            .addScrapedNameValue(scraper, "sessionData")
-            .addScrapedNameValue(scraper, "bic");
+        webScraper = new WebScraper(wrapper);
+        webScraper.scanTo("<form ");
+        restUrl = new RESTUrl(combineUrl(location, webScraper.findWithin("action")))
+            .addScrapedNameValue(webScraper, "sessionID")
+            .addScrapedNameValue(webScraper, "sessionData")
+            .addScrapedNameValue(webScraper, "bic");
         location = restUrl.toString();
 
         wrapper = getBrowserEmulator(openBanking);
@@ -510,14 +519,14 @@ abstract class APICore extends HttpServlet {
         logger.info(location);
         wrapper.makeGetRequest(location);
         logger.info(String.valueOf(wrapper.getResponseCode()));
-        scraper = new Scraper(wrapper);
-        scraper.scanTo("<form ");
-        location = combineUrl(location, scraper.findWithin("action"));
+        webScraper = new WebScraper(wrapper);
+        webScraper.scanTo("<form ");
+        location = combineUrl(location, webScraper.findWithin("action"));
         FormData formData = new FormData()
-            .addScrapedNameValue(scraper, "sessionID")
-            .addScrapedNameValue(scraper, "sessionData")
-            .addScrapedNameValue(scraper, "action")
-            .addScrapedNameValue(scraper, "bic");
+            .addScrapedNameValue(webScraper, "sessionID")
+            .addScrapedNameValue(webScraper, "sessionData")
+            .addScrapedNameValue(webScraper, "action")
+            .addScrapedNameValue(webScraper, "bic");
 
         wrapper = getBrowserEmulator(openBanking);
         wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
@@ -552,22 +561,23 @@ abstract class APICore extends HttpServlet {
         }
         HTTPSWrapper wrapper = getBrowserEmulator(openBanking);
         wrapper.makeGetRequest(location);
-        Scraper scraper = new Scraper(wrapper);
+        WebScraper webScraper = new WebScraper(wrapper);
         String setCookie = wrapper.getHeaderValue("set-cookie");
         openBanking.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
-        scraper.scanTo("<form ").scanTo("<form ");
-        location = combineUrl(location, scraper.findWithin("action"));
+        webScraper.scanTo("<form ").scanTo("<form ");
+        location = combineUrl(location, webScraper.findWithin("action"));
         FormData formData = new FormData()
-            .addScrapedNameValue(scraper, "token")
-            .addScrapedNameValue(scraper, "bic")
-            .addScrapedNameValue(scraper, "action");
+            .addScrapedNameValue(webScraper, "token")
+            .addScrapedNameValue(webScraper, "bic")
+            .addScrapedNameValue(webScraper, "action");
 
         wrapper = getBrowserEmulator(openBanking);
         wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makePostRequest(location, formData.toByteArray());
-        scraper = new Scraper(wrapper);
-        if (!scraper.scanTo("<form ").findWithin("action").endsWith(SCA_ACCOUNT_SUCCESS_PATH)) {
+        webScraper = new WebScraper(wrapper);
+        if (!webScraper.scanTo("<form ")
+        		.findWithin("action").endsWith(SCA_ACCOUNT_SUCCESS_PATH)) {
             throw new IOException("Internal error, consent did not succeed");
         }
         return getAccountData(true, openBanking);
@@ -599,7 +609,7 @@ abstract class APICore extends HttpServlet {
     static String initiatePayment(OpenBanking openBanking, 
                                   JSONObjectWriter paymentData) throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
-                "/sandbox/v2/payments/se-domestic-credit-transfers")
+                                      "/sandbox/v2/payments/se-domestic-credit-transfers")
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
@@ -649,20 +659,21 @@ abstract class APICore extends HttpServlet {
                                                                reference));
         HTTPSWrapper wrapper = getBrowserEmulator(openBanking);
         wrapper.makeGetRequest(location);
-        Scraper scraper = new Scraper(wrapper);
+        WebScraper webScraper = new WebScraper(wrapper);
         String setCookie = wrapper.getHeaderValue("set-cookie");
         openBanking.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
-        scraper.scanTo("<form ").scanTo("<form ");
-        location = combineUrl(location, scraper.findWithin("action"));
+        webScraper.scanTo("<form ").scanTo("<form ");
+        location = combineUrl(location, webScraper.findWithin("action"));
         FormData formData = new FormData()
-            .addScrapedNameValue(scraper, "token")
-            .addScrapedNameValue(scraper, "bic")
-            .addScrapedNameValue(scraper, "action");
+            .addScrapedNameValue(webScraper, "token")
+            .addScrapedNameValue(webScraper, "bic")
+            .addScrapedNameValue(webScraper, "action");
         wrapper = getBrowserEmulator(openBanking);
         wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
         wrapper.makePostRequest(location, formData.toByteArray());
-        scraper = new Scraper(wrapper);
-        if (!scraper.scanTo("<form ").findWithin("action").endsWith(SCA_PAYMENT_SUCCESS_PATH)) {
+        webScraper = new WebScraper(wrapper);
+        if (!webScraper.scanTo("<form ")
+        		.findWithin("action").endsWith(SCA_PAYMENT_SUCCESS_PATH)) {
             throw new IOException("Internal error, consent did not succeed");
         }
         return openBanking.paymentId;

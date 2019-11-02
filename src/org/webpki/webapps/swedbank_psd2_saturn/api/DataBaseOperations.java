@@ -33,6 +33,8 @@ import org.webpki.crypto.HashAlgorithms;
 
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
+// All database operation are performed in this class
+
 class DataBaseOperations {
 
     static Logger logger = Logger.getLogger(DataBaseOperations.class.getCanonicalName());
