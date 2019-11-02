@@ -247,7 +247,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
             transactionId = openBanking.paymentRequest(accountId,
                                                        "BG 5051-6905",
                                                        amount,
-                                                       Currencies.SEK,
+                                                       paymentRequest.getCurrency(),
                                                        paymentRequest.getPayee().getCommonName(),
                                                        authorizationRequest.getReferenceId()
                                                            .replace('#', 'R'));
