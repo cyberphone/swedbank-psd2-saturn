@@ -325,7 +325,7 @@ abstract class APICore extends HttpServlet {
             .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret)
             .addElement("code", code)
             .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + 
-            		                    OAUTH2_REDIRECT_PATH);
+                                        OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader jsonResponse = getJsonData(wrapper);
@@ -349,7 +349,7 @@ abstract class APICore extends HttpServlet {
             logger.info("JSON to be POSTed (" + restUrl + ")\n" + jsonRequestData.toString());
         }
         wrapper.setHeader(HttpSupport.HTTP_CONTENT_TYPE_HEADER,
-        		          BaseProperties.JSON_CONTENT_TYPE);
+                          BaseProperties.JSON_CONTENT_TYPE);
         wrapper.makePostRequest(restUrl.toString(), 
                                 jsonRequestData.serializeToBytes(JSONOutputFormats.NORMALIZED));
         return getJsonData(wrapper, expectedResponseCode);
@@ -385,14 +385,14 @@ abstract class APICore extends HttpServlet {
         }
         JSONObjectReader links = json.getObject("_links");
         openBanking.scaStatusUrl = OPEN_BANKING_HOST + 
-        		links.getObject("scaStatus").getString("href");
+                links.getObject("scaStatus").getString("href");
         openBanking.statusUrl = OPEN_BANKING_HOST + 
-        		links.getObject("status").getString("href");
+                links.getObject("status").getString("href");
         return links.getObject("scaRedirect").getString("href");
     }
 
     static JSONObjectReader performGet(HTTPSWrapper wrapper, 
-    		                           RESTUrl restUrl) throws IOException {
+                                       RESTUrl restUrl) throws IOException {
         if (LocalIntegrationService.logging) {
             logger.info("About to GET: " + restUrl.toString());
         }
@@ -576,7 +576,7 @@ abstract class APICore extends HttpServlet {
         wrapper.makePostRequest(location, formData.toByteArray());
         webScraper = new WebScraper(wrapper);
         if (!webScraper.scanTo("<form ")
-        		.findWithin("action").endsWith(SCA_ACCOUNT_SUCCESS_PATH)) {
+                .findWithin("action").endsWith(SCA_ACCOUNT_SUCCESS_PATH)) {
             throw new IOException("Internal error, consent did not succeed");
         }
         return getAccountData(true, openBanking);
@@ -672,7 +672,7 @@ abstract class APICore extends HttpServlet {
         wrapper.makePostRequest(location, formData.toByteArray());
         webScraper = new WebScraper(wrapper);
         if (!webScraper.scanTo("<form ")
-        		.findWithin("action").endsWith(SCA_PAYMENT_SUCCESS_PATH)) {
+                .findWithin("action").endsWith(SCA_PAYMENT_SUCCESS_PATH)) {
             throw new IOException("Internal error, consent did not succeed");
         }
         return openBanking.paymentId;

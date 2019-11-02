@@ -13,6 +13,10 @@
   </condition>
   <fail message="'${application.secrets}' not found!" unless="app_secrets_set"/>
   <property file="${application.secrets}"/>
+    
+  <condition property="inhouse" value="inhouse-" else="">
+    <equals arg1="${inhouse_service_host}" arg2="${service_host}"/>
+  </condition>
 
   <property name="openkeystore.dir" location="${@openkeystore}"/>
   <property name="saturn.dir" location="${@saturn}"/>
@@ -99,7 +103,7 @@
       <replacefilter token="@oauth2-client-id@" value="${oauth2_client_id}"/>
       <replacefilter token="@oauth2-client-secret@" value="${oauth2_client_secret}"/>
       <replacefilter token="@android-webpki-versions@" value="${@android.webpki.versions}"/>
-      <replacefilter token="@svg-card-image@" value="${svg_card_image}"/>
+      <replacefilter token="@svg-card-image@" value="${inhouse}${svg_card_image}"/>
       <replacefilter token="@server-tls-certificate@" value="${kg2_tls_cert_file}"/>
       <replacefilter token="@test-merchant-url@" value="${test_merchant_url}"/>
       <replacefilter token="@use-w3c-payment-request@" value="${@w3c.paymentrequest}"/>
@@ -112,7 +116,7 @@
       <replacefilter token="@bank-common-name@" value="${bank_common_name}"/>
       <replacefilter token="@bank-eecert@" value="${bank_eecert}"/>
       <replacefilter token="@bank-encrypt@" value="${bank_encrypt}"/>
-      <replacefilter token="@bank-kg2kmk@" value="${bank_kg2kmk}"/>
+      <replacefilter token="@bank-kg2kmk@" value="${inhouse}${bank_kg2kmk}"/>
       <replacefilter token="@logging@" value="${logging}"/>
     </replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
@@ -124,9 +128,13 @@
          <include name="webpki.org-webutil*.jar"/>
       </lib>
       <fileset dir="web"/>
-      <zipfileset dir="${keys.dir}" prefix="${class_war_path}"/>
+      <zipfileset dir="${keys.dir}" prefix="${class_war_path}">
+        <include name="${inhouse}${bank_kg2kmk}"/>
+        <include name="${bank_eecert}"/>
+        <include name="${bank_encrypt}"/>
+      </zipfileset>
       <zipfileset dir="${cards.dir}" prefix="${class_war_path}">
-        <include name="${svg_card_image}"/>
+        <include name="${inhouse}${svg_card_image}"/>
       </zipfileset>
       <zipfileset file="${payment-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${acquirer-network-root}" prefix="${class_war_path}"/>
@@ -157,6 +165,9 @@
 
   <target name="createkeys">
     <antcall target="_createonekey">
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore inhouse-${bank_kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+    </antcall>
+    <antcall target="_createonekey">
       <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
     </antcall>
     <antcall target="_createonekey">
@@ -164,9 +175,6 @@
     </antcall>
     <antcall target="_createonekey">
       <param name="cmd" value="-out/keyalias mykey -ca/addpath all -ca/keypass ${keypassword} -ca/storetype PKCS12 -ca/storepass ${keypassword} -ca/keystore ${saturn.dir}/resources/keys/payment-network-subca.p12 -entity/ee -extension/ku digitalSignature -subject &quot;CN=Swedbank, O=PSD2, serialNumber=502017-7753, C=SE&quot; -validity/start 2019-01-01T00:00:00 -validity/end 2022-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_eecert} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
-    </antcall>
-    <antcall target="_createonekey">
-      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${fixed_client_payment_key} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
   </target>
   
