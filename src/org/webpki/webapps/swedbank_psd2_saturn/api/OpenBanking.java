@@ -160,7 +160,7 @@ public class OpenBanking implements Serializable {
     }
 
     public OpenBanking setRequestParameters(HttpServletRequest request) {
-        request.getSession(true).setAttribute(APICore.OBSD, this);
+        request.getSession(true).setAttribute(APICore.OPEN_BANKING_SESSION_ATTR, this);
         return null;
     }
 
@@ -203,7 +203,7 @@ public class OpenBanking implements Serializable {
         HttpSession session = request.getSession(true);
         OpenBanking openBanking = new OpenBanking(request);
         openBanking.loginSuccessUrl = loginSuccessUrl;
-        session.setAttribute(APICore.OBSD, openBanking);
+        session.setAttribute(APICore.OPEN_BANKING_SESSION_ATTR, openBanking);
         response.sendRedirect(APICore.coreInit());
     }
 }

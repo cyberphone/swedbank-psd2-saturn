@@ -29,6 +29,8 @@ import java.util.logging.Logger;
 
 import java.text.SimpleDateFormat;
 
+import java.util.UUID;
+
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -59,7 +61,7 @@ abstract class APICore extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
 
-    static final String OBSD                             = "j7543sLk.6";  // Unique?
+    static final String OPEN_BANKING_SESSION_ATTR        = "j7543sLk.6";  // Unique?
     
     static final String DEFAULT_USER                     = "20010101-1234";
     
@@ -99,8 +101,6 @@ abstract class APICore extends HttpServlet {
     
     static DateTimeFormatter httpDateFormat = 
            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.US);
-
-    static int X_Request_ID = 1536;
 
     static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
 
@@ -162,7 +162,7 @@ abstract class APICore extends HttpServlet {
             response.sendRedirect(HomeServlet.REDIRECT_TIMEOUT_URI);
             return null;
         }
-        return (OpenBanking)session.getAttribute(OBSD);
+        return (OpenBanking)session.getAttribute(OPEN_BANKING_SESSION_ATTR);
     }
 
     static JSONObjectWriter createAccountConsent(String[] accountIds) throws IOException {
@@ -412,7 +412,7 @@ abstract class APICore extends HttpServlet {
     }
     
     static void setRequestId(HTTPSWrapper wrapper) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, String.valueOf(X_Request_ID++));
+        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, UUID.randomUUID().toString());
     }
     
     private static void checkReturnStatus(boolean scaFlag,
