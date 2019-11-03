@@ -182,11 +182,11 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     /////////////////////////////////////////////////////////////////////////////
     // W3C PaymentRequest data
     /////////////////////////////////////////////////////////////////////////////
-    static final String W3C_PAYMENT_REQUEST_URL   = "w3c_payment_request_url";
+    static final String W3C_PAYMENT_REQUEST_URL     = "w3c_payment_request_url";
 
     public static String w3cPaymentRequestUrl;
 
-    static final String USE_W3C_PAYMENT_REQUEST   = "use_w3c_payment_request";
+    static final String USE_W3C_PAYMENT_REQUEST     = "use_w3c_payment_request";
 
     public static boolean useW3cPaymentRequest;
 
@@ -290,7 +290,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             // KeyGen2 objects
             ////////////////////////////////////////////////////////////////////////////////////////////
             keygen2RunUrl = bankBaseUrl + "/kg2.runner";
-
+            keyManagementKey = new KeyStoreEnumerator(getResource(BANK_KG2KMK),
+                                                      getPropertyString(KEYSTORE_PASSWORD));
             svgCardImage = getEmbeddedResourceString(SVG_CARD_IMAGE);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,12 +301,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.NIST_P_256.getJceName());
             generator.initialize(eccgen, new SecureRandom());
             carrierCaKeyPair = generator.generateKeyPair();
-
-            ////////////////////////////////////////////////////////////////////////////////////////////
-            // SKS key management key
-            ////////////////////////////////////////////////////////////////////////////////////////////
-            keyManagementKey = new KeyStoreEnumerator(getResource(BANK_KG2KMK),
-                                                      getPropertyString(KEYSTORE_PASSWORD));
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Android WebPKI version check (vlow-vhigh)
