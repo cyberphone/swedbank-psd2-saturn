@@ -295,7 +295,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             svgCardImage = getEmbeddedResourceString(SVG_CARD_IMAGE);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
-            // Create a CA keys.  Note Saturn payment credentials do not use PKI
+            // Create a CA keys.  Payment credentials only use keys but KeyGen2 wraps keys in PKI
             ////////////////////////////////////////////////////////////////////////////////////////////
             KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
             generator.initialize(new ECGenParameterSpec(KeyAlgorithms.NIST_P_256.getJceName()),
