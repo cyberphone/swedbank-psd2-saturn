@@ -2,6 +2,6 @@
 
 Proof of concept system using Swedbank's Open Banking "sandbox".
 
-Core idea: https://github.com/cyberphone/doc/blob/gh-pages/payments/dual-mode-open-banking-api.md#background
+Core concept: https://github.com/cyberphone/doc/blob/gh-pages/payments/dual-mode-open-banking-api.md#background
 
 Note: some of the code is not entirely "kosher" because the system uses an *unmodified* Open Banking API.
