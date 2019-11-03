@@ -393,10 +393,10 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             externalCalls = new ExternalCalls(logging, logger, null);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
-            // Finally, at each restart OAuth tokens for every enroll user must be checked for
+            // Finally, at each restart OAuth2 access tokens for every enrolled user must be checked for
             // validity and potentially be refreshed.
             //
-            // For our Swedbank demo having a single use this is no big deal...
+            // For our Swedbank demo having a single user this is not such a big deal...
             /////////////////////////////////////////////////////////////////////////////////////////////
             OpenBanking.initialize();
 

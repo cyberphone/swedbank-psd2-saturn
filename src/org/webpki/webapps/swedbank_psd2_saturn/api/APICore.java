@@ -318,14 +318,19 @@ abstract class APICore extends HttpServlet {
         return derivedUrl.substring(0, i + 1) + path;
     }
 
-    static void getOAuth2Token(OpenBanking openBanking, String code) throws IOException {
+    static void getOAuth2Token(OpenBanking openBanking, String codeOrNull) throws IOException {
         FormData formData = new FormData()
-            .addElement("grant_type", "authorization_code")
             .addElement("client_id", LocalIntegrationService.oauth2ClientId)
-            .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret)
-            .addElement("code", code)
-            .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + 
+            .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret);
+        if (codeOrNull == null) {
+            formData.addElement("grant_type", "refresh_token")
+                    .addElement("refresh_token", openBanking.refreshToken);
+        } else {
+            formData.addElement("grant_type", "authorization_code")
+                    .addElement("code", codeOrNull)
+                    .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + 
                                         OAUTH2_REDIRECT_PATH);
+        }
         HTTPSWrapper wrapper = getHTTPSWrapper();
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader jsonResponse = getJsonData(wrapper);
