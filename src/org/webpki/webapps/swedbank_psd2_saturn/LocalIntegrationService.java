@@ -298,8 +298,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             // Create a CA keys.  Note Saturn payment credentials do not use PKI
             ////////////////////////////////////////////////////////////////////////////////////////////
             KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
-            ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.NIST_P_256.getJceName());
-            generator.initialize(eccgen, new SecureRandom());
+            generator.initialize(new ECGenParameterSpec(KeyAlgorithms.NIST_P_256.getJceName()),
+                                 new SecureRandom());
             carrierCaKeyPair = generator.generateKeyPair();
 
             ////////////////////////////////////////////////////////////////////////////////////////////
