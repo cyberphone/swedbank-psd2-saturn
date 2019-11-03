@@ -56,12 +56,6 @@ import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Verifier;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
-import org.webpki.keygen2.CredentialDiscoveryResponseDecoder;
-import org.webpki.keygen2.InvocationResponseDecoder;
-import org.webpki.keygen2.KeyCreationResponseDecoder;
-import org.webpki.keygen2.ProvisioningFinalizationResponseDecoder;
-import org.webpki.keygen2.ProvisioningInitializationResponseDecoder;
-
 import org.webpki.util.ArrayUtil;
 
 import org.webpki.saturn.common.AuthorityObjectManager;
@@ -147,9 +141,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     /////////////////////////////////////////////////////////////////////////////
     // KeyGen2 objects
     /////////////////////////////////////////////////////////////////////////////
-    public static JSONDecoderCache keygen2JSONCache;
-
-    static final String VERSION_CHECK               = "android_webpki_versions";
+    static final String ANDROID_APP_VERSIONS        = "android_webpki_versions";
 
     static final String TLS_CERTIFICATE             = "server_tls_certificate";
 
@@ -297,13 +289,6 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ////////////////////////////////////////////////////////////////////////////////////////////
             // KeyGen2 objects
             ////////////////////////////////////////////////////////////////////////////////////////////
-            keygen2JSONCache = new JSONDecoderCache();
-            keygen2JSONCache.addToCache(InvocationResponseDecoder.class);
-            keygen2JSONCache.addToCache(ProvisioningInitializationResponseDecoder.class);
-            keygen2JSONCache.addToCache(CredentialDiscoveryResponseDecoder.class);
-            keygen2JSONCache.addToCache(KeyCreationResponseDecoder.class);
-            keygen2JSONCache.addToCache(ProvisioningFinalizationResponseDecoder.class);
-            
             keygen2RunUrl = bankBaseUrl + "/kg2.runner";
 
             svgCardImage = getEmbeddedResourceString(SVG_CARD_IMAGE);
@@ -325,7 +310,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Android WebPKI version check (vlow-vhigh)
             ////////////////////////////////////////////////////////////////////////////////////////////
-            grantedVersions = getPropertyString(VERSION_CHECK);
+            grantedVersions = getPropertyString(ANDROID_APP_VERSIONS);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Get TLS server certificate

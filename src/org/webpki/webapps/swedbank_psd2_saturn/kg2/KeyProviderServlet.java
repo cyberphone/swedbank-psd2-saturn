@@ -175,7 +175,7 @@ logger.info("POST session=" + request.getSession(false).getId());
             if (LocalIntegrationService.logging) {
                 logger.info("Received message:\n" + new String(jsonData, "UTF-8"));
             }
-            JSONDecoder jsonObject = LocalIntegrationService.keygen2JSONCache.parse(jsonData);
+            JSONDecoder jsonObject = KeyProviderInitServlet.keygen2JSONCache.parse(jsonData);
             switch (keygen2State.getProtocolPhase()) {
                 case INVOCATION:
                     InvocationResponseDecoder invocationResponse = 
