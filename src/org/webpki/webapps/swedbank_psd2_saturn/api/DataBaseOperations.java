@@ -124,27 +124,6 @@ class DataBaseOperations {
         return publicKey == null ? null : HashAlgorithms.SHA256.digest(publicKey.getEncoded());
     }
 
-    static String getAccessToken(String userId) throws IOException {
-        try {
-
-/*
-            CREATE PROCEDURE GetAccessTokenSP (OUT p_AccessToken CHAR(36),
-                                               IN p_UserId CHAR(13))
-*/
-
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
-                 CallableStatement stmt = connection.prepareCall("{call GetAccessTokenSP(?,?)}");) {
-                stmt.registerOutParameter(1, java.sql.Types.CHAR);
-                stmt.setString(2, userId);
-                stmt.execute();
-                return stmt.getString(1);
-            }
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Database problem", e);
-            throw new IOException(e);
-        }
-    }
-
     public static void scanAll(OpenBanking.CallBack callBack) throws IOException {
         try {
              try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();

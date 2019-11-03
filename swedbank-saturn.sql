@@ -111,14 +111,6 @@ CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
   END
 //
 
-CREATE PROCEDURE GetAccessTokenSP (OUT p_AccessToken CHAR(36),
-			                       IN p_UserId CHAR(13))
-  BEGIN
-	SELECT OAUTH2TOKENS.AccessToken INTO p_AccessToken FROM OAUTH2TOKENS
-	    WHERE OAUTH2TOKENS.UserId = p_UserId;
-  END
-//
-
 CREATE PROCEDURE StoreAccessTokenSP (IN p_AccessToken CHAR(36),
                                      IN p_RefreshToken CHAR(36),
                                      IN p_Expires INT,
@@ -197,10 +189,6 @@ CALL AuthenticatePayReqSP (@Error,
                            @NonMatchingPaymentKey);
 
 SELECT @Error, @Name, @AccountId, @AccessToken;
-
-CALL GetAccessTokenSP (@AccessToken, @UserId);
-
-SELECT @AccessToken;
 
 DELETE FROM CREDENTIALS WHERE CREDENTIALS.S256PayReq = @PaymentKey;
 
