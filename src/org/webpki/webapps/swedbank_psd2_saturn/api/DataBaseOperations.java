@@ -147,16 +147,13 @@ class DataBaseOperations {
 
     public static void scanAll(OpenBanking.CallBack callBack) throws IOException {
         try {
-            long time = System.currentTimeMillis();
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
-                 Statement stmt =
-                         connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, 
-                                                    ResultSet.CONCUR_UPDATABLE);
+             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+                 Statement stmt = connection.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT * FROM OAUTH2TOKENS")) {
                 while (rs.next()) {
-                    if (rs.getLong("Expires") < time) {
-                        OpenBanking.Token token = callBack.getToken(rs.getString("UserId"),"");
-                    }
+                    callBack.refreshToken(rs.getString("UserId"),
+                                          rs.getString("RefreshToken"),
+                                          rs.getInt("Expires"));
                 }
             }
         } catch (SQLException e) {

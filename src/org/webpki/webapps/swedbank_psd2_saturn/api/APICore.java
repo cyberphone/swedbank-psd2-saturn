@@ -69,6 +69,8 @@ abstract class APICore extends HttpServlet {
     
     static final String DEFAULT_USER                     = "20010101-1234";
     
+    static final long LIFETIME                           = 3600000;  // access_token in ms
+    
     static final String DEFAULT_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36";
 

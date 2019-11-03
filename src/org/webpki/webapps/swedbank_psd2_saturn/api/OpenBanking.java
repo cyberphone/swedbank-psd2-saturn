@@ -45,12 +45,8 @@ public class OpenBanking implements Serializable {
         public String accessToken;
     }
 
-    static class Token {
-        
-    }
-    
     interface CallBack {
-        Token getToken(String userId, String accessToken);
+        void refreshToken(String userId, String refreshToken, int expires) throws IOException;
     }
     
     private OpenBanking(String clientIpAddress,
@@ -146,15 +142,7 @@ public class OpenBanking implements Serializable {
     }
 
     public static void initialize() throws IOException {
-        DataBaseOperations.scanAll(new CallBack() {
-
-            @Override
-            public Token getToken(String userId, String accessToken) {
-                Token token = new Token();
-                return token;
-            }
-            
-        });
+        performOneRefreshRound();
     }
 
     public OpenBanking authorize() throws IOException {
@@ -208,5 +196,23 @@ public class OpenBanking implements Serializable {
         openBanking.loginSuccessUrl = loginSuccessUrl;
         session.setAttribute(APICore.OPEN_BANKING_SESSION_ATTR, openBanking);
         response.sendRedirect(APICore.coreInit());
+    }
+
+    static void performOneRefreshRound() throws IOException {
+        final int time = (int) ((System.currentTimeMillis() - APICore.LIFETIME / 3) / 1000);
+        DataBaseOperations.scanAll(new CallBack() {
+
+            @Override
+            public void refreshToken(String userId,
+                                     String refreshToken,
+                                     int expires) throws IOException {
+                if (expires < time) {
+                    OpenBanking temp = new OpenBanking(null, null);
+                    temp.userId = userId;
+                    temp.refreshToken = refreshToken;
+                    APICore.getOAuth2Token(temp, null);
+                }
+            }
+        });
     }
 }
