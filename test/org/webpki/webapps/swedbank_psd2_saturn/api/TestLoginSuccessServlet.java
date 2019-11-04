@@ -35,7 +35,8 @@ public class TestLoginSuccessServlet extends APICore {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
         
-        HTML.standardPage(response, null, new StringBuilder(
+        HTML.standardPage(response, 
+            null,
             HTML_HEADER +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">Login Succeeded!</div>" +
@@ -48,6 +49,6 @@ public class TestLoginSuccessServlet extends APICore {
                 "Step #2: Get Basic Account Data" +
                 "</div></td></tr>" +
               "</table>" +
-            "</div>"));
+            "</div>");
     }
 }

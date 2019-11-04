@@ -31,6 +31,8 @@ import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 public class AuthorizeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+
+    static final int MINIMUM_CHROME_VERSION    = 75;
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -53,6 +55,27 @@ public class AuthorizeServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
+        String userAgent = request.getHeader("User-Agent");
+        boolean notOk = request.getParameter("override") == null;
+        if (userAgent.contains("Android ")) {
+            int i = userAgent.indexOf(" Chrome/");
+            if (i > 0) {
+                String chromeVersion = userAgent.substring(i + 8, userAgent.indexOf('.', i));
+                if (Integer.parseInt(chromeVersion) >= MINIMUM_CHROME_VERSION) {
+                    notOk = false;
+                }
+            }
+        }
+        if (notOk) {
+            HTML.standardPage(
+                response,
+                null,
+                "<div class=\"label\">This proof-of-concept system only supports " +
+                  "Android and using the \"Chrome\" browser (min version: " + 
+                  MINIMUM_CHROME_VERSION + ")" +
+                "</div>");
+            return;
+        }
 
         HTML.standardPage(response, 
             null,
@@ -61,6 +84,10 @@ public class AuthorizeServlet extends HttpServlet {
             "<div class=\"centerbox\">" +
               "<div class=\"description\">The login in the Swedbank Open Banking &quot;sandbox&quot; " +
                 "is rather primitive, respond with <i>any</i> data and proceed&nbsp;&#x1f642;</div>" +
+            "</div>" +
+            "<div class=\"centerbox\" style=\"color:red;padding-top:1em\">" +
+              "<div class=\"description\">Due to a bug in the Swedbank &quot;sandbox&quot; " +
+              "you may be requested for certificates.  Ignore this request and click CANCEL!</div>" +
             "</div>" +
             "<div class=\"centerbox\">" +
               "<table>" +

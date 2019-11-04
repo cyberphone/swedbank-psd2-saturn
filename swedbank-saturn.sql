@@ -88,9 +88,9 @@ SET @IdentityToken = "20010101-1234";
 
 INSERT INTO OAUTH2TOKENS(IdentityToken, AccessToken, RefreshToken, Expires) 
     VALUES(@IdentityToken,
-           "00000000-0000-0000-0000-000000000000",
-           "00000000-0000-0000-0000-000000000000",
-           0);
+           "56b0762c-5834-4a53-a6b8-2d9eebff4514",
+           "6c6b27e5-c71b-4d93-9b08-1f17cac179da",
+           1572875316);
 
 DELIMITER //
 

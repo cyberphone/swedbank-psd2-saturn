@@ -91,8 +91,6 @@ public class KeyProviderInitServlet extends HttpServlet {
     static final String ANONYMOUS_JAVA         = "Anonymous " + 
                  new String(Character.toChars(Integer.parseInt("1f47d", 16)));  // E.T. emoji
     
-    static final int MINIMUM_CHROME_VERSION    = 75;
-    
     static String getInvocationUrl(String scheme, HttpSession session) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////////////////
         // The following is the actual contract between an issuing server and a KeyGen2 client.
@@ -109,27 +107,6 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        String userAgent = request.getHeader("User-Agent");
-        boolean notOk = true;
-        if (userAgent.contains("Android ")) {
-            int i = userAgent.indexOf(" Chrome/");
-            if (i > 0) {
-                String chromeVersion = userAgent.substring(i + 8, userAgent.indexOf('.', i));
-                if (Integer.parseInt(chromeVersion) >= MINIMUM_CHROME_VERSION) {
-                    notOk = false;
-                }
-            }
-        }
-        if (notOk) {
-            HTML.standardPage(
-                response,
-                null,
-                "<div class=\"label\">This proof-of-concept system only supports " +
-                  "Android and using the \"Chrome\" browser (min version: " + 
-                  MINIMUM_CHROME_VERSION + ")" +
-                "</div>");
-            return;
-        }
         HTML.standardPage(response, 
             (LocalIntegrationService.useW3cPaymentRequest ?
             "function paymentRequestError(msg) {\n" +

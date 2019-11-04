@@ -236,7 +236,7 @@ logger.info("POST session=" + request.getSession(false).getId());
 // - Certificate serial number holds "CredentialId"
 // - Subject serialNumber attribute holds "AccountId"
 
-                        	X509Certificate endEntityCertificate = 
+                            X509Certificate endEntityCertificate = 
                                     matchingCredential.getCertificatePath()[0];
                             keygen2State
                                 .addPostDeleteKey(

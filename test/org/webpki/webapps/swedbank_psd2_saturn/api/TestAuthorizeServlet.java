@@ -36,7 +36,8 @@ public class TestAuthorizeServlet extends APICore {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         
-        HTML.standardPage(response, null, new StringBuilder(
+        HTML.standardPage(response, 
+            null,
             HTML_HEADER +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">Note that the \"sandbox\" " +
@@ -51,7 +52,7 @@ public class TestAuthorizeServlet extends APICore {
                 "Step #1: Authorize/Login" +
                 "</div></td></tr>" +
               "</table>" +
-            "</div>"));
+            "</div>");
     }
 
     @Override

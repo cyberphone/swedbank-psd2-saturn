@@ -32,11 +32,12 @@ public class TestSCAFailedServlet extends APICore {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
-        HTML.standardPage(response, null, new StringBuilder(
+        HTML.standardPage(response, 
+            null,
             HTML_HEADER +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">The process either failed or " +
               "was aborted by the user.</div>" +
-            "</div>"));
+            "</div>");
     }
 }

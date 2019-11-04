@@ -57,17 +57,13 @@ public class TestSCAPaymentSuccessServlet extends APICore {
         verifyPaymentStatus(openBanking);
 
        
-        HTML.standardPage(response, null, new StringBuilder(
+        HTML.standardPage(response,
+            null,
             HTML_HEADER +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">" +
                 "Payment Succeeded!" +
               "</div>" +
-            "</div>" +
-            "<div class=\"centerbox\">" +
-              "<table class=\"tftable\">" +
-                "<tr><th>Account ID</th><th>Balance</th></tr>" +
-              "</table>" +
-            "</div>"));
+            "</div>");
     }
 }

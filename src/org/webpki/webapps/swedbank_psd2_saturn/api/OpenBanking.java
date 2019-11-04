@@ -38,6 +38,27 @@ import org.webpki.saturn.common.Currencies;
 
 public class OpenBanking implements Serializable {
     
+    static class TokenRefresher extends Thread {
+        
+        long cycleTime;
+
+        public TokenRefresher(long cycleTime) {
+            this.cycleTime = cycleTime;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    sleep(cycleTime);
+                    performOneRefreshRound();
+                } catch (Exception e) {
+                    break;
+                }
+            }
+        }
+    }
+    
     public static class AuthenticationResult {
         String error;
         String humanName;
@@ -153,10 +174,6 @@ public class OpenBanking implements Serializable {
                                               reference);
     }
 
-    public static void initialize() throws IOException {
-        performOneRefreshRound();
-    }
-
     public OpenBanking authorize() throws IOException {
         APICore.emulatedAuthorize(this);
         return this;
@@ -211,13 +228,14 @@ public class OpenBanking implements Serializable {
     }
 
     static void performOneRefreshRound() throws IOException {
-        final int time = (int) ((System.currentTimeMillis() - APICore.LIFETIME / 3) / 1000);
+        final int time = (int) ((System.currentTimeMillis() + APICore.LIFETIME / 4) / 1000);
         DataBaseOperations.scanAll(new CallBack() {
 
             @Override
             public void refreshToken(String identityToken,
                                      String refreshToken,
                                      int expires) throws IOException {
+                APICore.logger.info("expires:" + expires + " time:" + time);
                 if (expires < time) {
                     OpenBanking temp = new OpenBanking(null, null);
                     temp.identityToken = identityToken;
@@ -225,5 +243,10 @@ public class OpenBanking implements Serializable {
                 }
             }
         });
+    }
+
+    public static void initialize() throws IOException {
+        performOneRefreshRound();
+        new TokenRefresher(APICore.LIFETIME / 10).start();
     }
 }
