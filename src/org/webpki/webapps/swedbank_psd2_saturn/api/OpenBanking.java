@@ -235,7 +235,6 @@ public class OpenBanking implements Serializable {
             public void refreshToken(String identityToken,
                                      String refreshToken,
                                      int expires) throws IOException {
-                APICore.logger.info("expires:" + expires + " time:" + time);
                 if (expires < time) {
                     OpenBanking temp = new OpenBanking(null, null);
                     temp.identityToken = identityToken;
