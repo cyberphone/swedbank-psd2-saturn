@@ -77,18 +77,19 @@ public class AuthorizeServlet extends HttpServlet {
             return;
         }
 
-        HTML.standardPage(response, 
-            null,
+        HTML.standardPage(response, null, new StringBuilder(
             "<div class=\"header\">Login to Application</div>" +
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">The login in the Swedbank Open Banking &quot;sandbox&quot; " +
                 "is rather primitive, respond with <i>any</i> data and proceed&nbsp;&#x1f642;</div>" +
-            "</div>" +
+            "</div>")
+        .append(request.getParameter("demo") == null ?
             "<div class=\"centerbox\" style=\"color:red;padding-top:1em\">" +
               "<div class=\"description\">Due to a bug in the Swedbank &quot;sandbox&quot; " +
               "you may be requested for certificates.  Ignore this request and click CANCEL!</div>" +
-            "</div>" +
+            "</div>" : "")
+        .append(
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
@@ -96,6 +97,6 @@ public class AuthorizeServlet extends HttpServlet {
                   "title=\"Login and retrieve account list\">" +
                   "Login...</div></td></tr>" +
               "</table>" +
-            "</div>");
+            "</div>"));
     }
 }

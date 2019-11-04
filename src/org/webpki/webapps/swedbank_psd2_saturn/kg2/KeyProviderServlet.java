@@ -100,6 +100,8 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
 
     static final int MAX_CARD_NAME_LENGTH = 30;  // Sorry :(
     static final int MAX_CARD_NAME_BIG    = 20;
+    
+    static final String CARD_IMAGE_ATTR   = "card";
 
     static Logger logger = Logger.getLogger(KeyProviderServlet.class.getCanonicalName());
     
@@ -358,28 +360,29 @@ logger.info("POST session=" + request.getSession(false).getId());
                                 .serializeToBytes(JSONOutputFormats.NORMALIZED));
 
                     // 4. Add personalized card image
+                    String cardImage = new String(LocalIntegrationService.svgCardImage);
+                    String cardUserName = userName;
+                    if (cardUserName.length() > MAX_CARD_NAME_LENGTH) {
+                        cardUserName = cardUserName.substring(0, MAX_CARD_NAME_LENGTH);
+                    }
+                    if (cardUserName.length() > MAX_CARD_NAME_BIG) {
+                        cardImage = cardImage.replace(
+                                CardImageData.STANDARD_NAME_FONT_SIZE + 
+                                    "\">" + 
+                                    CardImageData.STANDARD_NAME,
+                                ((2 * CardImageData.STANDARD_NAME_FONT_SIZE) / 3) +
+                                    "\">" + 
+                                    CardImageData.STANDARD_NAME);
+                    }
+                    final String completedCardImage = 
+                            cardImage.replace(CardImageData.STANDARD_NAME, cardUserName)
+                                     .replace(CardImageData.STANDARD_ACCOUNT, accountId);
+                    session.setAttribute(CARD_IMAGE_ATTR, completedCardImage);
                     key.addLogotype(KeyGen2URIs.LOGOTYPES.CARD, new MIMETypedObject() {
 
                         @Override
                         public byte[] getData() throws IOException {
-                            String cardImage = new String(LocalIntegrationService.svgCardImage);
-                            String cardUserName = userName;
-                            if (cardUserName.length() > MAX_CARD_NAME_LENGTH) {
-                                cardUserName = cardUserName.substring(0, MAX_CARD_NAME_LENGTH);
-                            }
-                            if (cardUserName.length() > MAX_CARD_NAME_BIG) {
-                                cardImage = cardImage.replace(
-                                        CardImageData.STANDARD_NAME_FONT_SIZE + 
-                                            "\">" + 
-                                            CardImageData.STANDARD_NAME,
-                                        ((2 * CardImageData.STANDARD_NAME_FONT_SIZE) / 3) +
-                                            "\">" + 
-                                            CardImageData.STANDARD_NAME);
-                            }
-                            return cardImage
-                                .replace(CardImageData.STANDARD_NAME, cardUserName)
-                                .replace(CardImageData.STANDARD_ACCOUNT, accountId)
-                                    .getBytes("utf-8");
+                            return completedCardImage.getBytes("utf-8");
                         }
 
                         @Override
@@ -457,11 +460,44 @@ logger.info("POST session=" + request.getSession(false).getId());
                 response.sendRedirect(HomeServlet.REDIRECT_TIMEOUT_URI);
                 return;
             }
+            String completedCardImage = (String) session.getAttribute(CARD_IMAGE_ATTR);
             session.invalidate();
             html.append(
-                "<div class=\"header\">Successful Enrollment!</div>" +
+                "<div class=\"header\">Successful Enrollment!</div>")
+            .append("<svg style=\"width:80%\" " +
+                    "viewBox=\"0 0 318 190\" xmlns=\"http://www.w3.org/2000/svg\">" +
+                    "<defs>" +
+                    " <clipPath id=\"cardClip\">" +
+                    "  <rect rx=\"15\" ry=\"15\" height=\"180\" width=\"300\" y=\"0\" x=\"0\"/>" +
+                    " </clipPath>" +
+                    " <filter id=\"dropShaddow\">" +
+                    "  <feGaussianBlur stdDeviation=\"2.4\"/>" +
+                    " </filter>" +
+                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"innerCardBorder\">" +
+                    "  <stop offset=\"0\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
+                    "  <stop offset=\"0.48\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
+                    "  <stop offset=\"0.52\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
+                    "  <stop offset=\"1\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
+                    " </linearGradient>" +
+                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"outerCardBorder\">" +
+                    "  <stop offset=\"0\" stop-color=\"#b0b0b0\"/>" +
+                    "  <stop offset=\"0.48\" stop-color=\"#b0b0b0\"/>" +
+                    "  <stop offset=\"0.52\" stop-color=\"#808080\"/>" +
+                    "  <stop offset=\"1\" stop-color=\"#808080\"/>" +
+                    " </linearGradient>" +
+                    "</defs>" +
+                    "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
+                    "height=\"182\" width=\"302\" y=\"4\" x=\"12\" fill=\"#c0c0c0\"/>" +
+                    "<svg x=\"9\" y=\"1\" clip-path=\"url(#cardClip)\"")
+            .append(completedCardImage.substring(completedCardImage.indexOf('>')))
+            .append(
+                "<rect x=\"10\" y=\"2\" width=\"298\" height=\"178\" " +
+                "rx=\"14.7\" ry=\"14.7\" fill=\"none\" " +
+                "stroke=\"url(#innerCardBorder)\" stroke-width=\"2.7\"/>" +
+                "<rect x=\"8.5\" y=\"0.5\" width=\"301\" height=\"181\" " +
+                "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/></svg>" +
                 "<div class=\"centerbox\">" +
-                  "<div class=\"description\">" +
+                  "<div class=\"description\" style=\"padding-top:1em\">" +
                     "You may now pay with the card at a merchant like:<br>" +
                     "<a href=\"" + LocalIntegrationService.testMerchantUrl +
                     "\">" + LocalIntegrationService.testMerchantUrl + "</a></div>");
