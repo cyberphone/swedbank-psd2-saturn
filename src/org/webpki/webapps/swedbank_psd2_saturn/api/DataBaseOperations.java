@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@ class DataBaseOperations {
     static Logger logger = Logger.getLogger(DataBaseOperations.class.getCanonicalName());
     
     static String createCredential(String accountId,         // IBAN
-                                   String name,              // On the card
+                                   String humanName,         // On the card
                                    String methodUri,         // Saturn method
-                                   String userId,            // Just one
+                                   OpenBanking openBanking,  // Holds "identityToken"
                                    PublicKey payReq,         // Payment authorization
                                    PublicKey optionalBalReq) // Not yet...
     throws SQLException, IOException {
@@ -50,7 +50,7 @@ class DataBaseOperations {
 
 /*
             CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
-                                                 IN p_UserId CHAR(13),
+                                                 IN p_IdentityToken VARCHAR(50),
                                                  IN p_AccountId VARCHAR(30),
                                                  IN p_Name VARCHAR(50),
                                                  IN p_MethodUri VARCHAR(50),
@@ -62,9 +62,9 @@ class DataBaseOperations {
                  CallableStatement stmt = 
                     connection.prepareCall("{call CreateCredentialSP(?,?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
-                stmt.setString(2, userId);
+                stmt.setString(2, openBanking.identityToken);
                 stmt.setString(3, accountId);
-                stmt.setString(4, name);
+                stmt.setString(4, humanName);
                 stmt.setString(5, methodUri);
                 stmt.setBytes(6, s256(payReq));
                 stmt.setBytes(7, s256(optionalBalReq));
@@ -84,7 +84,7 @@ class DataBaseOperations {
 
 /*
             CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
-                                                   OUT p_Name VARCHAR(50),
+                                                   OUT p_HumanName VARCHAR(50),
                                                    OUT p_AccountId VARCHAR(30),
                                                    OUT p_AccessToken CHAR(36),
                                                    IN p_CredentialId INT,
@@ -105,7 +105,7 @@ class DataBaseOperations {
                         new OpenBanking.AuthenticationResult();
                 int errorCode = stmt.getInt(1);
                 if (errorCode  == 0) {
-                    authenticationResult.name = stmt.getString(2);
+                    authenticationResult.humanName = stmt.getString(2);
                     authenticationResult.accountId = stmt.getString(3);
                     authenticationResult.accessToken = stmt.getString(4);
                 } else {
@@ -130,7 +130,7 @@ class DataBaseOperations {
                  Statement stmt = connection.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT * FROM OAUTH2TOKENS")) {
                 while (rs.next()) {
-                    callBack.refreshToken(rs.getString("UserId"),
+                    callBack.refreshToken(rs.getString("IdentityToken"),
                                           rs.getString("RefreshToken"),
                                           rs.getInt("Expires"));
                 }
@@ -141,22 +141,24 @@ class DataBaseOperations {
         }
     }
 
-    static void storeAccessToken(OpenBanking openBanking) throws IOException {
+    static void storeAccessToken(OpenBanking openBanking,
+                                 String refreshToken,
+                                 int expires) throws IOException {
         try {
 
 /*
             CREATE PROCEDURE StoreAccessTokenSP (IN p_AccessToken CHAR(36),
                                                  IN p_RefreshToken CHAR(36),
                                                  IN p_Expires INT,
-                                                 IN p_UserId CHAR(13))
+                                                 IN p_IdentityToken VARCHAR(50))
 */
 
             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
                  CallableStatement stmt = connection.prepareCall("{call StoreAccessTokenSP(?,?,?,?)}");) {
                 stmt.setString(1, openBanking.accessToken);
-                stmt.setString(2, openBanking.refreshToken);
-                stmt.setLong(3, openBanking.expires);
-                stmt.setString(4, openBanking.userId);
+                stmt.setString(2, refreshToken);
+                stmt.setInt(3, expires);
+                stmt.setString(4, openBanking.identityToken);
                 stmt.execute();
             }
         } catch (SQLException e) {

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -163,12 +163,12 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         OpenBanking.AuthenticationResult authenticationResult =
                 OpenBanking.authenticatePayReq(credentialId,
                                                authorizationData.getPublicKey());
-        if (authenticationResult.error != null) {
-            logger.severe(authenticationResult.error + " " + credentialId + 
+        if (authenticationResult.failed()) {
+            logger.severe(authenticationResult.getErrorMessage() + " " + credentialId + 
                     " " + authorizationData.getPublicKey().toString());
-            throw new NormalException(authenticationResult.error);
+            throw new InternalException(authenticationResult.getErrorMessage());
         }
-        String accountId = authenticationResult.accountId;
+        String accountId = authenticationResult.getAccountId();
 
         // We don't accept requests that are old or ahead of time
         long diff = System.currentTimeMillis() - authorizationData.getTimeStamp().getTimeInMillis();
@@ -231,7 +231,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         AuthorizationResponse.AccountDataEncoder accountData = cardPayment ?
             new com.supercard.SupercardAccountDataEncoder(
                     accountId, 
-                    authenticationResult.name,
+                    authenticationResult.getHumanName(),
                     ISODateTime.parseDateTime("2022-12-31T00:00:00Z", ISODateTime.COMPLETE))
                                                      :
             new org.payments.sepa.SEPAAccountDataEncoder(accountId);

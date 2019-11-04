@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -320,16 +320,18 @@ abstract class APICore extends HttpServlet {
         return derivedUrl.substring(0, i + 1) + path;
     }
 
-    static void getOAuth2Token(OpenBanking openBanking, String codeOrNull) throws IOException {
+    static void getOAuth2Token(OpenBanking openBanking, 
+                               boolean refresh,
+                               String codeOrRefreshToken) throws IOException {
         FormData formData = new FormData()
             .addElement("client_id", LocalIntegrationService.oauth2ClientId)
             .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret);
-        if (codeOrNull == null) {
+        if (refresh) {
             formData.addElement("grant_type", "refresh_token")
-                    .addElement("refresh_token", openBanking.refreshToken);
+                    .addElement("refresh_token", codeOrRefreshToken);
         } else {
             formData.addElement("grant_type", "authorization_code")
-                    .addElement("code", codeOrNull)
+                    .addElement("code", codeOrRefreshToken)
                     .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + 
                                         OAUTH2_REDIRECT_PATH);
         }
@@ -337,10 +339,11 @@ abstract class APICore extends HttpServlet {
         wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
         JSONObjectReader jsonResponse = getJsonData(wrapper);
         openBanking.accessToken = jsonResponse.getString("access_token");
-        openBanking.refreshToken = jsonResponse.getString("refresh_token");
-        openBanking.expires = jsonResponse.getInt("expires_in") + System.currentTimeMillis() / 1000;
-        openBanking.userId = DEFAULT_USER;
-        DataBaseOperations.storeAccessToken(openBanking);
+        openBanking.identityToken = DEFAULT_USER;  // Needed for credential creation
+        DataBaseOperations.storeAccessToken(openBanking,
+                                            jsonResponse.getString("refresh_token"),
+                                            jsonResponse
+                            .getInt("expires_in") + (int)(System.currentTimeMillis() / 1000));
     }
 
     static void setAuthorization(HTTPSWrapper wrapper,
@@ -555,7 +558,7 @@ abstract class APICore extends HttpServlet {
         ////////////////////////////////////////////////////////////////////////////////
         // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
-        getOAuth2Token(openBanking, code);
+        getOAuth2Token(openBanking, false, code);
     }
     
     static Accounts emulatedAccountDataAccess(String[] accountIds,

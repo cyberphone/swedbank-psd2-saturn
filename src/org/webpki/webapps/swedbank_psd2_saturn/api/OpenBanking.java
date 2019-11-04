@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -39,16 +39,32 @@ import org.webpki.saturn.common.Currencies;
 public class OpenBanking implements Serializable {
     
     public static class AuthenticationResult {
-        public String error;
-        public String name;
-        public String accountId;
-        public String accessToken;
+        String error;
+        String humanName;
+        String accountId;
+        String accessToken;
+
+        public boolean failed() {
+            return error != null;
+        }
+
+        public String getAccountId() {
+            return accountId;
+        }
+
+        public String getErrorMessage() {
+            return error;
+        }
+
+        public String getHumanName() {
+            return humanName;
+        }
     }
 
     interface CallBack {
-        void refreshToken(String userId, String refreshToken, int expires) throws IOException;
+        void refreshToken(String identityToken, String refreshToken, int expires) throws IOException;
     }
-    
+
     private OpenBanking(String clientIpAddress,
                         String userAgentOrNull) {
         this.clientIpAddress = clientIpAddress;
@@ -75,10 +91,6 @@ public class OpenBanking implements Serializable {
 
     String accessToken;
 
-    String refreshToken;
-    
-    long expires;
-    
     String consentId;
 
     String scaStatusUrl;
@@ -107,7 +119,7 @@ public class OpenBanking implements Serializable {
 
     String loginSuccessUrl;
 
-    String userId;
+    String identityToken;
 
     public Object getUserObject() {
         return userObject;
@@ -177,7 +189,7 @@ public class OpenBanking implements Serializable {
         return DataBaseOperations.createCredential(currentAccountId,
                                                    userName,
                                                    methodUri,
-                                                   userId,
+                                                   this,
                                                    payReq,
                                                    optionalBalReq);
     }
@@ -203,14 +215,13 @@ public class OpenBanking implements Serializable {
         DataBaseOperations.scanAll(new CallBack() {
 
             @Override
-            public void refreshToken(String userId,
+            public void refreshToken(String identityToken,
                                      String refreshToken,
                                      int expires) throws IOException {
                 if (expires < time) {
                     OpenBanking temp = new OpenBanking(null, null);
-                    temp.userId = userId;
-                    temp.refreshToken = refreshToken;
-                    APICore.getOAuth2Token(temp, null);
+                    temp.identityToken = identityToken;
+                    APICore.getOAuth2Token(temp, true, refreshToken);
                 }
             }
         });

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -316,7 +316,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Saturn extensions
             /////////////////////////////////////////////////////////////////////////////////////////////
-            String extensions = getEmbeddedResourceString(SATURN_EXTENSIONS);
+            String extensions = getEmbeddedResourceString(SATURN_EXTENSIONS).trim();
             if (!extensions.isEmpty()) {
                 extensions = extensions.replace("${host}", bankBaseUrl);
                 optionalProviderExtensions = JSONParser.parse(extensions);

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -226,7 +226,17 @@ logger.info("POST session=" + request.getSession(false).getId());
                                 .MatchingCredential matchingCredential
                                  : 
                              lookupResult.getMatchingCredentials()) {
-                            X509Certificate endEntityCertificate = 
+
+// TODO 
+// if the user already have (in the actual device) a credential for the
+// selected account, it should be removed from the credential database
+// but only if the rest of the enrollment process is successful.
+//
+// Note: all information required is available in the retrieved certificate:
+// - Certificate serial number holds "CredentialId"
+// - Subject serialNumber attribute holds "AccountId"
+
+                        	X509Certificate endEntityCertificate = 
                                     matchingCredential.getCertificatePath()[0];
                             keygen2State
                                 .addPostDeleteKey(

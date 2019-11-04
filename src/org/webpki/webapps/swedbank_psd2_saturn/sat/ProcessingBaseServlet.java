@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -86,11 +86,11 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
     abstract JSONObjectWriter processCall(UrlHolder urlHolder, 
                                           JSONObjectReader providerRequest) throws Exception;
     
-    static class NormalException extends Exception {
+    static class InternalException extends Exception {
 
         private static final long serialVersionUID = 1L;
 
-        NormalException(String message) {
+        InternalException(String message) {
             super(message);
         }
     }
@@ -141,7 +141,7 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             String message = (urlHolder == null ? "" : "From" + urlHolder.getCallerAddress() +
                               (urlHolder.getUrl() == null ? "" : "URL=" + urlHolder.getUrl()) + 
                               "\n") + e.getMessage();
-            if (!(e instanceof NormalException)) {
+            if (!(e instanceof InternalException)) {
                 logger.log(Level.SEVERE, message, e);
             }
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

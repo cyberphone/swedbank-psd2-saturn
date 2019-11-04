@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class AuthRedirectServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // We got the code, now we need to upgrade it to an oauth2 token              //
         ////////////////////////////////////////////////////////////////////////////////
-        getOAuth2Token(openBanking, code);
+        getOAuth2Token(openBanking, false, code);
         
         ////////////////////////////////////////////////////////////////////////////////
         // Go to the designated URL                                                   //

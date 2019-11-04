@@ -80,7 +80,7 @@
        tablength="4"
        eol="lf"
        eof="remove"
-       includes="**/*.java, **/*.css, **/*.svg, **/*.xml"/>
+       includes="**/*.java, **/*.css, **/*.svg, **/*.xml, **/*.sql, **/*.json"/>
     <copy file="web.xml" todir="${temp.dir}"/>
     <javac debug="${debug}"
            source="${javaversion}"
