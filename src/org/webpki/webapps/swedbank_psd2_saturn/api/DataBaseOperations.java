@@ -25,7 +25,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,6 +38,10 @@ import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 class DataBaseOperations {
 
     static Logger logger = Logger.getLogger(DataBaseOperations.class.getCanonicalName());
+    
+    static void failed(Exception e) {
+        logger.log(Level.SEVERE, "Database problem", e);
+    }
     
     static String createCredential(String accountId,         // IBAN
                                    String humanName,         // On the card
@@ -73,7 +76,7 @@ class DataBaseOperations {
                 return String.valueOf(stmt.getInt(1));
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Database problem", e);
+            failed(e);
             throw e;
         }            
     }
@@ -116,7 +119,7 @@ class DataBaseOperations {
                 return authenticationResult;
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Database problem", e);
+            failed(e);
             throw e;
         }            
     }
@@ -128,8 +131,9 @@ class DataBaseOperations {
     public static void scanAll(OpenBanking.CallBack callBack) throws IOException {
         try {
             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
-                 Statement stmt = connection.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT * FROM OAUTH2TOKENS")) {
+                 PreparedStatement stmt = 
+                         connection.prepareStatement("SELECT * FROM OAUTH2TOKENS");
+                 ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     callBack.refreshToken(rs.getString("IdentityToken"),
                                           rs.getString("RefreshToken"),
@@ -137,7 +141,7 @@ class DataBaseOperations {
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Database problem", e);
+            failed(e);
             throw new IOException(e);
         }
     }
@@ -148,14 +152,13 @@ class DataBaseOperations {
                  PreparedStatement stmt = connection
             .prepareStatement("SELECT AccessToken FROM OAUTH2TOKENS WHERE IdentityToken=?");) {
                 stmt.setString(1, identityToken);
-                ResultSet rs = stmt.executeQuery();
-                rs.next();
-                String accessToken = rs.getString(1);
-                rs.close();
-                return accessToken;
+                try (ResultSet rs = stmt.executeQuery();) {
+                    rs.next();
+                    return rs.getString(1);
+                }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Database problem", e);
+            failed(e);
             throw new IOException(e);
         }
     }
@@ -181,7 +184,7 @@ class DataBaseOperations {
                 stmt.execute();
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Database problem", e);
+            failed(e);
             throw new IOException(e);
         }
     }
