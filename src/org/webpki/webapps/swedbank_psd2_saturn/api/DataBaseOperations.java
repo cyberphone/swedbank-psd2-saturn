@@ -22,6 +22,7 @@ import java.security.PublicKey;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -126,7 +127,7 @@ class DataBaseOperations {
 
     public static void scanAll(OpenBanking.CallBack callBack) throws IOException {
         try {
-             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
                  Statement stmt = connection.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT * FROM OAUTH2TOKENS")) {
                 while (rs.next()) {
@@ -134,6 +135,24 @@ class DataBaseOperations {
                                           rs.getString("RefreshToken"),
                                           rs.getInt("Expires"));
                 }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Database problem", e);
+            throw new IOException(e);
+        }
+    }
+
+    static String getAccessToken(String identityToken) throws IOException {
+        try {
+            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+                 PreparedStatement stmt = connection
+            .prepareStatement("SELECT AccessToken FROM OAUTH2TOKENS WHERE IdentityToken=?");) {
+                stmt.setString(1, identityToken);
+                ResultSet rs = stmt.executeQuery();
+                rs.next();
+                String accessToken = rs.getString(1);
+                rs.close();
+                return accessToken;
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Database problem", e);

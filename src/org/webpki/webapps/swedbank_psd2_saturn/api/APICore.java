@@ -354,6 +354,7 @@ abstract class APICore extends HttpServlet {
     static void setAuthorization(HTTPSWrapper wrapper,
                                  OpenBanking openBanking) throws IOException {
 //TODO access token must always be fetched from the database!!!
+        logger.info("accesstoken=" + (openBanking.identityToken == null ? "undefineed" : DataBaseOperations.getAccessToken(openBanking.identityToken)));
         wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + openBanking.accessToken);
     }
 
