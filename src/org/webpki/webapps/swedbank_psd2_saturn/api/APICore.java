@@ -341,10 +341,9 @@ abstract class APICore extends HttpServlet {
         synchronized (refreshLock) {
             wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
             JSONObjectReader jsonResponse = getJsonData(wrapper);
-//TODO access token must always be fetched from the database!!!
-            openBanking.accessToken = jsonResponse.getString("access_token");
             openBanking.identityToken = DEFAULT_USER;  // Needed for credential creation
             DataBaseOperations.storeAccessToken(openBanking,
+                                                jsonResponse.getString("access_token"),
                                                 jsonResponse.getString("refresh_token"),
                                                 jsonResponse
                                 .getInt("expires_in") + (int)(System.currentTimeMillis() / 1000));
@@ -353,9 +352,7 @@ abstract class APICore extends HttpServlet {
 
     static void setAuthorization(HTTPSWrapper wrapper,
                                  OpenBanking openBanking) throws IOException {
-//TODO access token must always be fetched from the database!!!
-        logger.info("accesstoken=" + (openBanking.identityToken == null ? "undefineed" : DataBaseOperations.getAccessToken(openBanking.identityToken)));
-        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + openBanking.accessToken);
+        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + DataBaseOperations.getAccessToken(openBanking.identityToken));
     }
 
     static JSONObjectReader postJson(RESTUrl restUrl,

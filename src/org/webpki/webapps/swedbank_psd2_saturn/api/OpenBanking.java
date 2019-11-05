@@ -63,7 +63,7 @@ public class OpenBanking implements Serializable {
         String error;
         String humanName;
         String accountId;
-        String accessToken;
+        String identityToken;
 
         public boolean failed() {
             return error != null;
@@ -101,7 +101,7 @@ public class OpenBanking implements Serializable {
                        String clientIpAddress,
                        String userAgentOrNull) {
         this(clientIpAddress, userAgentOrNull);
-        this.accessToken = authenticationResult.accessToken;
+        this.identityToken = authenticationResult.identityToken;
     }
 
     private static final long serialVersionUID = 1L;
@@ -109,9 +109,6 @@ public class OpenBanking implements Serializable {
     String userAgent;
 
     String clientIpAddress;
-
-//TODO access token must always be fetched from the database!!!
-    String accessToken;
 
     String consentId;
 

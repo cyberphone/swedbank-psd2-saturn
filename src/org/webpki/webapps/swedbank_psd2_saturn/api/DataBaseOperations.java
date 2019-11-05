@@ -90,7 +90,7 @@ class DataBaseOperations {
             CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
                                                    OUT p_HumanName VARCHAR(50),
                                                    OUT p_AccountId VARCHAR(30),
-                                                   OUT p_AccessToken CHAR(36),
+                                                   OUT p_IdentityToken VARCHAR(50),
                                                    IN p_CredentialId INT,
                                                    IN p_S256PayReq BINARY(32))
 */
@@ -111,7 +111,7 @@ class DataBaseOperations {
                 if (errorCode  == 0) {
                     authenticationResult.humanName = stmt.getString(2);
                     authenticationResult.accountId = stmt.getString(3);
-                    authenticationResult.accessToken = stmt.getString(4);
+                    authenticationResult.identityToken = stmt.getString(4);
                 } else {
                     authenticationResult.error = errorCode == 1 ?
                               "Key does not match credentialId" : "Credential not found";
@@ -164,6 +164,7 @@ class DataBaseOperations {
     }
 
     static void storeAccessToken(OpenBanking openBanking,
+                                 String accessToken,
                                  String refreshToken,
                                  int expires) throws IOException {
         try {
@@ -177,7 +178,7 @@ class DataBaseOperations {
 
             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
                  CallableStatement stmt = connection.prepareCall("{call StoreAccessTokenSP(?,?,?,?)}");) {
-                stmt.setString(1, openBanking.accessToken);
+                stmt.setString(1, accessToken);
                 stmt.setString(2, refreshToken);
                 stmt.setInt(3, expires);
                 stmt.setString(4, openBanking.identityToken);

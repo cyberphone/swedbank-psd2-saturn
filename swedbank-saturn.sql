@@ -129,20 +129,20 @@ CREATE PROCEDURE StoreAccessTokenSP (IN p_AccessToken CHAR(36),
 CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
                                        OUT p_HumanName VARCHAR(50),
                                        OUT p_AccountId VARCHAR(30),
-                                       OUT p_AccessToken CHAR(36),
+                                       OUT p_IdentityToken VARCHAR(50),
                                        IN p_CredentialId INT,
                                        IN p_S256PayReq BINARY(32))
   BEGIN
-    SELECT CREDENTIALS.HumanName, 
-           CREDENTIALS.AccountId, 
-           OAUTH2TOKENS.AccessToken
+    SELECT HumanName, 
+           AccountId, 
+           IdentityToken
         INTO 
            p_HumanName,
            p_AccountId,
-           p_AccessToken
-        FROM CREDENTIALS INNER JOIN OAUTH2TOKENS ON CREDENTIALS.IdentityToken = OAUTH2TOKENS.IdentityToken 
-        WHERE CREDENTIALS.CredentialId = p_CredentialId AND CREDENTIALS.S256PayReq = p_S256PayReq;
-    IF p_AccessToken IS NULL THEN   -- Failed => Find reason
+           p_IdentityToken
+        FROM CREDENTIALS WHERE CREDENTIALS.CredentialId = p_CredentialId AND
+                               CREDENTIALS.S256PayReq = p_S256PayReq;
+    IF p_IdentityToken IS NULL THEN   -- Failed => Find reason
       IF EXISTS (SELECT * FROM CREDENTIALS WHERE CREDENTIALS.CredentialId = p_CredentialId) THEN
         SET p_Error = 1;       -- Key does not match credentialId
       ELSE
@@ -173,22 +173,22 @@ SELECT @CredentialId;
 CALL AuthenticatePayReqSP (@Error,
                            @HumanName,
                            @AccountId,
-                           @AccessToken,
+                           @IdentityToken,
                            @CredentialId,
                            @PaymentKey);
 
-SELECT @Error, @HumanName, @AccountId, @AccessToken;
+SELECT @Error, @HumanName, @AccountId, @IdentityToken;
 
 set @NonMatchingPaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b';
 
 CALL AuthenticatePayReqSP (@Error,
                            @HumanName,
                            @AccountId,
-                           @AccessToken,
+                           @IdentityToken,
                            @CredentialId,
                            @NonMatchingPaymentKey);
 
-SELECT @Error, @HumanName, @AccountId, @AccessToken;
+SELECT @Error, @HumanName, @AccountId, @IdentityToken;
 
 -- Remove all test data
 
