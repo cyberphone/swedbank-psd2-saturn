@@ -341,7 +341,10 @@ abstract class APICore extends HttpServlet {
         synchronized (refreshLock) {
             wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
             JSONObjectReader jsonResponse = getJsonData(wrapper);
-            openBanking.identityToken = DEFAULT_USER;  // Needed for credential creation
+            if (!refresh) {
+                // This is where the described update of OAuth2 authorize would happen.
+                openBanking.identityToken = DEFAULT_USER;
+            }
             DataBaseOperations.storeAccessToken(openBanking,
                                                 jsonResponse.getString("access_token"),
                                                 jsonResponse.getString("refresh_token"),
