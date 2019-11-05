@@ -112,6 +112,8 @@ abstract class APICore extends HttpServlet {
 
     static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
 
+    static Object refreshLock = new Object();  // This is a multi-threaded application...
+    
     static class WebScraper {
 
         String html;
@@ -336,18 +338,22 @@ abstract class APICore extends HttpServlet {
                                         OAUTH2_REDIRECT_PATH);
         }
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
-        JSONObjectReader jsonResponse = getJsonData(wrapper);
-        openBanking.accessToken = jsonResponse.getString("access_token");
-        openBanking.identityToken = DEFAULT_USER;  // Needed for credential creation
-        DataBaseOperations.storeAccessToken(openBanking,
-                                            jsonResponse.getString("refresh_token"),
-                                            jsonResponse
-                            .getInt("expires_in") + (int)(System.currentTimeMillis() / 1000));
+        synchronized (refreshLock) {
+            wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
+            JSONObjectReader jsonResponse = getJsonData(wrapper);
+//TODO access token must always be fetched from the database!!!
+            openBanking.accessToken = jsonResponse.getString("access_token");
+            openBanking.identityToken = DEFAULT_USER;  // Needed for credential creation
+            DataBaseOperations.storeAccessToken(openBanking,
+                                                jsonResponse.getString("refresh_token"),
+                                                jsonResponse
+                                .getInt("expires_in") + (int)(System.currentTimeMillis() / 1000));
+        }
     }
 
     static void setAuthorization(HTTPSWrapper wrapper,
                                  OpenBanking openBanking) throws IOException {
+//TODO access token must always be fetched from the database!!!
         wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + openBanking.accessToken);
     }
 
@@ -380,11 +386,14 @@ abstract class APICore extends HttpServlet {
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
                           LocalIntegrationService.bankBaseUrl + SCA_FAILED_PATH);
         setRequestId(wrapper);
-        setAuthorization(wrapper, openBanking);
-        JSONObjectReader json = postJson(restUrl, 
-                                         wrapper, 
-                                         createAccountConsent(accountIds), 
-                                         HttpServletResponse.SC_CREATED);
+        JSONObjectReader json;
+        synchronized (refreshLock) {
+            setAuthorization(wrapper, openBanking);
+            json = postJson(restUrl, 
+                            wrapper, 
+                            createAccountConsent(accountIds), 
+                            HttpServletResponse.SC_CREATED);
+        }
         openBanking.consentId = json.getString("consentId");
         String consentStatus = json.getString("consentStatus");
         if (accountIds == null ^ consentStatus.equals("valid")) {
@@ -420,8 +429,10 @@ abstract class APICore extends HttpServlet {
         HTTPSWrapper wrapper = getHTTPSWrapper();
         setRequestId(wrapper);
         setConsentId(wrapper, openBanking);
-        setAuthorization(wrapper, openBanking);
-        openBanking.accountData = performGet(wrapper, restUrl);
+        synchronized (refreshLock) {
+            setAuthorization(wrapper, openBanking);
+            openBanking.accountData = performGet(wrapper, restUrl);
+        }
         return new Accounts(openBanking.accountData);
     }
     
@@ -439,13 +450,16 @@ abstract class APICore extends HttpServlet {
                                           String keyWord,
                                           String[] expectedResults) throws IOException {
         HTTPSWrapper checkStatus = getHTTPSWrapper();
-        setRequestId(checkStatus);
-        setConsentId(checkStatus, openBanking);
-        setAuthorization(checkStatus, openBanking);
         RESTUrl restUrl = new RESTUrl(scaFlag ? openBanking.scaStatusUrl : openBanking.statusUrl)
             .setBic()
             .setAppId();
-        String actualResult = performGet(checkStatus, restUrl).getString(keyWord);
+        setRequestId(checkStatus);
+        setConsentId(checkStatus, openBanking);
+        String actualResult;
+        synchronized (refreshLock) {
+            setAuthorization(checkStatus, openBanking);
+            actualResult = performGet(checkStatus, restUrl).getString(keyWord);
+        }
         for (String expectedResult : expectedResults) {
             if (actualResult.equals(expectedResult)) {
                 return;
@@ -631,12 +645,14 @@ abstract class APICore extends HttpServlet {
         wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
                           LocalIntegrationService.bankBaseUrl + SCA_FAILED_PATH);
         setRequestId(wrapper);
-        setAuthorization(wrapper, openBanking);
-        JSONObjectReader json = postJson(restUrl, 
-                                         wrapper, 
-                                         paymentData, 
-                                         HttpServletResponse.SC_CREATED);
-        
+        JSONObjectReader json;
+        synchronized (refreshLock) {
+            setAuthorization(wrapper, openBanking);
+            json = postJson(restUrl, 
+                            wrapper, 
+                            paymentData, 
+                            HttpServletResponse.SC_CREATED);
+        }
         String transactionStatus = json.getString("transactionStatus");
         for (String expectedStatus : PAYMENT_STATUSES) {
             if (transactionStatus.equals(expectedStatus)) {

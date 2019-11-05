@@ -110,6 +110,7 @@ public class OpenBanking implements Serializable {
 
     String clientIpAddress;
 
+//TODO access token must always be fetched from the database!!!
     String accessToken;
 
     String consentId;
