@@ -92,7 +92,7 @@ public class OpenBanking implements Serializable {
         this.userAgent = userAgentOrNull == null ? APICore.DEFAULT_BROWSER : userAgentOrNull;
     }
     
-    public OpenBanking(HttpServletRequest request) throws IOException {
+    OpenBanking(HttpServletRequest request) throws IOException {
         this(request.getRemoteAddr(),
              request.getHeader(APICore.HTTP_HEADER_USER_AGENT));
     }

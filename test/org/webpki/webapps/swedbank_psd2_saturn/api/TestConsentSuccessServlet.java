@@ -31,9 +31,9 @@ import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 public class TestConsentSuccessServlet extends APICore {
     
     private static final long serialVersionUID = 1L;
-    
+
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
         // Successful return after SCA (a dummy in the Sandbox)                       //
@@ -47,16 +47,6 @@ public class TestConsentSuccessServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         OpenBanking openBanking = getOpenBanking(request, response);
         if (openBanking == null) return;
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // Verify that SCA is OK                                                      //
-        ////////////////////////////////////////////////////////////////////////////////
-        verifyScaStatus(openBanking);
-        
-        ////////////////////////////////////////////////////////////////////////////////
-        // Verify that Consent status is OK                                           //
-        ////////////////////////////////////////////////////////////////////////////////
-        verifyConsentStatus(openBanking);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Now get rich account data (=with balances)                                 //
@@ -127,9 +117,53 @@ public class TestConsentSuccessServlet extends APICore {
                 "<tr><td><div class=\"multibtn\" " +
                 "onclick=\"spawnPaymentSetup()\" " +
                 "title=\"Prepare for a payment operation\">" +
-                "Step #4: Payment Operation Setup" +
+                "Step #5: Payment Operation Setup" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>"));
     }
+
+    
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+        ////////////////////////////////////////////////////////////////////////////////
+        // Successful return after SCA (a dummy in the Sandbox)                       //
+        ////////////////////////////////////////////////////////////////////////////////
+        if (LocalIntegrationService.logging) {
+            logger.info("Successful return after SCA");
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Check that we still have a session                                         //
+        ////////////////////////////////////////////////////////////////////////////////
+        OpenBanking openBanking = getOpenBanking(request, response);
+        if (openBanking == null) return;
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Verify that SCA is OK                                                      //
+        ////////////////////////////////////////////////////////////////////////////////
+        verifyScaStatus(openBanking);
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        // Verify that Consent status is OK                                           //
+        ////////////////////////////////////////////////////////////////////////////////
+        verifyConsentStatus(openBanking);
+
+        HTML.standardPage(response, 
+            null,
+            HTML_HEADER +
+            "<div class=\"centerbox\">" +
+              "<div class=\"description\">Consent Succeeded.</div>" +
+            "</div>" +
+            "<div class=\"centerbox\">" +
+              "<table>" +
+                "<tr><td><div class=\"multibtn\" " +
+                "onclick=\"document.location.href = 'api.consentsuccess'\" " +
+                "title=\"Get more data for the accounts\">" +
+                "Step #4: Get Extended Account Data" +
+                "</div></td></tr>" +
+              "</table>" +
+            "</div>");
+        }
 }

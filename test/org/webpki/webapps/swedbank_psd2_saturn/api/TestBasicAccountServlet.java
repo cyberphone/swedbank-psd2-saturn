@@ -71,8 +71,8 @@ public class TestBasicAccountServlet extends APICore {
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
                 "onclick=\"document.location.href = 'api.extendedaccount'\" " +
-                "title=\"Get extended account data (consent needed)\">" +
-                "Step #3: Get Extended Account Data" +
+                "title=\"Get consent for extended account data\">" +
+                "Step #3: Get Extended Data Consent" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>"));

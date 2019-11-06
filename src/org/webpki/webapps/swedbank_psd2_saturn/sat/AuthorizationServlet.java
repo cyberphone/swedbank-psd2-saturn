@@ -41,7 +41,6 @@ import org.webpki.saturn.common.Messages;
 import org.webpki.saturn.common.UserResponseItem;
 
 import org.webpki.util.ArrayUtil;
-
 import org.webpki.util.ISODateTime;
 
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
@@ -253,6 +252,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                                       authorizationRequest.getClientIpAddress(),
                                                       null);
             transactionId = openBanking.paymentRequest(accountId,
+//TODO The BG (Bankgiro) method is still waiting to be defined.
                                                        "BG 5051-6905",
                                                        amount,
                                                        paymentRequest.getCurrency(),

@@ -103,7 +103,7 @@ public class TestPaymentSetupServlet extends APICore {
                 "<tr><td><div class=\"multibtn\" " +
                 "onclick=\"document.location.href = 'api.paymentsetup'\" " +
                 "title=\"Perform payment\">" +
-                "Step #5: Perform Payment" +
+                "Step #6: Perform Payment" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>"));
