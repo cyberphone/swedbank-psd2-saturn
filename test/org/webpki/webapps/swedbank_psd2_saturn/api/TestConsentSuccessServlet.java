@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 
-public class TestSCAAccountSuccessServlet extends APICore {
+public class TestConsentSuccessServlet extends APICore {
     
     private static final long serialVersionUID = 1L;
     

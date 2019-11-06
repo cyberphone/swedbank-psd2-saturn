@@ -188,13 +188,13 @@
     </servlet>
 
     <servlet>
-        <servlet-name>TestSCAAccountSuccessServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAAccountSuccessServlet</servlet-class>
+        <servlet-name>TestConsentSuccessServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestConsentSuccessServlet</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>TestSCAFailedServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAFailedServlet</servlet-class>
+        <servlet-name>TestOperationFailedServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestOperationFailedServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -203,8 +203,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>TestSCAPaymentSuccessServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestSCAPaymentSuccessServlet</servlet-class>
+        <servlet-name>TestPaymentSuccessServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestPaymentSuccessServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -278,13 +278,13 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>TestSCAAccountSuccessServlet</servlet-name>
-        <url-pattern>/api.scaaccountsuccess</url-pattern>
+        <servlet-name>TestConsentSuccessServlet</servlet-name>
+        <url-pattern>/api.consentsuccess</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>TestSCAFailedServlet</servlet-name>
-        <url-pattern>/api.scafailed</url-pattern>
+        <servlet-name>TestOperationFailedServlet</servlet-name>
+        <url-pattern>/api.operationfailed</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -293,8 +293,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>TestSCAPaymentSuccessServlet</servlet-name>
-        <url-pattern>/api.scapaymentsuccess</url-pattern>
+        <servlet-name>TestPaymentSuccessServlet</servlet-name>
+        <url-pattern>/api.paymentsuccess</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

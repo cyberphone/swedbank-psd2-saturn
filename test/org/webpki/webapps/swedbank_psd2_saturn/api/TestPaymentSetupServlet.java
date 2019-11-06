@@ -123,8 +123,10 @@ public class TestPaymentSetupServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         JSONObjectWriter paymentMessage = 
                 (JSONObjectWriter) request.getSession(false).getAttribute(PAYMENT_MESSAGE_ATTR);
-        logger.info(paymentMessage.toString());
-        
+        if (LocalIntegrationService.logging) {
+            logger.info(paymentMessage.toString());
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // Now perform payment which should require SCA                               //
         ////////////////////////////////////////////////////////////////////////////////

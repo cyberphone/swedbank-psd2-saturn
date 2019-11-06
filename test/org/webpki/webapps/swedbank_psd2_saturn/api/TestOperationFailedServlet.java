@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 
-public class TestSCAFailedServlet extends APICore {
+public class TestOperationFailedServlet extends APICore {
 
     private static final long serialVersionUID = 1L;
     
