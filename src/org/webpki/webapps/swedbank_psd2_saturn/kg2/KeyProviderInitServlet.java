@@ -213,12 +213,11 @@ public class KeyProviderInitServlet extends HttpServlet {
             "<div class=\"centerbox\">" +
               "This name will be printed on your virtual payment cards." +
             "</div>" + 
-            "<img id=\"" + WAITING_ID + 
-              "\" src=\"images/waiting.gif\" style=\"padding-top:1em;display:none\">" +
+            "<img id=\"" + WAITING_ID + "\" src=\"images/waiting.gif\" " +
+              "style=\"padding-top:1em;display:none\" alt=\"waiting\">" +
             "<div id=\"" + BUTTON_ID + "\" class=\"centerbox\">" +
               "<table>" +
-                "<tr><td><div id=\"" + BUTTON_ID + 
-                "\" class=\"multibtn\" onclick=\"enroll()\">" + BUTTON_TEXT_HTML + 
+                "<tr><td><div class=\"multibtn\" onclick=\"enroll()\">" + BUTTON_TEXT_HTML + 
                 "</div></td></tr>" +
               "</table>" +
             "</div>" +

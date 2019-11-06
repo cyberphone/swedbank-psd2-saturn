@@ -33,7 +33,6 @@ import org.webpki.saturn.common.AuthorizationRequest;
 import org.webpki.saturn.common.AuthorizationResponse;
 import org.webpki.saturn.common.UserChallengeItem;
 import org.webpki.saturn.common.PayeeAuthority;
-import org.webpki.saturn.common.Currencies;
 import org.webpki.saturn.common.AuthorizationData;
 import org.webpki.saturn.common.PaymentRequest;
 import org.webpki.saturn.common.ProviderAuthority;
@@ -77,7 +76,11 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
 
         // Fetch the payment request object
         PaymentRequest paymentRequest = authorizationRequest.getPaymentRequest();
+
+//TODO Current Open Banking APIs do not appear to support reservations
+// so the following line doesn't have any real use...
         NonDirectPayments nonDirectPayment = paymentRequest.getNonDirectPayment();
+
         boolean cardPayment = authorizationRequest.getPaymentMethod().isCardPayment();
         
         // Get the providers. Note that caching could play tricks on you!
@@ -157,9 +160,14 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         //
         // Note: in this particular implementation the accountId coming
         // from the client is a unique id which in turn points to an
-        // accountId for external consumption like an IBAN
+        // accountId for external consumption like an IBAN.
+        //
+        // Since the issuer of a payment credential is also supposed to be
+        // the consumer of it, this part is subject to customization.
         String credentialId = authorizationData.getAccountId();
         String authorizedPaymentMethod = authorizationData.getPaymentMethod();
+
+        // Now, the most(?) important of all: verify that the key is recognized (=valid)
         OpenBanking.AuthenticationResult authenticationResult =
                 OpenBanking.authenticatePayReq(credentialId,
                                                authorizationData.getPublicKey());
@@ -250,6 +258,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                                        paymentRequest.getCurrency(),
                                                        paymentRequest.getPayee().getCommonName(),
                                                        authorizationRequest.getReferenceId()
+//TODO Swedbank consider '#' as an illegal character in references...
                                                            .replace('#', 'R'));
         }
 

@@ -67,7 +67,7 @@ abstract class APICore extends HttpServlet {
 
     static final String OPEN_BANKING_SESSION_ATTR        = "j7543sLk.6";  // Unique?
     
-    static final String DEFAULT_USER                     = "20010101-1234";
+    static final String DEFAULT_USER                     = "20010101-1234";  // IdentityToken
     
     static final long LIFETIME                           = 3600000;  // access_token in ms
     
@@ -434,7 +434,7 @@ abstract class APICore extends HttpServlet {
             setAuthorization(wrapper, openBanking);
             openBanking.accountData = performGet(wrapper, restUrl);
         }
-        return new Accounts(openBanking.accountData);
+        return new Accounts(openBanking);
     }
     
     static void setConsentId(HTTPSWrapper wrapper,

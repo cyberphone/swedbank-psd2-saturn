@@ -32,9 +32,9 @@ public class Accounts implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    Accounts(JSONObjectReader accountData) throws IOException {
+    Accounts(OpenBanking openBanking) throws IOException {
         // Likely to be provider dependent
-        JSONArrayReader accountsArray = accountData.getArray("accounts");
+        JSONArrayReader accountsArray = openBanking.accountData.getArray("accounts");
         while (accountsArray.hasMore()) {
             JSONObjectReader accountEntry = accountsArray.getObject();
             Account account = new Account();

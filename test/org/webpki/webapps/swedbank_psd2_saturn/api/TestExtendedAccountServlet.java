@@ -44,7 +44,7 @@ public class TestExtendedAccountServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // We should by now have an existing basic account listing                    //
         ////////////////////////////////////////////////////////////////////////////////
-        Accounts accounts = new Accounts(openBanking.accountData);
+        Accounts accounts = new Accounts(openBanking);
 
         ////////////////////////////////////////////////////////////////////////////////
         // Now get more details.  For that we need a consent                          //

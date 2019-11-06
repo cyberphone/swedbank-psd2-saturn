@@ -137,7 +137,7 @@ public class AccountsServlet extends HttpServlet {
             "<div class=\"centerbox\">" +
               "<div class=\"description\">Retrieving account information...</div>" +
             "</div>" +
-            "<img src=\"images/waiting.gif\" style=\"padding-top:1em\">" +
+            "<img src=\"images/waiting.gif\" style=\"padding-top:1em\" alt=\"waiting\">" +
             "<form name=\"accounts\" action=\"accounts\" method=\"POST\"></form>");
     }
 }

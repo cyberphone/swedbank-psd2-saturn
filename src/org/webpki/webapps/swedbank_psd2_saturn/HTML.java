@@ -96,7 +96,7 @@ public class HTML {
 
     public static void output(HttpServletResponse response, String html)
             throws IOException, ServletException {
-  //    logger.info(html);
+//      logger.info("\n\n" + html + "\n\n");
         response.setContentType("text/html; charset=utf-8");
         response.setHeader("Pragma", "No-Cache");
         response.setDateHeader("EXPIRES", 0);
