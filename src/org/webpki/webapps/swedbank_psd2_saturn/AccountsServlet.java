@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
+
 import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
 
 // After authorization/login this servlet is called to enumerate accounts.
