@@ -229,7 +229,8 @@ public class KeyProviderInitServlet extends HttpServlet {
               "<div class=\"description\">If you have not yet " +
               "installed the &quot;Wallet&quot;, this is the time but <i>please do not " +
               "start the application</i>, simply press " +
-              "<div style=\"display:inline;background:blue;color:white;font-weight:bold;padding:0 0.5em\">&lt;</div> " +
+              "<div style=\"display:inline;background:blue;color:white;" +
+              "font-weight:bold;padding:0 0.5em\">&lt;</div> " +
               "after the installation!</i></div>" +
             "</div>" +
             "<div style=\"cursor:pointer;display:flex;justify-content:center;align-items:center\">" +
