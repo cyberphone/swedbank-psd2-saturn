@@ -227,7 +227,10 @@ public class KeyProviderInitServlet extends HttpServlet {
             "</div>" +
             "<div style=\"padding-top:1.5em;padding-bottom:1em\" class=\"centerbox\">" +
               "<div class=\"description\">If you have not yet " +
-              "installed WebPKI, this is the time to do it!</div>" +
+              "installed the &quot;Wallet&quot;, this is the time but <i>please do not " +
+              "start the application</i>, simply press " +
+              "<div style=\"display:inline;background:blue;color:white;font-weight:bold;padding:0 0.5em\">&lt;</div> " +
+              "after the installation!</i></div>" +
             "</div>" +
             "<div style=\"cursor:pointer;display:flex;justify-content:center;align-items:center\">" +
               "<img src=\"images/google-play-badge.png\" style=\"height:25pt;padding:0 15pt\" alt=\"image\" " +
