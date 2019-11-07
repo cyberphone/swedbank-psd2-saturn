@@ -78,11 +78,12 @@ public class AuthorizeServlet extends HttpServlet {
         }
 
         HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Login to Application</div>" +
+            "<div class=\"header\">Login to Swedbank</div>" +
             "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
-              "<div class=\"description\">The login in the Swedbank Open Banking &quot;sandbox&quot; " +
-                "is rather primitive, respond with <i>any</i> data and proceed&nbsp;&#x1f642;</div>" +
+              "<div class=\"description\">The login in the Swedbank Open Banking " +
+                "&quot;sandbox&quot; is rather primitive, respond with <i>any</i> " +
+                 "data (like <b>55</b>) and proceed&nbsp;&#x1f642;</div>" +
             "</div>")
         .append(request.getParameter("demo") == null ?
             "<div class=\"centerbox\" style=\"color:red;padding-top:1em\">" +
