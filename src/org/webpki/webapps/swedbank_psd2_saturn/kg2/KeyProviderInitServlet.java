@@ -83,6 +83,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     private static final String BUTTON_ID  = "gokg2";
     private static final String WAITING_ID = "wait";
+    private static final String ERROR_ID   = "error";
     
     static final String DEFAULT_USER_NAME_HTML = "Luke Skywalker &#x1f984;";    // Unicorn emoji
     
@@ -111,9 +112,10 @@ public class KeyProviderInitServlet extends HttpServlet {
             (LocalIntegrationService.useW3cPaymentRequest ?
             "function paymentRequestError(msg) {\n" +
             "  console.info('Payment request error:' + msg);\n" +
-            "  document.getElementById('" + WAITING_ID + 
-            "').outerHTML = '<div style=\"color:red;font-weight:bold;padding-top:1.2em\">' + " +
-              "msg + '</div>';\n" +
+            "  document.getElementById('" + WAITING_ID + "').style.display = 'none';\n" +
+            "  document.getElementById('" + ERROR_ID + "').innerHTML = msg;\n" +
+            "  document.getElementById('" + ERROR_ID + "').style.display = 'block';\n" +
+            "  document.getElementById('" + BUTTON_ID + "').style.display = 'block';\n" +
             "}\n\n" +
 
             "async function enroll() {\n" +
@@ -213,6 +215,8 @@ public class KeyProviderInitServlet extends HttpServlet {
             "<div class=\"centerbox\">" +
               "This name will be printed on your virtual payment cards." +
             "</div>" + 
+            "<div id=\"" + ERROR_ID + "\" " +
+              "style=\"color:red;font-weight:bold;padding-top:1em;display:none\"></div>" +
             "<img id=\"" + WAITING_ID + "\" src=\"images/waiting.gif\" " +
               "style=\"padding-top:1em;display:none\" alt=\"waiting\">" +
             "<div id=\"" + BUTTON_ID + "\" class=\"centerbox\">" +
