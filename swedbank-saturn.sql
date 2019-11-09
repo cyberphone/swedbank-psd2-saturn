@@ -190,6 +190,16 @@ CALL AuthenticatePayReqSP (@Error,
 
 SELECT @Error, @HumanName, @AccountId, @IdentityToken;
 
+SET @CredentialId = @CredentialId + 1;
+CALL AuthenticatePayReqSP (@Error,
+                           @HumanName,
+                           @AccountId,
+                           @IdentityToken,
+                           @CredentialId,
+                           @PaymentKey);
+
+SELECT @Error, @HumanName, @AccountId, @IdentityToken;
+
 -- Remove all test data
 
 DELETE FROM OAUTH2TOKENS;
