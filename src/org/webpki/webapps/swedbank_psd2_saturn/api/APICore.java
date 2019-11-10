@@ -576,8 +576,10 @@ abstract class APICore extends HttpServlet {
         getOAuth2Token(openBanking, false, code);
     }
     
-    static Accounts emulatedAccountDataAccess(String[] accountIds,
-                                              OpenBanking openBanking)
+    // Note: this method is synchronized because there can only be one active account
+    // access consent per user which at least in our single user sandbox create problems.
+    static synchronized Accounts emulatedAccountDataAccess(String[] accountIds,
+                                                           OpenBanking openBanking)
     throws IOException {
         String location = getConsent(accountIds, openBanking);
         if (location == null) {
