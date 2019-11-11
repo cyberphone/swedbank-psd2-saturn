@@ -300,7 +300,6 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                                                        null);
 
                     // 2. Create a "carrier" certificate for the signature key (SKS need that)
-                    // In this unusual setup all certificates have the same public/private key.
                     CertSpec certSpec = new CertSpec();
                     certSpec.setKeyUsageBit(KeyUsageBits.DIGITAL_SIGNATURE);
                     certSpec.setSubject("CN=" + userName + ", serialNumber=" + accountId);
