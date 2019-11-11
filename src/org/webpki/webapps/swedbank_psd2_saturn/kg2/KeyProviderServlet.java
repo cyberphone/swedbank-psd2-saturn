@@ -352,6 +352,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             LocalIntegrationService.currentDecryptionKey.getPublicKey(),
                             null,
                             null,
+//TODO We are still waiting on the Balance solution for Saturn...
                             new BigDecimal("5302.00"))
                                 .serializeToBytes(JSONOutputFormats.NORMALIZED));
 
