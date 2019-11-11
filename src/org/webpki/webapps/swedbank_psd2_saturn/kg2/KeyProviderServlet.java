@@ -105,8 +105,6 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
 
     static Logger logger = Logger.getLogger(KeyProviderServlet.class.getCanonicalName());
     
-    static String success_image_and_message;
-    
     void returnKeyGen2Error(HttpServletResponse response, String errorMessage) throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Server errors are returned as HTTP redirects taking the client out of its KeyGen2 mode
@@ -137,7 +135,6 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
            throws IOException, ServletException {
-logger.info("POST session=" + request.getSession(false).getId());
        executeRequest(request, response, false);
     }
 
@@ -177,7 +174,7 @@ logger.info("POST session=" + request.getSession(false).getId());
             if (LocalIntegrationService.logging) {
                 logger.info("Received message:\n" + new String(jsonData, "UTF-8"));
             }
-            JSONDecoder jsonObject = KeyProviderInitServlet.keygen2JSONCache.parse(jsonData);
+            JSONDecoder jsonObject = ServerState.parseReceivedMessage(jsonData);
             switch (keygen2State.getProtocolPhase()) {
                 case INVOCATION:
                     InvocationResponseDecoder invocationResponse = 
@@ -506,5 +503,4 @@ logger.info("POST session=" + request.getSession(false).getId());
                           null,
                           html.append("</div>"));
     }
-
 }

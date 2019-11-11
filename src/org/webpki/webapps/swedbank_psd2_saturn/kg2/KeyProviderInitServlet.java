@@ -30,14 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.webpki.json.JSONDecoderCache;
-
 import org.webpki.keygen2.ServerState;
-import org.webpki.keygen2.CredentialDiscoveryResponseDecoder;
-import org.webpki.keygen2.InvocationResponseDecoder;
-import org.webpki.keygen2.KeyCreationResponseDecoder;
-import org.webpki.keygen2.ProvisioningFinalizationResponseDecoder;
-import org.webpki.keygen2.ProvisioningInitializationResponseDecoder;
 
 import org.webpki.net.MobileProxyParameters;
 
@@ -55,20 +48,6 @@ public class KeyProviderInitServlet extends HttpServlet {
 
     static Logger logger = Logger.getLogger(KeyProviderInitServlet.class.getCanonicalName());
     
-    static final JSONDecoderCache keygen2JSONCache = new JSONDecoderCache();
-    
-    static {
-        try {
-            keygen2JSONCache.addToCache(InvocationResponseDecoder.class);
-            keygen2JSONCache.addToCache(ProvisioningInitializationResponseDecoder.class);
-            keygen2JSONCache.addToCache(CredentialDiscoveryResponseDecoder.class);
-            keygen2JSONCache.addToCache(KeyCreationResponseDecoder.class);
-            keygen2JSONCache.addToCache(ProvisioningFinalizationResponseDecoder.class);
-        } catch (IOException e) {
-            new RuntimeException(e);
-        }
-    }
-
     static final String KEYGEN2_SESSION_ATTR           = "keygen2";
     static final String USERNAME_SESSION_ATTR_PARM     = "userName";  // Dual use
     static final String W3C_PAYMENT_REQUEST_MODE_PARM  = "w3cpr";
