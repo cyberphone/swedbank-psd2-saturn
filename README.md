@@ -7,3 +7,6 @@ Core concept: https://github.com/cyberphone/doc/blob/gh-pages/payments/dual-mode
 Note: some of the code is not entirely "kosher" because the system uses an *unmodified* Open Banking API.
 
 It is (currently) possible testing this system using Android on: https://mobilepki.org/swedbank-psd2-saturn/home
+
+Note: the "Gas station" sample application does not work but that is not due to limitations in this
+implementation; it is because the Swedbank Open Banking API does (currently) not support reservation of funds.
