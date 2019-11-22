@@ -42,7 +42,6 @@ CREATE TABLE OAUTH2TOKENS
     
     Expires         INT         NOT NULL,                               -- In UNIX "epoch" style
                                                                         
- 
     PRIMARY KEY (IdentityToken)
   );
 
@@ -81,16 +80,6 @@ CREATE TABLE CREDENTIALS
     FOREIGN KEY (IdentityToken) REFERENCES OAUTH2TOKENS(IdentityToken) ON DELETE CASCADE
   ) AUTO_INCREMENT=200500123;                                           -- Brag about "users" :-)
 
-
--- We only have a single user due to limitations of the Swedbank "sandbox"
-
-SET @IdentityToken = "20010101-1234";
-
-INSERT INTO OAUTH2TOKENS(IdentityToken, AccessToken, RefreshToken, Expires) 
-    VALUES(@IdentityToken,
-           "56b0762c-5834-4a53-a6b8-2d9eebff4514",
-           "6c6b27e5-c71b-4d93-9b08-1f17cac179da",
-           1572875316);
 
 DELIMITER //
 
@@ -158,7 +147,14 @@ DELIMITER ;
 
 -- Run a few tests
 
-set @PaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104a';
+SET @IdentityToken = "20010101-1234";
+
+CALL StoreAccessTokenSP ("56b0762c-5834-4a53-a6b8-2d9eebff4514",
+                         "6c6b27e5-c71b-4d93-9b08-1f17cac179da",
+                         1572875316,
+                         @IdentityToken);
+
+SET @PaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104a';
 
 CALL CreateCredentialSP (@CredentialId, 
                          @IdentityToken,
@@ -179,7 +175,7 @@ CALL AuthenticatePayReqSP (@Error,
 
 SELECT @Error, @HumanName, @AccountId, @IdentityToken;
 
-set @NonMatchingPaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b';
+SET @NonMatchingPaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b';
 
 CALL AuthenticatePayReqSP (@Error,
                            @HumanName,
