@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
             throw new IOException("Unexpected \"" + RECEPIENT_URL_JSON + "\" : " + authorizationRequest.getRecepientUrl());
         }
 
-        // Verify that we understand the payment method
+        // Verify that we understand the backend payment method
         AuthorizationRequest.PaymentBackendMethodDecoder paymentMethodSpecific =
             authorizationRequest.getPaymentBackendMethodSpecific(LocalIntegrationService.knownPayeeMethods);
 
@@ -124,7 +124,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
 
         // Verify Payee signature key.  It may be one generation back as well
         PayeeCoreProperties payeeCoreProperties = payeeAuthority.getPayeeCoreProperties();
-        payeeCoreProperties.verify(paymentRequest.getPayee(), authorizationRequest.getSignatureDecoder());
+        payeeCoreProperties.verify(authorizationRequest.getSignatureDecoder());
 
         // Optionally verify the claimed Payee account
         byte[] accountHash = paymentMethodSpecific.getAccountHash();
@@ -163,19 +163,20 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         //
         // Since the issuer of a payment credential is also supposed to be
         // the consumer of it, this part is subject to customization.
-        String credentialId = authorizationData.getAccountId();
-        String authorizedPaymentMethod = authorizationData.getPaymentMethod();
+        String accountId = authorizationData.getAccountId();
+        String paymentMethodUrl = authorizationData.getPaymentMethodUrl();
 
         // Now, the most(?) important of all: verify that the key is recognized (=valid)
         OpenBanking.AuthenticationResult authenticationResult =
-                OpenBanking.authenticatePayReq(credentialId,
+                OpenBanking.authenticatePayReq(authorizationData.getCredentialId(),
+                                               accountId,
+                                               paymentMethodUrl,
                                                authorizationData.getPublicKey());
         if (authenticationResult.failed()) {
-            logger.severe(authenticationResult.getErrorMessage() + " " + credentialId + 
+            logger.severe(authenticationResult.getErrorMessage() + " " + accountId + 
                     " " + authorizationData.getPublicKey().toString());
             throw new InternalException(authenticationResult.getErrorMessage());
         }
-        String accountId = authenticationResult.getAccountId();
 
         // We don't accept requests that are old or ahead of time
         long diff = System.currentTimeMillis() - authorizationData.getTimeStamp().getTimeInMillis();
@@ -256,7 +257,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                                        "BG 5051-6905",
                                                        amount,
                                                        paymentRequest.getCurrency(),
-                                                       paymentRequest.getPayee().getCommonName(),
+                                                       paymentRequest.getPayeeCommonName(),
                                                        authorizationRequest.getReferenceId()
 //TODO Swedbank consider '#' as an illegal character in references...
                                                            .replace('#', 'R'));
@@ -266,7 +267,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                     "Authorized Amount=" + amount.toString() + 
                     ", Transaction ID=" + transactionId + 
                     ", Account ID=" + accountId + 
-                    ", Payment Method=" + authorizedPaymentMethod + 
+                    ", Payment Method=" + paymentMethodUrl + 
                     ", Client IP=" + clientIpAddress +
                     ", Method Specific=" + paymentMethodSpecific.logLine());
 

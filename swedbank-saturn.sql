@@ -1,4 +1,21 @@
--- SQL Script for MySQL 5.7
+/*
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+ 
+ -- SQL Script for MySQL 5.7
 --
 -- root privileges are required!!!
 --
@@ -60,9 +77,9 @@ CREATE TABLE CREDENTIALS
 
     AccountId       VARCHAR(30) NOT NULL,                               -- Account Reference
     
-    MethodUri       VARCHAR(50) NOT NULL,                               -- Payment method
+    PaymentMethodUrl VARCHAR(50) NOT NULL,                              -- Payment method URL
 
-    HumanName       VARCHAR(50) NOT NULL,                               -- "Card holder"
+    HumanName       VARCHAR(50) NOT NULL,                               -- "Card Holder"
     
     IdentityToken   VARCHAR(50) NOT NULL,                               -- For OAuth2 tokens
 
@@ -87,13 +104,23 @@ DELIMITER //
 CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
                                      IN p_IdentityToken VARCHAR(50),
                                      IN p_AccountId VARCHAR(30),
-                                     IN p_Name VARCHAR(50),
-                                     IN p_MethodUri VARCHAR(50),
+                                     IN p_HumanName VARCHAR(50),
+                                     IN p_PaymentMethodUrl VARCHAR(50),
                                      IN p_S256PayReq BINARY(32),
                                      IN p_S256BalReq BINARY(32))
   BEGIN
-    INSERT INTO CREDENTIALS(AccountId, HumanName, MethodUri, IdentityToken, S256PayReq, S256BalReq) 
-        VALUES(p_AccountId, p_Name, p_MethodUri, p_IdentityToken, p_S256PayReq, p_S256BalReq);
+    INSERT INTO CREDENTIALS(AccountId, 
+                            HumanName, 
+                            PaymentMethodUrl, 
+                            IdentityToken, 
+                            S256PayReq, 
+                            S256BalReq) 
+        VALUES(p_AccountId,
+               p_HumanName, 
+               p_PaymentMethodUrl,
+               p_IdentityToken, 
+               p_S256PayReq, 
+               p_S256BalReq);
     SET p_CredentialId = LAST_INSERT_ID();
   END
 //
@@ -117,28 +144,41 @@ CREATE PROCEDURE StoreAccessTokenSP (IN p_AccessToken CHAR(36),
 
 CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
                                        OUT p_HumanName VARCHAR(50),
-                                       OUT p_AccountId VARCHAR(30),
                                        OUT p_IdentityToken VARCHAR(50),
+
+-- Note: the assumption is that the following variables are non-NULL otherwise
+-- you may get wrong answer due to the (weird) way SQL deals with comparing NULL!
                                        IN p_CredentialId INT,
+                                       IN p_AccountId VARCHAR(30),
+                                       IN p_PaymentMethodUrl VARCHAR(50),
                                        IN p_S256PayReq BINARY(32))
   BEGIN
+    DECLARE v_AccountId VARCHAR(30);
+    DECLARE v_PaymentMethodUrl VARCHAR(50);
+    DECLARE v_S256PayReq BINARY(32);
+
     SELECT HumanName, 
-           AccountId, 
-           IdentityToken
+           IdentityToken,
+           AccountId,
+           PaymentMethodUrl,
+           S256PayReq
         INTO 
            p_HumanName,
-           p_AccountId,
-           p_IdentityToken
-        FROM CREDENTIALS WHERE CREDENTIALS.CredentialId = p_CredentialId AND
-                               CREDENTIALS.S256PayReq = p_S256PayReq;
-    IF p_IdentityToken IS NULL THEN   -- Failed => Find reason
-      IF EXISTS (SELECT * FROM CREDENTIALS WHERE CREDENTIALS.CredentialId = p_CredentialId) THEN
-        SET p_Error = 1;       -- Key does not match credentialId
-      ELSE
-        SET p_Error = 2;       -- Credential not found
-      END IF;
+           p_IdentityToken,
+           v_AccountId,
+           v_PaymentMethodUrl,
+           v_S256PayReq
+        FROM CREDENTIALS WHERE CREDENTIALS.CredentialId = p_CredentialId;
+    IF v_AccountId IS NULL THEN
+      SET p_Error = 1;    -- No such credential
+    ELSEIF v_AccountId <> p_AccountId THEN
+      SET p_Error = 2;    -- Non-matching account
+    ELSEIF v_S256PayReq <> p_S256PayReq THEN
+      SET p_Error = 3;    -- Non-matching key
+    ELSEIF v_PaymentMethodUrl <> p_PaymentMethodUrl THEN
+      SET p_Error = 4;    -- Non-matching payment method
     ELSE                       
-      SET p_Error = 0;         -- Success
+      SET p_Error = 0;    -- Success
     END IF;
   END
 //
@@ -148,53 +188,69 @@ DELIMITER ;
 -- Run a few tests
 
 SET @IdentityToken = "20010101-1234";
+SET @PaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104a';
+SET @AccountId = "SE6767676767676767676";
+SET @HumanName = "Luke Skywalker";
+SET @PaymentMethodUrl = "https://supercard.com";
 
 CALL StoreAccessTokenSP ("56b0762c-5834-4a53-a6b8-2d9eebff4514",
                          "6c6b27e5-c71b-4d93-9b08-1f17cac179da",
                          1572875316,
                          @IdentityToken);
 
-SET @PaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104a';
-
 CALL CreateCredentialSP (@CredentialId, 
                          @IdentityToken,
-                         "SE6767676767676767676",
-                         "Luke Skywalker",
-                         "https://supercard.com",
+                         @AccountId,
+                         @HumanName,
+                         @PaymentMethodUrl,
                          @PaymentKey,
                          NULL);
-                        
 SELECT @CredentialId;
 
 CALL AuthenticatePayReqSP (@Error,
-                           @HumanName,
-                           @AccountId,
-                           @IdentityToken,
+                           @ReadHumanName,
+                           @ReadIdentityToken,
                            @CredentialId,
+                           @AccountId,
+                           @PaymentMethodUrl,
                            @PaymentKey);
+SELECT @Error, @ReadHumanName, @ReadIdentityToken;
 
-SELECT @Error, @HumanName, @AccountId, @IdentityToken;
+CALL AuthenticatePayReqSP (@Error,
+                           @ReadHumanName,
+                           @ReadIdentityToken,
+                           @CredentialId + 1,
+                           @AccountId,
+                           @PaymentMethodUrl,
+                           @PaymentKey);
+SELECT @Error, @ReadHumanName, @ReadIdentityToken;
 
-SET @NonMatchingPaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b';
+CALL AuthenticatePayReqSP (@Error,
+                           @ReadHumanName,
+                           @ReadIdentityToken,
+                           @CredentialId,
+                           "no such account",
+                           @PaymentMethodUrl,
+                           @PaymentKey);
+SELECT @Error, @ReadHumanName, @ReadIdentityToken;
 
 CALL AuthenticatePayReqSP (@Error,
                            @HumanName,
-                           @AccountId,
-                           @IdentityToken,
+                           @ReadIdentityToken,
                            @CredentialId,
-                           @NonMatchingPaymentKey);
+                           @AccountId,
+                           @PaymentMethodUrl,
+                           x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b');
+SELECT @Error, @ReadHumanName, @ReadIdentityToken;
 
-SELECT @Error, @HumanName, @AccountId, @IdentityToken;
-
-SET @CredentialId = @CredentialId + 1;
 CALL AuthenticatePayReqSP (@Error,
                            @HumanName,
-                           @AccountId,
-                           @IdentityToken,
+                           @ReadIdentityToken,
                            @CredentialId,
+                           @AccountId,
+                           "payme twice!",
                            @PaymentKey);
-
-SELECT @Error, @HumanName, @AccountId, @IdentityToken;
+SELECT @Error, @ReadHumanName, @ReadIdentityToken;
 
 -- Remove all test data
 

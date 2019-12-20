@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -292,10 +292,10 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     // now create Saturn payment credentials
                     // 1. Get key and other input data
                     key = keygen2State.getKeys()[0];
-                    String methodUri = PaymentMethods.BANK_DIRECT.getPaymentMethodUri();
+                    String paymentMethodUrl = PaymentMethods.BANK_DIRECT.getPaymentMethodUrl();
                     // A credentialId uniquely points to an account
                     String credentialId = openBanking.createCredential(userName,
-                                                                       methodUri,
+                                                                       paymentMethodUrl,
                                                                        key.getPublicKey(),
                                                                        null);
 
@@ -343,8 +343,9 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     // 3. Add card data blob to the key entry
                     key.addExtension(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI,
                         CardDataEncoder.encode(
-                            methodUri,
-                            credentialId, 
+                            paymentMethodUrl,
+                            credentialId,
+                            accountId,
                             LocalIntegrationService.providerAuthorityUrl, 
                             AsymSignatureAlgorithms.ECDSA_SHA256, 
                             LocalIntegrationService.dataEncryptionAlgorithm, 

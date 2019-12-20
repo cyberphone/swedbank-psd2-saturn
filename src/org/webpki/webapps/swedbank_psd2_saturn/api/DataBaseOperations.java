@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,12 +43,12 @@ class DataBaseOperations {
         logger.log(Level.SEVERE, "Database problem", e);
     }
     
-    static String createCredential(String accountId,         // IBAN
-                                   String humanName,         // On the card
-                                   String methodUri,         // Saturn method
-                                   OpenBanking openBanking,  // Holds "identityToken"
-                                   PublicKey payReq,         // Payment authorization
-                                   PublicKey optionalBalReq) // Not yet...
+    static String createCredential(String identityToken,        // Credential bound to user
+                                   String accountId,            // IBAN
+                                   String humanName,            // On the card
+                                   String paymentMethodUrl,     // Saturn method
+                                   PublicKey authorizationKey,  // Payment authorization
+                                   PublicKey optionalBalanceRequestKey)  // Not yet...
     throws SQLException, IOException {
         try {
 
@@ -57,7 +57,7 @@ class DataBaseOperations {
                                                  IN p_IdentityToken VARCHAR(50),
                                                  IN p_AccountId VARCHAR(30),
                                                  IN p_Name VARCHAR(50),
-                                                 IN p_MethodUri VARCHAR(50),
+                                                 IN p_PaymentMethod VARCHAR(50),
                                                  IN p_S256PayReq BINARY(32),
                                                  IN p_S256BalReq BINARY(32))
 */
@@ -66,12 +66,12 @@ class DataBaseOperations {
                  CallableStatement stmt = 
                     connection.prepareCall("{call CreateCredentialSP(?,?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
-                stmt.setString(2, openBanking.identityToken);
+                stmt.setString(2, identityToken);
                 stmt.setString(3, accountId);
                 stmt.setString(4, humanName);
-                stmt.setString(5, methodUri);
-                stmt.setBytes(6, s256(payReq));
-                stmt.setBytes(7, s256(optionalBalReq));
+                stmt.setString(5, paymentMethodUrl);
+                stmt.setBytes(6, s256(authorizationKey));
+                stmt.setBytes(7, s256(optionalBalanceRequestKey));
                 stmt.execute();
                 return String.valueOf(stmt.getInt(1));
             }
@@ -82,39 +82,59 @@ class DataBaseOperations {
     }
 
     static OpenBanking.AuthenticationResult authenticatePayReq(String credentialId,
-                                                               PublicKey payReq)
+                                                               String accountId,
+                                                               String paymentMethodUrl,
+                                                               PublicKey authorizationKey)
     throws SQLException, IOException {
         try {
 
 /*
-            CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
-                                                   OUT p_HumanName VARCHAR(50),
-                                                   OUT p_AccountId VARCHAR(30),
-                                                   OUT p_IdentityToken VARCHAR(50),
-                                                   IN p_CredentialId INT,
-                                                   IN p_S256PayReq BINARY(32))
+        CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
+                                               OUT p_HumanName VARCHAR(50),
+                                               OUT p_IdentityToken VARCHAR(50),
+        
+        -- Note: the assumption is that the following variables are non-NULL otherwise
+        -- you may get wrong answer due to the (weird) way SQL deals with comparing NULL!
+                                               IN p_CredentialId INT,
+                                               IN p_AccountId VARCHAR(30),
+                                               IN p_PaymentMethodUrl VARCHAR(50),
+                                               IN p_S256PayReq BINARY(32))
 */
 
             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
                  CallableStatement stmt = 
-                    connection.prepareCall("{call AuthenticatePayReqSP(?,?,?,?,?,?)}");) {
+                    connection.prepareCall("{call AuthenticatePayReqSP(?,?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
                 stmt.registerOutParameter(2, java.sql.Types.VARCHAR);
                 stmt.registerOutParameter(3, java.sql.Types.VARCHAR);
-                stmt.registerOutParameter(4, java.sql.Types.CHAR);
-                stmt.setInt(5, Integer.valueOf(credentialId));
-                stmt.setBytes(6, s256(payReq));
+                stmt.setInt(4, Integer.valueOf(credentialId));
+                stmt.setString(5, accountId);
+                stmt.setString(6,  paymentMethodUrl);
+                stmt.setBytes(7, s256(authorizationKey));
                 stmt.execute();
                 OpenBanking.AuthenticationResult authenticationResult = 
                         new OpenBanking.AuthenticationResult();
-                int errorCode = stmt.getInt(1);
-                if (errorCode  == 0) {
-                    authenticationResult.humanName = stmt.getString(2);
-                    authenticationResult.accountId = stmt.getString(3);
-                    authenticationResult.identityToken = stmt.getString(4);
-                } else {
-                    authenticationResult.error = errorCode == 1 ?
-                              "Key does not match credentialId" : "Credential not found";
+                switch (stmt.getInt(1)) {
+                    case 0:
+                        authenticationResult.humanName = stmt.getString(2);
+                        authenticationResult.identityToken = stmt.getString(3);
+                        break;
+
+                    case 1:
+                        authenticationResult.error = "Credential not found";
+                        break;
+
+                    case 2:
+                        authenticationResult.error = "AccountId mismatch";
+                        break;
+
+                    case 3:
+                        authenticationResult.error = "Key does not match credentialId";
+                        break;
+                    
+                    default:
+                        authenticationResult.error = "Payment method mismatch";
+                        break;
                 }
                 return authenticationResult;
             }

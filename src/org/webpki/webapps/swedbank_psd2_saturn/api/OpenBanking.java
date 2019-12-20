@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -62,15 +62,10 @@ public class OpenBanking implements Serializable {
     public static class AuthenticationResult {
         String error;
         String humanName;
-        String accountId;
         String identityToken;
 
         public boolean failed() {
             return error != null;
-        }
-
-        public String getAccountId() {
-            return accountId;
         }
 
         public String getErrorMessage() {
@@ -197,22 +192,27 @@ public class OpenBanking implements Serializable {
     }
 
     public String createCredential(String userName,
-                                   String methodUri,
-                                   PublicKey payReq,
-                                   PublicKey optionalBalReq)
+                                   String paymentMethodUrl,
+                                   PublicKey authorizationKey,
+                                   PublicKey optionalBalanceRequestKey)
     throws SQLException, IOException {
-        return DataBaseOperations.createCredential(currentAccountId,
+        return DataBaseOperations.createCredential(identityToken,
+                                                   currentAccountId,
                                                    userName,
-                                                   methodUri,
-                                                   this,
-                                                   payReq,
-                                                   optionalBalReq);
+                                                   paymentMethodUrl,
+                                                   authorizationKey,
+                                                   optionalBalanceRequestKey);
     }
 
     public static AuthenticationResult authenticatePayReq(String credentialId,
-                                                          PublicKey payReq)
+                                                          String accountId,
+                                                          String paymentMethodUrl,
+                                                          PublicKey authorizationKey)
     throws SQLException, IOException {
-        return DataBaseOperations.authenticatePayReq(credentialId, payReq);
+        return DataBaseOperations.authenticatePayReq(credentialId,
+                                                     accountId,
+                                                     paymentMethodUrl,
+                                                     authorizationKey);
     }
 
     public static void createSession(HttpServletRequest request,

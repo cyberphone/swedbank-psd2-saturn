@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2019 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -345,11 +345,11 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
                 new ProviderAuthority.PaymentMethodDeclarations()
                     .add(new ProviderAuthority
                             .PaymentMethodDeclaration(
-                                    PaymentMethods.BANK_DIRECT.getPaymentMethodUri())
+                                    PaymentMethods.BANK_DIRECT.getPaymentMethodUrl())
                         .add(org.payments.sepa.SEPAPaymentBackendMethodDecoder.class))
                     .add(new ProviderAuthority
                             .PaymentMethodDeclaration(
-                                    PaymentMethods.SUPER_CARD.getPaymentMethodUri())
+                                    PaymentMethods.SUPER_CARD.getPaymentMethodUrl())
                         .add(org.payments.sepa.SEPAPaymentBackendMethodDecoder.class)),
                 optionalProviderExtensions,
                 new SignatureProfiles[]{SignatureProfiles.P256_ES256},
