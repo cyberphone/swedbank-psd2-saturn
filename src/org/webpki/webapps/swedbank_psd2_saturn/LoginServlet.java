@@ -28,7 +28,7 @@ import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
 // The first servlet to call during an enrollment is authorize/login
 
-public class AuthorizeServlet extends HttpServlet {
+public class LoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
@@ -79,7 +79,7 @@ public class AuthorizeServlet extends HttpServlet {
 
         HTML.standardPage(response, null, new StringBuilder(
             "<div class=\"header\">Login to Swedbank</div>" +
-            "<form name=\"authorize\" action=\"authorize\" method=\"POST\"></form>" +
+            "<form name=\"login\" action=\"login\" method=\"POST\"></form>" +
             "<div class=\"centerbox\">" +
               "<div class=\"description\">The login in the Swedbank Open Banking " +
                 "&quot;sandbox&quot; is rather primitive, respond with <i>any</i> " +
@@ -94,7 +94,7 @@ public class AuthorizeServlet extends HttpServlet {
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                  "onclick=\"document.forms.authorize.submit()\" " +
+                  "onclick=\"document.forms.login.submit()\" " +
                   "title=\"Login and retrieve account list\">" +
                   "Login...</div></td></tr>" +
               "</table>" +

@@ -133,8 +133,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>AuthorizeServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AuthorizeServlet</servlet-class>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.LoginServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -223,8 +223,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>AuthorizeServlet</servlet-name>
-        <url-pattern>/authorize</url-pattern>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

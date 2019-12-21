@@ -51,7 +51,7 @@ public class HomeServlet extends HttpServlet {
             "<div class=\"centerbox\">" +
               "<table>" +
                 "<tr><td><div class=\"multibtn\" " +
-                "onclick=\"document.location.href='authorize'\" " +
+                "onclick=\"document.location.href='login'\" " +
                 "title=\"Begin enrollment process\">" +
                 "Begin Enrollment" +
                 "</div></td></tr>" +
