@@ -50,7 +50,6 @@ USE SWEDBANK_SATURN;
 
 CREATE TABLE OAUTH2TOKENS
   (
-
     IdentityToken   VARCHAR(50) NOT NULL UNIQUE,                        -- Unique User ID
 
     AccessToken     CHAR(36)    NOT NULL,                               -- The one we normally use
@@ -183,6 +182,17 @@ CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
   END
 //
 
+-- Test code only called by this script
+CREATE PROCEDURE ASSERT_TRUE (IN p_DidIt BOOLEAN,
+                              IN p_Message VARCHAR(100))
+  BEGIN
+    IF p_DidIt = FALSE THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = p_Message, MYSQL_ERRNO = 1001;
+    END IF;
+  END
+//
+
 DELIMITER ;
 
 -- Run a few tests
@@ -205,7 +215,6 @@ CALL CreateCredentialSP (@CredentialId,
                          @PaymentMethodUrl,
                          @PaymentKey,
                          NULL);
-SELECT @CredentialId;
 
 CALL AuthenticatePayReqSP (@Error,
                            @ReadHumanName,
@@ -214,7 +223,9 @@ CALL AuthenticatePayReqSP (@Error,
                            @AccountId,
                            @PaymentMethodUrl,
                            @PaymentKey);
-SELECT @Error, @ReadHumanName, @ReadIdentityToken;
+CALL ASSERT_TRUE(@Error = 0, "Error code");
+CALL ASSERT_TRUE(@ReadHumanName = @HumanName, "Human name");
+CALL ASSERT_TRUE(@ReadIdentityToken = @IdentityToken, "Identity token");
 
 CALL AuthenticatePayReqSP (@Error,
                            @ReadHumanName,
@@ -223,7 +234,7 @@ CALL AuthenticatePayReqSP (@Error,
                            @AccountId,
                            @PaymentMethodUrl,
                            @PaymentKey);
-SELECT @Error, @ReadHumanName, @ReadIdentityToken;
+CALL ASSERT_TRUE(@Error = 1, "Error code");
 
 CALL AuthenticatePayReqSP (@Error,
                            @ReadHumanName,
@@ -232,7 +243,7 @@ CALL AuthenticatePayReqSP (@Error,
                            "no such account",
                            @PaymentMethodUrl,
                            @PaymentKey);
-SELECT @Error, @ReadHumanName, @ReadIdentityToken;
+CALL ASSERT_TRUE(@Error = 2, "Error code");
 
 CALL AuthenticatePayReqSP (@Error,
                            @HumanName,
@@ -241,7 +252,7 @@ CALL AuthenticatePayReqSP (@Error,
                            @AccountId,
                            @PaymentMethodUrl,
                            x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b');
-SELECT @Error, @ReadHumanName, @ReadIdentityToken;
+CALL ASSERT_TRUE(@Error = 3, "Error code");
 
 CALL AuthenticatePayReqSP (@Error,
                            @HumanName,
@@ -250,8 +261,11 @@ CALL AuthenticatePayReqSP (@Error,
                            @AccountId,
                            "payme twice!",
                            @PaymentKey);
-SELECT @Error, @ReadHumanName, @ReadIdentityToken;
+CALL ASSERT_TRUE(@Error = 4, "Error code");
 
 -- Remove all test data
 
 DELETE FROM OAUTH2TOKENS;
+
+SET @Result = 'SUCCESSFUL';
+SELECT @Result;
