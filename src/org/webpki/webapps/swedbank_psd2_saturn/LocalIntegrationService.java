@@ -31,7 +31,7 @@ import java.security.interfaces.RSAKey;
 
 import java.security.spec.ECGenParameterSpec;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,8 +105,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static JSONDecryptionDecoder.DecryptionKeyHolder currentDecryptionKey;
     
-    public static Vector<JSONDecryptionDecoder.DecryptionKeyHolder> decryptionKeys = 
-            new Vector<JSONDecryptionDecoder.DecryptionKeyHolder>();
+    public static ArrayList<JSONDecryptionDecoder.DecryptionKeyHolder> decryptionKeys = 
+            new ArrayList<JSONDecryptionDecoder.DecryptionKeyHolder>();
     
     public static final DataEncryptionAlgorithms dataEncryptionAlgorithm = 
             DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID;
