@@ -28,10 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.util.logging.Logger;
 
-import org.webpki.json.JSONParser;
-
-import org.webpki.saturn.common.BaseProperties;
-
 import org.webpki.webutil.ServletUtil;
 
 // Debug print
@@ -45,21 +41,24 @@ public class DebugServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        String query = request.getQueryString();
-        logger.info("URL=" + request.getRequestURL().append(query == null ? "" : "?" + query).toString());
+        StringBuilder s = new StringBuilder("Headers:\n");
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String header = headerNames.nextElement();
-            logger.info(header + ": " + request.getHeader(header));
+            s.append(header)
+             .append(": ")
+             .append(request.getHeader(header))
+             .append('\n');
         }
         if (request.getMethod().equals("POST")) {
-            logger.info(JSONParser.parse(ServletUtil.getData(request)).toString());
+            s.append("Input:\n")
+             .append(new String(ServletUtil.getData(request),"utf-8"))
+             .append('\n');
         }
-        response.setStatus(201);
-        response.setContentType(BaseProperties.JSON_CONTENT_TYPE);
-        byte[] json = "{\"debug\":true}".getBytes("utf-8");
-        response.setContentLength(json.length);
-        response.getOutputStream().write(json);
+        response.setContentType("text/plain");
+        byte[] data = s.toString().getBytes("utf-8");
+        response.setContentLength(data.length);
+        response.getOutputStream().write(data);
     }
     
     @Override
