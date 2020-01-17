@@ -18,12 +18,12 @@
 		<link>
 			<name>common</name>
 			<type>2</type>
-			<location>C:/github.repositories/saturn/resources/common</location>
+			<locationURI>GITHUB/saturn/resources/common</locationURI>
 		</link>
 		<link>
 			<name>methods</name>
 			<type>2</type>
-			<location>C:/github.repositories/saturn/methods/src</location>
+			<locationURI>GITHUB/saturn/methods/src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
