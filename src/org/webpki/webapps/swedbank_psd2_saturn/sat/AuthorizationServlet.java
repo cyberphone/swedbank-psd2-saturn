@@ -68,8 +68,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         }
 
         // Verify that we understand the backend payment method
-        AuthorizationRequest.PaymentBackendMethodDecoder paymentMethodSpecific =
-            authorizationRequest.getPaymentBackendMethodSpecific(LocalIntegrationService.knownPayeeMethods);
+        AuthorizationRequest.BackendPaymentDataDecoder backendPaymentData =
+            authorizationRequest.getBackendPaymentData(LocalIntegrationService.knownPayeeMethods);
 
         // Fetch the payment request object
         PaymentRequest paymentRequest = authorizationRequest.getPaymentRequest();
@@ -88,14 +88,16 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
             // Lookup of Payee
             urlHolder.setNonCachedMode(nonCached);
             payeeAuthority = 
-                LocalIntegrationService.externalCalls.getPayeeAuthority(urlHolder,
-                                                            authorizationRequest.getAuthorityUrl());
+                LocalIntegrationService.externalCalls
+                    .getPayeeAuthority(urlHolder,
+                                       authorizationRequest.getAuthorityUrl());
 
             // Lookup of Payee's Provider
             urlHolder.setNonCachedMode(nonCached);
             providerAuthority =
-                LocalIntegrationService.externalCalls.getProviderAuthority(urlHolder,
-                                                               payeeAuthority.getProviderAuthorityUrl());
+                LocalIntegrationService.externalCalls
+                    .getProviderAuthority(urlHolder,
+                                          payeeAuthority.getProviderAuthorityUrl());
 
             // Now verify that they are issued by the same entity
             if (payeeAuthority.getAttestationKey().equals(
@@ -118,14 +120,15 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         }
 
         // Verify that the authority objects were signed by a genuine payment partner
-        providerAuthority.getSignatureDecoder().verify(cardPayment ? LocalIntegrationService.acquirerRoot : LocalIntegrationService.paymentRoot);
+        providerAuthority.getSignatureDecoder().verify(cardPayment ? 
+                              LocalIntegrationService.acquirerRoot : LocalIntegrationService.paymentRoot);
 
         // Verify Payee signature key.  It may be one generation back as well
         PayeeCoreProperties payeeCoreProperties = payeeAuthority.getPayeeCoreProperties();
         payeeCoreProperties.verify(authorizationRequest.getSignatureDecoder());
 
         // Optionally verify the claimed Payee account
-        payeeCoreProperties.verifyAccount(paymentMethodSpecific);
+        payeeCoreProperties.verifyAccount(backendPaymentData);
 
         // Decrypt and validate the encrypted Payer authorization
         AuthorizationData authorizationData = 
@@ -231,13 +234,13 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                                       null);
             transactionId = openBanking.paymentRequest(accountId,
 //TODO The BG (Bankgiro) method is still waiting to be defined.
-                                                       "BG 5051-6905",
-                                                       amount,
-                                                       paymentRequest.getCurrency(),
-                                                       paymentRequest.getPayeeCommonName(),
-                                                       authorizationRequest.getReferenceId()
+                                                      "BG 5051-6905",
+                                                      amount,
+                                                      paymentRequest.getCurrency(),
+                                                      paymentRequest.getPayeeCommonName(),
+                                                      authorizationRequest.getReferenceId()
 //TODO Swedbank consider '#' as an illegal character in references...
-                                                           .replace('#', 'R'));
+                                                          .replace('#', 'R'));
         }
 
         logger.info((testMode ? "TEST ONLY: ": "") +
@@ -246,7 +249,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                     ", Account ID=" + accountId + 
                     ", Payment Method=" + paymentMethodUrl + 
                     ", Client IP=" + clientIpAddress +
-                    ", Method Specific=" + paymentMethodSpecific.logLine());
+                    ", Method Specific=" + backendPaymentData.logLine());
 
         // We did it!
         return AuthorizationResponse.encode(authorizationRequest,
