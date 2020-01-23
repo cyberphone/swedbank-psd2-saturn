@@ -260,7 +260,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Payment network support
             /////////////////////////////////////////////////////////////////////////////////////////////
-            knownPayeeMethods.addToCache(se.bankgirot.BGBackendPaymentDataDecoder.class);
+            knownPayeeMethods.addToCache(se.bankgirot.BGAccountDataDecoder.class);
             knownAccountTypes.addToCache(org.payments.sepa.SEPAAccountDataDecoder.class);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
@@ -352,7 +352,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
                             .PaymentMethodDeclaration(
                                     PaymentMethods.SUPER_CARD.getPaymentMethodUrl())
 */
-                        .add(se.bankgirot.BGBackendPaymentDataDecoder.class)),
+                        .add(se.bankgirot.BGAccountDataDecoder.class)),
                 optionalProviderExtensions,
                 new SignatureProfiles[]{SignatureProfiles.P256_ES256},
                 new ProviderAuthority.EncryptionParameter[]{

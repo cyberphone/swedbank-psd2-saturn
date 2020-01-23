@@ -33,6 +33,8 @@ import org.webpki.saturn.common.AuthorizationRequest;
 import org.webpki.saturn.common.AuthorizationResponse;
 import org.webpki.saturn.common.UserChallengeItem;
 import org.webpki.saturn.common.PayeeAuthority;
+import org.webpki.saturn.common.AccountDataDecoder;
+import org.webpki.saturn.common.AccountDataEncoder;
 import org.webpki.saturn.common.AuthorizationData;
 import org.webpki.saturn.common.PaymentRequest;
 import org.webpki.saturn.common.ProviderAuthority;
@@ -68,8 +70,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         }
 
         // Verify that we understand the backend payment method
-        AuthorizationRequest.BackendPaymentDataDecoder backendPaymentData =
-            authorizationRequest.getBackendPaymentData(LocalIntegrationService.knownPayeeMethods);
+        AccountDataDecoder payeeReceiveAccount =
+            authorizationRequest.getPayeeReceiveAccount(LocalIntegrationService.knownPayeeMethods);
 
         // Fetch the payment request object
         PaymentRequest paymentRequest = authorizationRequest.getPaymentRequest();
@@ -128,7 +130,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         payeeCoreProperties.verify(authorizationRequest.getSignatureDecoder());
 
         // Optionally verify the claimed Payee account
-        payeeCoreProperties.verifyAccount(backendPaymentData);
+        payeeCoreProperties.verifyAccount(payeeReceiveAccount);
 
         // Decrypt and validate the encrypted Payer authorization
         AuthorizationData authorizationData = 
@@ -216,7 +218,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
 
         // Pure sample data...
         // Separate credit-card and account2account payments
-        AuthorizationResponse.AccountDataEncoder accountData = cardPayment ?
+        AccountDataEncoder accountData = cardPayment ?
             new com.supercard.SupercardAccountDataEncoder(
                     accountId, 
                     authenticationResult.getHumanName(),
@@ -233,8 +235,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                                       authorizationRequest.getClientIpAddress(),
                                                       null);
             transactionId = openBanking.paymentRequest(accountId,
-//TODO The BG (Bankgiro) method is still waiting to be defined.
-                                                      "BG 5051-6905",
+                                                      payeeReceiveAccount.getAccountId(),
                                                       amount,
                                                       paymentRequest.getCurrency(),
                                                       paymentRequest.getPayeeCommonName(),
@@ -249,12 +250,13 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                     ", Account ID=" + accountId + 
                     ", Payment Method=" + paymentMethodUrl + 
                     ", Client IP=" + clientIpAddress +
-                    ", Method Specific=" + backendPaymentData.logLine());
+                    ", Method Specific=" + payeeReceiveAccount.logLine());
 
         // We did it!
         return AuthorizationResponse.encode(authorizationRequest,
                                             providerAuthority.getEncryptionParameters()[0],
                                             accountData,
+                                            accountData.getPartialAccountIdentifier(accountId),
                                             transactionId,
                                             optionalLogData,
                                             LocalIntegrationService.bankKey);
