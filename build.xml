@@ -85,7 +85,7 @@
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src.dir}:${test.dir}:${saturn.dir}/resources/common:${saturn.dir}/methods/src"
+           srcdir="${src.dir}:${test.dir}:${saturn.dir}/resources/common:${saturn.dir}/account-types/src"
            destdir="${temp.dir}"
            includeAntRuntime="false">
         <include name="org/webpki/webapps/**/*.java"/>

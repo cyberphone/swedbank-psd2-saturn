@@ -16,14 +16,14 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>account-types</name>
+			<type>2</type>
+			<locationURI>GITHUB/saturn/account-types/src</locationURI>
+		</link>
+		<link>
 			<name>common</name>
 			<type>2</type>
 			<locationURI>GITHUB/saturn/resources/common</locationURI>
-		</link>
-		<link>
-			<name>methods</name>
-			<type>2</type>
-			<locationURI>GITHUB/saturn/methods/src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="common"/>
-	<classpathentry kind="src" path="methods"/>
+	<classpathentry kind="src" path="account-types"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="../openkeystore/resources/third-party-jars/servlet-api.jar"/>
