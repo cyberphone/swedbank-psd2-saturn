@@ -49,6 +49,7 @@ import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyStoreVerifier;
 
 import org.webpki.json.DataEncryptionAlgorithms;
+import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONDecryptionDecoder;
 import org.webpki.json.JSONObjectReader;
@@ -110,6 +111,14 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     
     public static final DataEncryptionAlgorithms dataEncryptionAlgorithm = 
             DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID;
+    
+    public static final JSONCryptoHelper.Options AUTHORIZATION_SIGNATURE_POLICY = 
+            new JSONCryptoHelper.Options();
+    
+    static {
+        AUTHORIZATION_SIGNATURE_POLICY.setPublicKeyOption(JSONCryptoHelper.PUBLIC_KEY_OPTIONS.REQUIRED);
+        AUTHORIZATION_SIGNATURE_POLICY.setKeyIdOption(JSONCryptoHelper.KEY_ID_OPTIONS.FORBIDDEN);
+    }
     
     public static X509Certificate[] bankCertificatePath;
 

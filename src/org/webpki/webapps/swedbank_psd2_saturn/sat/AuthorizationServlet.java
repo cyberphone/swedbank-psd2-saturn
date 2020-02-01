@@ -135,7 +135,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         // Decrypt and validate the encrypted Payer authorization
         AuthorizationData authorizationData = 
                 authorizationRequest.getDecryptedAuthorizationData(
-                        LocalIntegrationService.decryptionKeys);
+                        LocalIntegrationService.decryptionKeys,
+                        LocalIntegrationService.AUTHORIZATION_SIGNATURE_POLICY);
 
         // Verify that the there is a matching Payer account
         //
@@ -186,7 +187,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         UserResponseItem userResponseItem;
         if (amount.compareTo(DEMO_RBA_LIMIT) >= 0 &&
             (((userResponseItem = authorizationData.getUserResponseItems().get(RBA_PARM_MOTHER)) == null) ||
-            (!userResponseItem.getText().equals(MOTHER_NAME)))) {
+            (!userResponseItem.getValue().equals(MOTHER_NAME)))) {
             boolean specialTest = amount.compareTo(DEMO_RBA_LIMIT_CT) == 0;
             return createProviderUserResponse("Transaction requests exceeding " +
                                                 amountInHtml(paymentRequest, DEMO_RBA_LIMIT) +
@@ -202,7 +203,6 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                              UserChallengeItem.TYPE.ALPHANUMERIC
                                                                         : 
                                              UserChallengeItem.TYPE.ALPHANUMERIC_SECRET,
-                                                            20,
                                                             specialTest ? 
                                                  "Mother's maiden name" : null)},
               authorizationData);
