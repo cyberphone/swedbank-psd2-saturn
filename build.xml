@@ -34,7 +34,7 @@
   <property name="cards.dir" location="card-images"/>
   <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/swedbank_psd2_saturn"/>
 
-  <property name="logging" value="true"/>
+  <property name="logging" value="false"/>
   <property name="bouncycastle" value="true"/>
   
   <property name="application" value="${service_path}.war"/>
