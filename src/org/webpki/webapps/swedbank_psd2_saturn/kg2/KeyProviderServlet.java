@@ -285,7 +285,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     // Note, user name is just an "alias"
                     // so it does NOT function as a user ID...
                     String userName = (String) session.getAttribute(
-                            KeyProviderInitServlet.USERNAME_SESSION_ATTR_PARM);
+                            KeyProviderInitServlet.USERNAME_SESSION_ATTR);
                     OpenBanking openBanking = OpenBanking.getOpenBanking(request, response);
                     String accountId = openBanking.getAccountId();
 

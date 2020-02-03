@@ -49,7 +49,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     static Logger logger = Logger.getLogger(KeyProviderInitServlet.class.getCanonicalName());
     
     static final String KEYGEN2_SESSION_ATTR           = "keygen2";
-    static final String USERNAME_SESSION_ATTR_PARM     = "userName";  // Dual use
+    static final String USERNAME_SESSION_ATTR          = "userName";  // Dual use
     static final String W3C_PAYMENT_REQUEST_MODE_PARM  = "w3cpr";
     public static final String ACCOUNT_SET_MODE_PARM   = "account";
     
@@ -64,9 +64,14 @@ public class KeyProviderInitServlet extends HttpServlet {
     private static final String WAITING_ID = "wait";
     private static final String ERROR_ID   = "error";
     
+    private static final String THIS_SERVLET   = "kg2.init";
+    
     static final String DEFAULT_USER_NAME_HTML = "Luke Skywalker &#x1f984;";    // Unicorn emoji
     
     static final String BUTTON_TEXT_HTML       = "Start Enrollment &#x1f680;";  // Rocket emoji
+
+    static final String AFTER_INSTALL_JS       =
+            new String(Character.toChars(Integer.parseInt("1f449", 16))) + " Click here AFTER install";
     
     static final String ANONYMOUS_JAVA         = "Anonymous " + 
                  new String(Character.toChars(Integer.parseInt("1f47d", 16)));  // E.T. emoji
@@ -87,16 +92,50 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HttpSession session = request.getSession(false);
         HTML.standardPage(response, 
-            (LocalIntegrationService.useW3cPaymentRequest ?
             "function paymentRequestError(msg) {\n" +
             "  console.info('Payment request error:' + msg);\n" +
             "  document.getElementById('" + WAITING_ID + "').style.display = 'none';\n" +
             "  document.getElementById('" + ERROR_ID + "').innerHTML = msg;\n" +
             "  document.getElementById('" + ERROR_ID + "').style.display = 'block';\n" +
             "  document.getElementById('" + BUTTON_ID + "').style.display = 'block';\n" +
-            "}\n\n" +
+            "}\n" +
+            "let w3cPaymentRequest = null;\n" +
+            "async function setupW3CRequest() {\n" +
+            "  if (window.PaymentRequest) {\n" +
+            //==================================================================//
+            // W3C PaymentRequest using dummy data.                             //
+            //==================================================================//
+            "    const details = {total:{label:'total',amount:{currency:'USD',value:'1.00'}}};\n" +
+            "    const supportedInstruments = [{\n" +
+            "      supportedMethods: '" + LocalIntegrationService.w3cPaymentRequestUrl + "',\n" +
+// Test data
+//                        "          supportedMethods: 'weird-pay',\n" +
+            "      data: {url: '" + 
+               getInvocationUrl(MobileProxyParameters.SCHEME_W3CPAY, session) + "'}\n" +
+// Test data
+//                        "          supportedMethods: 'basic-card',\n" +
+//                        "          data: {supportedNetworks: ['visa', 'mastercard']}\n" +
+            "    }];\n" +
+            "    w3cPaymentRequest = new PaymentRequest(supportedInstruments, details);\n" +
 
+            // Fixes https://bugs.chromium.org/p/chromium/issues/detail?id=999920#c6
+            "    const w3cCanMakePayment = await w3cPaymentRequest.canMakePayment();\n" +
+            "    if (w3cCanMakePayment) {\n" +
+            "      document.getElementById('" + WAITING_ID + "').style.display = 'none';\n" +
+            "      document.getElementById('" + BUTTON_ID + "').style.display = 'block';\n" +
+            "    } else {\n" +
+            "      document.getElementById('" + BUTTON_ID + "').innerHTML = '" +
+                     AFTER_INSTALL_JS + "';\n" +
+            "      document.getElementById('" + BUTTON_ID + "').onclick = function() {\n" +
+            "        document.location.href = '" + THIS_SERVLET + "';\n" +
+            "      }\n" +
+            "      paymentRequestError('App does not seem to be installed');\n" +
+            "      w3cPaymentRequest = null;\n" +
+            "    }\n" +
+            "  }\n" +
+            "}\n" +
             "async function enroll() {\n" +
             //////////////////////////////////////////////////////////////////////
             // PaymentRequest for key enrollment?  Right, there is currently no //
@@ -107,63 +146,22 @@ public class KeyProviderInitServlet extends HttpServlet {
             //  - Away from having to select browser for App invoked pages      //
             //  - Security beating URL handlers without adding vulnerabilities  //
             //////////////////////////////////////////////////////////////////////
-            "  if (window.PaymentRequest) {\n" +
+            "  if (w3cPaymentRequest) {\n" +
             //==================================================================//
             // It may take a second or two to get PaymentRequest up and         //
             // running.  Indicate that to the user.                             //
             //==================================================================//
             "    document.getElementById('" + BUTTON_ID + "').style.display = 'none';\n" +
             "    document.getElementById('" + WAITING_ID + "').style.display = 'block';\n" +
-            //==================================================================//
-            // The following code may seem strange but the Web application      //
-            // does not create an HttpSession so we do this immediately after   //
-            // the user hit the "Enroll" button.  Using fetch() this becomes    //
-            // invisible UI wise. The POST provides the current FORM data which //
-            // is added to the HttpSession to be created on the server.         //
-            //==================================================================//
-            "    var formData = new URLSearchParams();\n" +
-            "    formData.append('" + USERNAME_SESSION_ATTR_PARM +
-              "', document.forms.shoot.elements." + USERNAME_SESSION_ATTR_PARM + ".value);\n" +
-            "    formData.append('" + W3C_PAYMENT_REQUEST_MODE_PARM + "', 1);\n" +
             "    try {\n" +
-            "      const httpResponse = await fetch('kg2.init', {\n" +
-            "        method: 'POST',\n" +
-            "        body: formData\n" +
-            "      });\n" +
-            "      if (httpResponse.status == " + HttpServletResponse.SC_OK + ") {\n" +
-            "        const invocationUrl = await httpResponse.text();\n" +
-            //==================================================================//
-            // Success! Now we can now hook into the W3C PaymentRequest using   //
-            // "dummy" payment data.                                            //
-            //==================================================================//
-            "        const details = {total:{label:'total',amount:{currency:'USD',value:'1.00'}}};\n" +
-            "        const supportedInstruments = [{\n" +
-            "          supportedMethods: '" + LocalIntegrationService.w3cPaymentRequestUrl + "',\n" +
-// Test data
-//            "          supportedMethods: 'weird-pay',\n" +
-            "          data: {url: invocationUrl}\n" +
-// Test data
-//            "          supportedMethods: 'basic-card',\n" +
-//            "          data: {supportedNetworks: ['visa', 'mastercard']}\n" +
-            "        }];\n" +
-            "        const payRequest = new PaymentRequest(supportedInstruments, details);\n" +
-            "        if (await payRequest.canMakePayment()) {\n" +
-            "          const payResponse = await payRequest.show();\n" +
-            "          payResponse.complete('success');\n" +
+            "      const payResponse = await w3cPaymentRequest.show();\n" +
+            "      payResponse.complete('success');\n" +
             //==================================================================//
             // Note that success does not necessarily mean that the enrollment  //
             // succeeded, it just means that the result is a redirect URL.      //                                                   //
             //==================================================================//
-            "          document.location.href = payResponse.details." +
+            "      document.location.href = payResponse.details." +
               MobileProxyParameters.W3CPAY_GOTO_URL + ";\n" +
-            "        } else {\n" +
-            "          paymentRequestError('App does not seem to be installed');\n" +
-            "        }\n" +
-            "      } else if (httpResponse.status == " + HttpServletResponse.SC_FORBIDDEN + ") {\n" +
-            "        document.location.href = '" + HomeServlet.REDIRECT_TIMEOUT_URI + "';\n" +
-            "      } else {\n" +
-            "        paymentRequestError('Server error, try again');\n" +
-            "      }\n" +
             "    } catch (err) {\n" +
             "      console.error(err);\n" +
             "      paymentRequestError(err.message);\n" +
@@ -172,21 +170,45 @@ public class KeyProviderInitServlet extends HttpServlet {
             // The browser does not support PaymentRequest, fallback to the awkward URL handler
             "    document.forms.shoot.submit();\n" +
             "  }\n" +
-            "}"
-                 :
-            "function enroll() {\n" +
-            "  document.forms.shoot.submit();\n" +
-            "}"),
+            "}\n" +
+            "async function setUserName() {\n" +
+            "  var formData = new URLSearchParams();\n" +
+            "  formData.append('" + USERNAME_SESSION_ATTR +
+              "', document.forms.shoot.elements." + USERNAME_SESSION_ATTR + ".value);\n" +
+            "  formData.append('" + W3C_PAYMENT_REQUEST_MODE_PARM + "', 1);\n" +
+            "  try {\n" +
+            "    const httpResponse = await fetch('" + THIS_SERVLET + "', {\n" +
+            "      method: 'POST',\n" +
+            "       body: formData\n" +
+            "    });\n" +
+            "    if (httpResponse.status == " + HttpServletResponse.SC_OK + ") {\n" +
+            "      await httpResponse.text();\n" +
+            "    } else {\n" +
+            "      paymentRequestError('Server problems, try again!');\n" +
+            "    }\n" +
+            "  } catch(err) {\n" +
+            "    paymentRequestError(err.message);\n" +
+            "  }\n" +
+            "}\n" +
+            "document.addEventListener('DOMContentLoaded', function() {\n" +
+            "  setUserName();\n" +
+            (LocalIntegrationService.useW3cPaymentRequest ?
+                    " setupW3CRequest();\n" 
+                                                     :
+                    " document.getElementById('" + BUTTON_ID + "').style.display = 'block';\n" +
+                    " document.getElementById('" + WAITING_ID + "').style.display = 'none';\n") +
+            "});\n",
+
             "<div class=\"header\">Create Virtual Payment Card</div>" + 
             "<div class=\"centerbox\">" +
               "<table style=\"border-collapse:collapse\">" + 
                 "<tr><td>Your name (real or made up):</td></tr>" + 
                 "<tr><td>" +
-                  "<form name=\"shoot\" method=\"POST\" action=\"kg2.init\">" + 
-                    "<input type=\"text\" name=\"" + USERNAME_SESSION_ATTR_PARM + 
-                    "\" value=\"" + DEFAULT_USER_NAME_HTML + 
-                    "\" size=\"30\" maxlength=\"50\" " + 
-                    "style=\"background-color:#def7fc\">" +
+                  "<form name=\"shoot\" method=\"POST\" action=\"" + THIS_SERVLET + "\">" + 
+                    "<input type=\"text\" name=\"" + USERNAME_SESSION_ATTR + 
+                      "\" value=\"" + DEFAULT_USER_NAME_HTML + 
+                      "\" size=\"30\" maxlength=\"50\" " + 
+                      "style=\"background-color:#def7fc\" oninput=\"setUserName()\">" +
                   "</form>" +
                 "</td></tr>" + 
               "</table>" +
@@ -197,14 +219,13 @@ public class KeyProviderInitServlet extends HttpServlet {
             "<div id=\"" + ERROR_ID + "\" " +
               "style=\"color:red;font-weight:bold;padding-top:1em;display:none\"></div>" +
             "<img id=\"" + WAITING_ID + "\" src=\"images/waiting.gif\" " +
-              "style=\"padding-top:1em;display:none\" alt=\"waiting\">" +
-            "<div id=\"" + BUTTON_ID + "\" class=\"centerbox\">" +
-              "<table>" +
-                "<tr><td><div class=\"multibtn\" onclick=\"enroll()\">" + BUTTON_TEXT_HTML + 
-                "</div></td></tr>" +
-              "</table>" +
-            "</div>" +
-            "<div style=\"padding-top:1.5em;padding-bottom:1em\" class=\"centerbox\">" +
+              "style=\"padding-top:1em\" alt=\"waiting\">" +
+            "<div style=\"display:flex;justify-content:center\">" +
+              "<div id=\"" + BUTTON_ID + "\" style=\"display:none\" class=\"multibtn\" onclick=\"enroll()\">" +
+                BUTTON_TEXT_HTML + 
+              "</div>" +
+            "</div>" + 
+            "<div style=\"padding:4em 0 1em 0\" class=\"centerbox\">" +
               "<div class=\"description\">If you have not yet " +
               "installed the &quot;Wallet&quot;, this is the time but <i>please do not " +
               "start the application</i>, simply press " +
@@ -225,7 +246,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     throws IOException, ServletException {
         // Note: there are three(!) different ways to enter here.
         // 1. From AccountServlet with a selected account parameter
-        // 2. From javascript "fetch()" when using W3C PaymentRequest
+        // 2. From javascript "fetch()"
         // 3. From javascript when using URL handler
         // Case 2 & 3 comes with a user name parameter
         request.setCharacterEncoding("utf-8");
@@ -241,7 +262,7 @@ public class KeyProviderInitServlet extends HttpServlet {
             return;
         }
         String account = request.getParameter(ACCOUNT_SET_MODE_PARM);
-        String userName = request.getParameter(USERNAME_SESSION_ATTR_PARM);
+        String userName = request.getParameter(USERNAME_SESSION_ATTR);
         if (account != null) {
             // Case 1
 
@@ -256,7 +277,7 @@ public class KeyProviderInitServlet extends HttpServlet {
                                     LocalIntegrationService.serverCertificate,
                                     null);
             session.setAttribute(KEYGEN2_SESSION_ATTR, serverState);
-            response.sendRedirect("kg2.init");
+            response.sendRedirect(THIS_SERVLET);
             return;
         }
         if (userName == null || (userName = userName.trim()).isEmpty()) {
@@ -265,7 +286,7 @@ public class KeyProviderInitServlet extends HttpServlet {
         if (userName.length() > NAME_MAX_LENGTH) {
             userName = userName.substring(0, NAME_MAX_LENGTH);
         }
-        session.setAttribute(USERNAME_SESSION_ATTR_PARM, userName);
+        session.setAttribute(USERNAME_SESSION_ATTR, userName);
         if (request.getParameter(W3C_PAYMENT_REQUEST_MODE_PARM) == null) {
             // Case 3
             HTML.standardPage(
@@ -284,17 +305,7 @@ public class KeyProviderInitServlet extends HttpServlet {
                 "</div>");
         } else {
             // Case 2
-/*
-            // This code makes the PaymentRequest "gesture" requirement open
-            // Chrome's payment dialog which is very confusing for users.
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-            }
-*/
-            String invocationUrl = getInvocationUrl(MobileProxyParameters.SCHEME_W3CPAY, session);
-            logger.info("POST return=" + invocationUrl);
-            HTML.output(response, invocationUrl);
+            HTML.output(response, "");
         }
     }
 }
