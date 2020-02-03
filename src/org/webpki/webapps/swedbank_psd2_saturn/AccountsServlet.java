@@ -103,7 +103,7 @@ public class AccountsServlet extends HttpServlet {
               "').value = curr;\n" +
             "  document.forms.accountSelector.submit();\n" +
             "}\n" +
-            "document.addEventListener('DOMContentLoaded', function() {\n" +
+            "window.addEventListener('load', (event) => {\n" +
             "  selectAccount(curr);\n" +
             "});\n", 
 
@@ -132,7 +132,7 @@ public class AccountsServlet extends HttpServlet {
     throws IOException, ServletException {
 
         HTML.standardPage(response, 
-            "document.addEventListener('DOMContentLoaded', function() {\n" +
+            "window.addEventListener('load', (event) => {\n" +
             "  document.forms.accounts.submit();\n" +
             "});\n",
             "<div class=\"centerbox\">" +

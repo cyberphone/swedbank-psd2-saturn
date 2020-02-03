@@ -190,7 +190,7 @@ public class KeyProviderInitServlet extends HttpServlet {
             "    paymentRequestError(err.message);\n" +
             "  }\n" +
             "}\n" +
-            "document.addEventListener('DOMContentLoaded', function() {\n" +
+            "window.addEventListener('load', (event) => {\n" +
             "  setUserName();\n" +
             (LocalIntegrationService.useW3cPaymentRequest ?
                     " setupW3CRequest();\n" 
@@ -291,7 +291,7 @@ public class KeyProviderInitServlet extends HttpServlet {
             // Case 3
             HTML.standardPage(
                 response,
-                "document.addEventListener('DOMContentLoaded', function() {\n" +
+                "window.addEventListener('load', (event) => {\n" +
                 "  document.location.href = '" + 
                     getInvocationUrl(MobileProxyParameters.SCHEME_URLHANDLER, session) + 
                     "#Intent;scheme=webpkiproxy;package=" +  

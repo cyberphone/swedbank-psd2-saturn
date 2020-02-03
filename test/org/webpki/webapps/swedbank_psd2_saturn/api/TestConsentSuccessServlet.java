@@ -98,7 +98,7 @@ public class TestConsentSuccessServlet extends APICore {
                TestPaymentSetupServlet.ACCOUNT_ID_PARM + "').value = curr;\n" +
             "  document.forms.paymentSetup.submit();\n" +
             "}\n" +
-            "document.addEventListener('DOMContentLoaded', function() {\n" +
+            "window.addEventListener('load', (event) => {\n" +
             "  selectAccount(curr);\n" +
             "});\n",
 
