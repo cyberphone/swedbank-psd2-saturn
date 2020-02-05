@@ -68,6 +68,9 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     static final String DEFAULT_USER_NAME_HTML = "Luke Skywalker &#x1f984;";    // Unicorn emoji
     
+    static final String DEFAULT_USER_NAME_JAVA = "Luke Skywalker " +
+            new String(Character.toChars(Integer.parseInt("1f984", 16)));       // Unicorn emoji
+
     static final String BUTTON_TEXT_HTML       = "Start Enrollment &#x1f680;";  // Rocket emoji
 
     static final String AFTER_INSTALL_JS       =
@@ -93,6 +96,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(false);
+        session.setAttribute(USERNAME_SESSION_ATTR, DEFAULT_USER_NAME_JAVA);
         HTML.standardPage(response, 
             "function paymentRequestError(msg) {\n" +
             "  console.info('Payment request error:' + msg);\n" +
@@ -125,7 +129,6 @@ public class KeyProviderInitServlet extends HttpServlet {
             "    if (result) {\n" +
             "      document.getElementById('" + WAITING_ID + "').style.display = 'none';\n" +
             "      document.getElementById('" + BUTTON_ID + "').style.display = 'block';\n" +
-            "      setUserName();\n" +
             "    } else {\n" +
             "      document.getElementById('" + BUTTON_ID + "').innerHTML = '" +
                      AFTER_INSTALL_JS + "';\n" +
@@ -290,13 +293,17 @@ public class KeyProviderInitServlet extends HttpServlet {
             response.sendRedirect(THIS_SERVLET);
             return;
         }
-        if (userName == null || (userName = userName.trim()).isEmpty()) {
-            userName = ANONYMOUS_JAVA;
+
+        if (userName != null) {
+            userName = userName.trim();
+            if (userName.isEmpty()) {
+                userName = ANONYMOUS_JAVA;
+            } else if (userName.length() > NAME_MAX_LENGTH) {
+                userName = userName.substring(0, NAME_MAX_LENGTH);
+            }
+            session.setAttribute(USERNAME_SESSION_ATTR, userName);
         }
-        if (userName.length() > NAME_MAX_LENGTH) {
-            userName = userName.substring(0, NAME_MAX_LENGTH);
-        }
-        session.setAttribute(USERNAME_SESSION_ATTR, userName);
+
         if (request.getParameter(W3C_PAYMENT_REQUEST_MODE_PARM) == null) {
             // Case 3
             HTML.standardPage(
