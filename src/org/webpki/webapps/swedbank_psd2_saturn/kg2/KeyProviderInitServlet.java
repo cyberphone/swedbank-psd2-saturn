@@ -275,7 +275,6 @@ public class KeyProviderInitServlet extends HttpServlet {
             return;
         }
         String account = request.getParameter(ACCOUNT_SET_MODE_PARM);
-        String userName = request.getParameter(USERNAME_SESSION_ATTR);
         if (account != null) {
             // Case 1
 
@@ -294,6 +293,7 @@ public class KeyProviderInitServlet extends HttpServlet {
             return;
         }
 
+        String userName = request.getParameter(USERNAME_SESSION_ATTR);
         if (userName != null) {
             userName = userName.trim();
             if (userName.isEmpty()) {
