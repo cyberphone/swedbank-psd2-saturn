@@ -83,9 +83,9 @@ public class TestConsentSuccessServlet extends APICore {
         }
         
         HTML.standardPage(response, 
-            "var curr = '" + preSelected + "';\n" +
+            "let curr = '" + preSelected + "';\n" +
             "function setColor(id, fg, bg) {\n" +
-            "  var e = document.getElementById(id);\n" +
+            "  let e = document.getElementById(id);\n" +
             "  e.style.color = fg;\n" +
             "  e.style.backgroundColor = bg;\n" +
             "}\n" +

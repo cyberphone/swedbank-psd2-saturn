@@ -72,7 +72,7 @@ public class HTML {
     public static String getHTML(String javascript, String box) {
         StringBuilder html = new StringBuilder(
             HTML_INIT + 
-            "<script>\"use strict\";\n" +
+            "<script>\n\"use strict\";\n" +
             "history.pushState(null, null, 'home');\n" +
             "window.addEventListener('popstate', function(event) {\n" +
             "  history.pushState(null, null, 'home');\n" +

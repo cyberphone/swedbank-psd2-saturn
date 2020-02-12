@@ -106,7 +106,7 @@ public class KeyProviderInitServlet extends HttpServlet {
             "  document.getElementById('" + BUTTON_ID + "').style.display = 'block';\n" +
             "}\n" +
             "async function setUserName() {\n" +
-            "  var formData = new URLSearchParams();\n" +
+            "  let formData = new URLSearchParams();\n" +
             "  formData.append('" + USERNAME_SESSION_ATTR +
               "', document.forms.shoot.elements." + USERNAME_SESSION_ATTR + ".value);\n" +
             "  formData.append('" + W3C_PAYMENT_REQUEST_MODE_PARM + "', 1);\n" +
