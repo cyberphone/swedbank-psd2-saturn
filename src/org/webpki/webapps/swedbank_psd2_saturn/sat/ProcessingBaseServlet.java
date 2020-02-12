@@ -142,7 +142,7 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
                               (urlHolder.getUrl() == null ? "" : "URL=" + urlHolder.getUrl()) + 
                               "\n") + e.getMessage();
             if (!(e instanceof InternalException)) {
-                logger.log(Level.SEVERE, message, e);
+                logger.log(Level.SEVERE, HttpSupport.getStackTrace(e, message));
             }
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             PrintWriter writer = response.getWriter();
