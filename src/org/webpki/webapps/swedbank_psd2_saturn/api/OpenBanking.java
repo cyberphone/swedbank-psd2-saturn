@@ -25,6 +25,9 @@ import java.security.PublicKey;
 
 import java.sql.SQLException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -33,13 +36,17 @@ import org.webpki.json.JSONObjectReader;
 
 import org.webpki.saturn.common.Currencies;
 
+import java.util.logging.Logger;
+
 // This is the only class a normal application is supposed to use
 // for accessing Dual-mode Open Banking methods.
 
 public class OpenBanking implements Serializable {
     
+    static Logger logger = Logger.getLogger(OpenBanking.class.getName());
+
     static class TokenRefresher extends Thread {
-        
+       
         long cycleTime;
 
         public TokenRefresher(long cycleTime) {
@@ -53,7 +60,7 @@ public class OpenBanking implements Serializable {
                     sleep(cycleTime);
                     performOneRefreshRound();
                 } catch (Exception e) {
-                    break;
+                    logger.log(Level.SEVERE, "Token update", e);
                 }
             }
         }
