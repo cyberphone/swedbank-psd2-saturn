@@ -107,7 +107,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public static JSONDecryptionDecoder.DecryptionKeyHolder currentDecryptionKey;
     
     public static ArrayList<JSONDecryptionDecoder.DecryptionKeyHolder> decryptionKeys = 
-            new ArrayList<JSONDecryptionDecoder.DecryptionKeyHolder>();
+            new ArrayList<>();
     
     public static final DataEncryptionAlgorithms dataEncryptionAlgorithm = 
             DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID;

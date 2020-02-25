@@ -63,8 +63,7 @@ public class KeyGen2SoftHSM implements ServerCryptoInterface {
     ////////////////////////////////////////////////////////////////////////////////////////
     // Private and secret keys would in a HSM implementation be represented as handles
     ////////////////////////////////////////////////////////////////////////////////////////
-    LinkedHashMap<PublicKey,PrivateKey> keyManagementKeys =
-            new LinkedHashMap<PublicKey,PrivateKey>();
+    LinkedHashMap<PublicKey,PrivateKey> keyManagementKeys = new LinkedHashMap<>();
     
     public KeyGen2SoftHSM(KeyStoreEnumerator keyStoreEnumerator) throws IOException {
         keyManagementKeys.put(keyStoreEnumerator.getPublicKey(), 

@@ -49,7 +49,7 @@ public class Accounts implements Serializable {
         }
     }
 
-    LinkedHashMap<String, Account> accounts = new LinkedHashMap<String, Account>();
+    LinkedHashMap<String, Account> accounts = new LinkedHashMap<>();
 
     public static class Account {
         String accountId;

@@ -36,8 +36,6 @@ import org.webpki.json.JSONObjectReader;
 
 import org.webpki.saturn.common.Currencies;
 
-import java.util.logging.Logger;
-
 // This is the only class a normal application is supposed to use
 // for accessing Dual-mode Open Banking methods.
 
@@ -84,8 +82,10 @@ public class OpenBanking implements Serializable {
         }
     }
 
-    interface CallBack {
-        void refreshToken(String identityToken, String refreshToken, int expires) throws IOException;
+    abstract static class CallBack {
+        int updates;
+        
+        abstract void refreshToken(String identityToken, String refreshToken, int expires) throws IOException;
     }
 
     private OpenBanking(String clientIpAddress,
@@ -234,23 +234,34 @@ public class OpenBanking implements Serializable {
 
     static void performOneRefreshRound() throws IOException {
         final int time = (int) ((System.currentTimeMillis() + APICore.LIFETIME / 4) / 1000);
-        DataBaseOperations.scanAll(new CallBack() {
+        CallBack callBack; 
+        DataBaseOperations.scanAll(callBack = new CallBack() {
 
             @Override
             public void refreshToken(String identityToken,
                                      String refreshToken,
                                      int expires) throws IOException {
                 if (expires < time) {
+                    updates++;
                     OpenBanking temp = new OpenBanking(null, null);
                     temp.identityToken = identityToken;
                     APICore.getOAuth2Token(temp, true, refreshToken);
                 }
             }
         });
+        if (callBack.updates > 0) {
+            logger.info("Updated " + callBack.updates + " tokens");
+        }
     }
 
     public static void initialize() throws IOException {
-        performOneRefreshRound();
+        // Restart with fresh tokens if possible
+        try {
+           performOneRefreshRound();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Restart problems", e);
+        }
+        // MUST always be running
         new TokenRefresher(APICore.LIFETIME / 10).start();
     }
 }
