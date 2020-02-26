@@ -98,6 +98,7 @@ public class HTML {
             throws IOException, ServletException {
 //      logger.info("\n\n" + html + "\n\n");
         response.setContentType("text/html; charset=utf-8");
+        response.setHeader("Cache-Control", "no-store");
         response.setHeader("Pragma", "No-Cache");
         response.setDateHeader("EXPIRES", 0);
         response.getOutputStream().write(html.getBytes("utf-8"));
