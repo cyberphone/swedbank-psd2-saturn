@@ -71,6 +71,7 @@ import org.webpki.keygen2.ProvisioningFinalizationRequestEncoder;
 
 import org.webpki.sks.Grouping;
 import org.webpki.sks.AppUsage;
+import org.webpki.sks.BiometricProtection;
 import org.webpki.sks.PassphraseFormat;
 
 import org.webpki.saturn.common.BaseProperties;
@@ -160,6 +161,9 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             if (init) {
                 InvocationRequestEncoder invocationRequest = new InvocationRequestEncoder(keygen2State);
                 keygen2State.addImageAttributesQuery(KeyGen2URIs.LOGOTYPES.LIST);
+                if (LocalIntegrationService.biometricSupport) {
+                    keygen2State.addFeatureQuery(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT);
+                }
                 keygen2JSONBody(response, invocationRequest);
                 return;
               }
@@ -268,6 +272,9 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                                    standardPinPolicy);                           
                     key.addEndorsedAlgorithm(AsymSignatureAlgorithms.ECDSA_SHA256);
                     key.setFriendlyName(LocalIntegrationService.bankCommonName);
+                    if (keygen2State.isFeatureSupported(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT)) {
+                        key.setBiometricProtection(BiometricProtection.ALTERNATIVE);
+                    }
 
                     keygen2JSONBody(response, new KeyCreationRequestEncoder(keygen2State));
                     return;

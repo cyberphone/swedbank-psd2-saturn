@@ -167,6 +167,10 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public static String svgCardImage;
 
     public static KeyPair carrierCaKeyPair;
+    
+    static final String BIOMETRIC_SUPPORT           = "biometric_support";
+    
+    public static boolean biometricSupport;
 
     /////////////////////////////////////////////////////////////////////////////
     // Open Banking objects
@@ -298,6 +302,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ////////////////////////////////////////////////////////////////////////////////////////////
             // KeyGen2 objects
             ////////////////////////////////////////////////////////////////////////////////////////////
+            biometricSupport = getPropertyBoolean(BIOMETRIC_SUPPORT);
             keygen2RunUrl = bankBaseUrl + "/kg2.runner";
             keyManagementKey = new KeyStoreEnumerator(getResource(BANK_KG2KMK),
                                                       getPropertyString(KEYSTORE_PASSWORD));

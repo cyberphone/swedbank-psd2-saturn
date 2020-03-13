@@ -18,6 +18,12 @@
     </context-param>
 
     <context-param>
+        <description>Biometric Support</description>
+        <param-name>biometric_support</param-name>
+        <param-value>@biometric-support@</param-value>
+    </context-param>
+    
+    <context-param>
         <description>OAuth2 Client ID</description>
         <param-name>oauth2_client_id</param-name>
         <param-value>@oauth2-client-id@</param-value>
@@ -106,6 +112,7 @@
         <param-name>acquirer_root</param-name>
         <param-value>@acquirer-root@</param-value>
     </context-param>
+
     <context-param>
         <description>Server TLS Certificate</description>
         <param-name>server_tls_certificate</param-name>

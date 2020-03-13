@@ -34,7 +34,6 @@
   <property name="cards.dir" location="card-images"/>
   <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/swedbank_psd2_saturn"/>
 
-  <property name="logging" value="false"/>
   <property name="bouncycastle" value="true"/>
   
   <property name="application" value="${service_path}.war"/>
@@ -51,6 +50,10 @@
   <property environment="env"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
 
+  <!-- Ant command line overridables -->
+  <property name="logging" value="false"/>
+  <property name="biometricsupport" value="true"/>
+    
   <target name="help">
      <echo message="build tomcat createkeys"/>
   </target>
@@ -110,6 +113,7 @@
       <replacefilter token="@w3c-payment-request-url@" value="${@w3c.manifesthost}/${@w3c.manifestpath}/method"/>
       <replacefilter token="@bank-base-url@" value="${bank_base_url}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
+      <replacefilter token="@biometric-support@" value="${biometricsupport}"/>
       <replacefilter token="@payment-root@" value="${payment-network-root.base}"/>
       <replacefilter token="@acquirer-root@" value="${acquirer-network-root.base}"/>
       <replacefilter token="@saturn-extensions@" value="${saturn-extensions}"/>
@@ -128,6 +132,9 @@
          <include name="webpki.org-webutil*.jar"/>
       </lib>
       <fileset dir="web"/>
+      <fileset dir="${openkeystore.dir}/resources">
+         <include name="images/thelab.svg"/>
+      </fileset>
       <zipfileset dir="${keys.dir}" prefix="${class_war_path}">
         <include name="${inhouse}${bank_kg2kmk}"/>
         <include name="${bank_eecert}"/>
