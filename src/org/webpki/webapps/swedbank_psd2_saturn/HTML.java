@@ -87,7 +87,7 @@ public class HTML {
             " onclick=\"document.location.href='home'\" title=\"Home of the lab...\"/>" +
             "<a href=\"https://github.com/cyberphone/swedbank-psd2-saturn\" target=\"_blank\">" +
             "<img src=\"images/saturn-psd2.svg\" " +
-            "style=\"position:absolute;height:30pt;top:13pt;right:15pt\" " +
+            "style=\"position:absolute;height:30pt;top:14pt;right:15pt\" " +
             "title=\"Specifications, source code, etc.\"/></a>" +
             "<div class=\"displayContainer\">")
         .append(box).append("</div></body></html>");
