@@ -140,9 +140,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
 
         // Verify that the there is a matching Payer account
         //
-        // Note: in this particular implementation the accountId coming
-        // from the client is a unique id which in turn points to an
-        // accountId for external consumption like an IBAN.
+        // In this particular implementation the accountId holds an IBAN
+        // while credentialId holds a unique credential serial number.
         //
         // Since the issuer of a payment credential is also supposed to be
         // the consumer of it, this part is subject to customization.

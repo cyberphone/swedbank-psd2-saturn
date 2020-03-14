@@ -72,7 +72,7 @@ CREATE TABLE CREDENTIALS
 -- Note: a Credential holds an external representation of an Account ID
 -- like an IBAN or Card Number + and an Authorization key
 
-    CredentialId    INT         NOT NULL  AUTO_INCREMENT,               -- Unique ID
+    CredentialId    INT         NOT NULL  AUTO_INCREMENT,               -- Unique ID/Serial number
 
     AccountId       VARCHAR(30) NOT NULL,                               -- Account Reference
     
