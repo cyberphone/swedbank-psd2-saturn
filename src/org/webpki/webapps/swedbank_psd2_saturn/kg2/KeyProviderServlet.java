@@ -51,6 +51,7 @@ import org.webpki.ca.CertSpec;
 
 import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
+import org.webpki.crypto.HashAlgorithms;
 import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyUsageBits;
 import org.webpki.crypto.SignatureWrapper;
@@ -354,6 +355,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             credentialId,
                             accountId,
                             LocalIntegrationService.providerAuthorityUrl, 
+                            HashAlgorithms.SHA256,
                             AsymSignatureAlgorithms.ECDSA_SHA256, 
                             LocalIntegrationService.dataEncryptionAlgorithm, 
                             LocalIntegrationService.currentDecryptionKey.getKeyEncryptionAlgorithm(), 

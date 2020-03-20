@@ -368,7 +368,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 */
                         .add(se.bankgirot.BGAccountDataDecoder.class)),
                 optionalProviderExtensions,
-                new SignatureProfiles[]{SignatureProfiles.P256_ES256},
+                SignatureProfiles.values(),
                 new ProviderAuthority.EncryptionParameter[]{
                         new ProviderAuthority.EncryptionParameter(
                                 dataEncryptionAlgorithm,
