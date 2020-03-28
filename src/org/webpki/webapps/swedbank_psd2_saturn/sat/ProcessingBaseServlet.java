@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
-import org.webpki.saturn.common.AuthorizationData;
+import org.webpki.saturn.common.AuthorizationDataDecoder;
 import org.webpki.saturn.common.HttpSupport;
 import org.webpki.saturn.common.UserChallengeItem;
 import org.webpki.saturn.common.BaseProperties;
@@ -74,7 +74,7 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
 
     static JSONObjectWriter createProviderUserResponse(String text,
                                                        UserChallengeItem[] optionalUserChallengeItems,
-                                                       AuthorizationData authorizationData)
+                                                       AuthorizationDataDecoder authorizationData)
     throws IOException, GeneralSecurityException {
         return ProviderUserResponse.encode(LocalIntegrationService.bankCommonName,
                                            text,
