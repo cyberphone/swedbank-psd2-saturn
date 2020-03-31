@@ -21,7 +21,7 @@
   <property name="openkeystore.dir" location="${@openkeystore}"/>
   <property name="saturn.dir" location="${@saturn}"/>
     
-  <property name="payment-network-root" value="${saturn.dir}/resources/keys/payment-network-rootca.cer"/>
+  <property name="bank-network-root" value="${saturn.dir}/resources/keys/bank-network-rootca.cer"/>
   <property name="acquirer-network-root" value="${saturn.dir}/resources/keys/acquirer-network-rootca.cer"/>
   <property file="${saturn.dir}/resources/android.properties"/>
   <property file="${saturn.dir}/resources/w3c.properties"/>
@@ -73,7 +73,7 @@
 
   <target name="build">
     <property name="zip.webpki.lib.dir" value="${webpki.lib.dir}"/>
-    <basename property="payment-network-root.base" file="${payment-network-root}"/>
+    <basename property="bank-network-root.base" file="${bank-network-root}"/>
     <basename property="acquirer-network-root.base" file="${acquirer-network-root}"/>
     <mkdir dir="${dist.dir}"/>
     <delete dir="${temp.dir}"/>
@@ -114,8 +114,8 @@
       <replacefilter token="@bank-base-url@" value="${bank_base_url}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
       <replacefilter token="@biometric-support@" value="${biometricsupport}"/>
-      <replacefilter token="@payment-root@" value="${payment-network-root.base}"/>
-      <replacefilter token="@acquirer-root@" value="${acquirer-network-root.base}"/>
+      <replacefilter token="@bank-network-root@" value="${bank-network-root.base}"/>
+      <replacefilter token="@acquirer-network-root@" value="${acquirer-network-root.base}"/>
       <replacefilter token="@saturn-extensions@" value="${saturn-extensions}"/>
       <replacefilter token="@bank-common-name@" value="${bank_common_name}"/>
       <replacefilter token="@bank-eecert@" value="${bank_eecert}"/>
@@ -143,7 +143,7 @@
       <zipfileset dir="${cards.dir}" prefix="${class_war_path}">
         <include name="${inhouse}${svg_card_image}"/>
       </zipfileset>
-      <zipfileset file="${payment-network-root}" prefix="${class_war_path}"/>
+      <zipfileset file="${bank-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${acquirer-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${saturn-extensions}" prefix="${class_war_path}"/>
     </war>

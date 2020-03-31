@@ -102,15 +102,15 @@
     </context-param>
 
     <context-param>
-        <description>Payment Root</description>
-        <param-name>payment_root</param-name>
-        <param-value>@payment-root@</param-value>
+        <description>Bank Network Root</description>
+        <param-name>bank_network_root</param-name>
+        <param-value>@bank-network-root@</param-value>
     </context-param>
 
     <context-param>
-        <description>Acquirer Root</description>
-        <param-name>acquirer_root</param-name>
-        <param-value>@acquirer-root@</param-value>
+        <description>Acquirer Network Root</description>
+        <param-name>acquirer_network_root</param-name>
+        <param-value>@acquirer-network-root@</param-value>
     </context-param>
 
     <context-param>

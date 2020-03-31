@@ -133,13 +133,13 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
 
     public static JSONDecoderCache knownAccountTypes = new JSONDecoderCache();
 
-    static final String PAYMENT_ROOT                = "payment_root";
+    static final String BANK_NETWORK_ROOT           = "bank_network_root";
 
-    static final String ACQUIRER_ROOT               = "acquirer_root";
+    static final String ACQUIRER_NETWORK_ROOT       = "acquirer_network_root";
 
-    public static JSONX509Verifier paymentRoot;
+    public static JSONX509Verifier bankNetworkRoot;
 
-    public static JSONX509Verifier acquirerRoot;
+    public static JSONX509Verifier acquirerNetworkRoot;
 
     public static String serviceUrl;
 
@@ -267,8 +267,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Payment network root keys
             /////////////////////////////////////////////////////////////////////////////////////////////
-            paymentRoot = getRoot(PAYMENT_ROOT);
-            acquirerRoot = getRoot(ACQUIRER_ROOT);
+            bankNetworkRoot = getRoot(BANK_NETWORK_ROOT);
+            acquirerNetworkRoot = getRoot(ACQUIRER_NETWORK_ROOT);
 
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Payment network support
