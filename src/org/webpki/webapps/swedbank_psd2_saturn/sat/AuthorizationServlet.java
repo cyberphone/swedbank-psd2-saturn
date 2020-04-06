@@ -31,14 +31,14 @@ import org.webpki.saturn.common.PayeeCoreProperties;
 import org.webpki.saturn.common.UrlHolder;
 import org.webpki.saturn.common.AuthorizationRequest;
 import org.webpki.saturn.common.AuthorizationResponse;
+import org.webpki.saturn.common.NonDirectPaymentDecoder;
 import org.webpki.saturn.common.UserChallengeItem;
 import org.webpki.saturn.common.PayeeAuthority;
 import org.webpki.saturn.common.AccountDataDecoder;
 import org.webpki.saturn.common.AccountDataEncoder;
 import org.webpki.saturn.common.AuthorizationDataDecoder;
-import org.webpki.saturn.common.PaymentRequest;
+import org.webpki.saturn.common.PaymentRequestDecoder;
 import org.webpki.saturn.common.ProviderAuthority;
-import org.webpki.saturn.common.NonDirectPayments;
 import org.webpki.saturn.common.UserResponseItem;
 
 import org.webpki.util.ISODateTime;
@@ -74,11 +74,11 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
             authorizationRequest.getPayeeReceiveAccount(LocalIntegrationService.knownPayeeMethods);
 
         // Fetch the payment request object
-        PaymentRequest paymentRequest = authorizationRequest.getPaymentRequest();
+        PaymentRequestDecoder paymentRequest = authorizationRequest.getPaymentRequest();
 
 //TODO Current Open Banking APIs do not appear to support reservations
 // so the following line doesn't have any real use...
-        NonDirectPayments nonDirectPayment = paymentRequest.getNonDirectPayment();
+        NonDirectPaymentDecoder nonDirectPayment = paymentRequest.getNonDirectPayment();
 
         boolean cardPayment = authorizationRequest.getPaymentMethod().isCardPayment();
         
