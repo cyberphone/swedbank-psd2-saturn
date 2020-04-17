@@ -79,6 +79,9 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
 //TODO Current Open Banking APIs do not appear to support reservations
 // so the following line doesn't have any real use...
         NonDirectPaymentDecoder nonDirectPayment = paymentRequest.getNonDirectPayment();
+        if (nonDirectPayment != null) {
+            throw new IOException("This implementation only support direct payments");
+        }
 
         boolean cardPayment = authorizationRequest.getPaymentMethod().isCardPayment();
         
@@ -92,7 +95,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
             payeeAuthority = 
                 LocalIntegrationService.externalCalls
                     .getPayeeAuthority(urlHolder,
-                                       authorizationRequest.getAuthorityUrl());
+                                       authorizationRequest.getPayeeAuthorityUrl());
 
             // Lookup of Payee's Provider
             urlHolder.setNonCachedMode(nonCached);
