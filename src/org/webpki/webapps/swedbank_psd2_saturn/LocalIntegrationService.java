@@ -32,6 +32,7 @@ import java.security.interfaces.RSAKey;
 import java.security.spec.ECGenParameterSpec;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +71,7 @@ import org.webpki.saturn.common.SignatureProfiles;
 import org.webpki.webutil.InitPropertyReader;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
+import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
 
 // This is the starting point for LIS (Local Integration Service)
 
@@ -161,10 +163,10 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     public static String keygen2RunUrl;
 
     public static KeyStoreEnumerator keyManagementKey;
+    
+    public static String INHOUSE_LOGO                = "inhouse_logo";
 
-    static final String SVG_CARD_IMAGE              = "svg_card_image";
-
-    public static String svgCardImage;
+    public static LinkedHashMap<String,String> cardImages = new LinkedHashMap<>();
 
     public static KeyPair carrierCaKeyPair;
     
@@ -210,28 +212,37 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     
     public static ExternalCalls externalCalls;
 
-    InputStream getResource(String name) throws IOException {
-        InputStream is = this.getClass().getResourceAsStream(getPropertyString(name));
+    InputStream getResource(String resourceName) throws IOException {
+        InputStream is = this.getClass().getResourceAsStream(resourceName);
         if (is == null) {
-            throw new IOException("Resource fail for: " + name);
+            throw new IOException("Resource fail for: " + resourceName);
         }
         return is;
     }
 
-    byte[] getEmbeddedResourceBinary(String name) throws IOException {
-        return ArrayUtil.getByteArrayFromInputStream(getResource(name));
+    byte[] getEmbeddedResourceBinary(String resourceName) throws IOException {
+        return ArrayUtil.getByteArrayFromInputStream(getResource(resourceName));
     }
 
-    String getEmbeddedResourceString(String name) throws IOException {
-        return new String(getEmbeddedResourceBinary(name), "utf-8");
+    String getEmbeddedResourceString(String resourceName) throws IOException {
+        return new String(getEmbeddedResourceBinary(resourceName), "utf-8");
     }
 
-    JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
+    void addCardImage(String cardTypeName) throws IOException {
+        String cardImage = getEmbeddedResourceString("swedbank-" + cardTypeName + ".svg");
+        if (getPropertyBoolean(INHOUSE_LOGO)) {
+            cardImage = cardImage.replace("</svg>", getEmbeddedResourceString("inhouse-flag.txt"));
+        }
+        cardImages.put(cardTypeName, cardImage);
+    }
+
+    JSONX509Verifier getRoot(String propertyName) throws IOException, GeneralSecurityException {
         KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load (null, null);
-        keyStore.setCertificateEntry("mykey",
-                                     CertificateUtil.getCertificateFromBlob (
-                                             getEmbeddedResourceBinary(name)));        
+        keyStore.setCertificateEntry(
+                "mykey",
+                CertificateUtil.getCertificateFromBlob (
+                        getEmbeddedResourceBinary(getPropertyString(propertyName))));        
         return new JSONX509Verifier(new KeyStoreVerifier(keyStore));
     }
 
@@ -281,13 +292,13 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             bankCommonName = getPropertyString(BANK_COMMON_NAME);
             KeyStoreEnumerator bankcreds = 
-                    new KeyStoreEnumerator(getResource(BANK_EECERT),
+                    new KeyStoreEnumerator(getResource(getPropertyString(BANK_EECERT)),
                                            getPropertyString(KEYSTORE_PASSWORD));
             bankCertificatePath = bankcreds.getCertificatePath();
             bankKey = new ServerX509Signer(bankcreds);
 
             KeyStoreEnumerator keyStoreEnumerator =
-                    new KeyStoreEnumerator(getResource(BANK_ENCRYPT),
+                    new KeyStoreEnumerator(getResource(getPropertyString(BANK_ENCRYPT)),
                                            getPropertyString(KEYSTORE_PASSWORD));
             currentDecryptionKey = new JSONDecryptionDecoder.DecryptionKeyHolder(
                     keyStoreEnumerator.getPublicKey(),
@@ -304,9 +315,10 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ////////////////////////////////////////////////////////////////////////////////////////////
             biometricSupport = getPropertyBoolean(BIOMETRIC_SUPPORT);
             keygen2RunUrl = bankBaseUrl + "/kg2.runner";
-            keyManagementKey = new KeyStoreEnumerator(getResource(BANK_KG2KMK),
+            keyManagementKey = new KeyStoreEnumerator(getResource(getPropertyString(BANK_KG2KMK)),
                                                       getPropertyString(KEYSTORE_PASSWORD));
-            svgCardImage = getEmbeddedResourceString(SVG_CARD_IMAGE);
+            addCardImage(KeyProviderInitServlet.METALCARD_PARM);
+            addCardImage(KeyProviderInitServlet.WHITECARD_PARM);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Create a CA keys.  Payment credentials only use keys but KeyGen2 wraps keys in PKI
@@ -330,7 +342,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Saturn extensions
             /////////////////////////////////////////////////////////////////////////////////////////////
-            String extensions = getEmbeddedResourceString(SATURN_EXTENSIONS).trim();
+            String extensions = getEmbeddedResourceString(getPropertyString(SATURN_EXTENSIONS)).trim();
             if (!extensions.isEmpty()) {
                 extensions = extensions.replace("${host}", bankBaseUrl);
                 optionalProviderExtensions = JSONParser.parse(extensions);

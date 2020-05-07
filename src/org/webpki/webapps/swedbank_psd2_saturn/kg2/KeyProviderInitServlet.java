@@ -51,8 +51,8 @@ public class KeyProviderInitServlet extends HttpServlet {
     static final String KEYGEN2_SESSION_ATTR           = "keygen2";
     static final String USERNAME_SESSION_ATTR          = "userName";  // Dual use
     static final String CARDTYPE_SESSION_ATTR          = "cardType";  // Dual use
-    static final String METALCARD_PARM                 = "metalcard";
-    static final String WHITECARD_PARM                 = "whitecard";
+    public static final String METALCARD_PARM          = "metalcard";
+    public static final String WHITECARD_PARM          = "whitecard";
     static final String W3C_PAYMENT_REQUEST_MODE_PARM  = "w3cpr";
     public static final String ACCOUNT_SET_MODE_PARM   = "account";
     
@@ -70,6 +70,8 @@ public class KeyProviderInitServlet extends HttpServlet {
     private static final String THIS_SERVLET   = "kg2.init";
     
     static final String DEFAULT_USER_NAME_HTML = "Luke Skywalker &#x1f984;";    // Unicorn emoji
+    static final Object DEFAULT_CARDTYPE_JAVA  = METALCARD_PARM;
+    
     
     static final String DEFAULT_USER_NAME_JAVA = "Luke Skywalker " +
             new String(Character.toChars(Integer.parseInt("1f984", 16)));       // Unicorn emoji
@@ -81,7 +83,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     static final String ANONYMOUS_JAVA         = "Anonymous " + 
                  new String(Character.toChars(Integer.parseInt("1f47d", 16)));  // E.T. emoji
-    
+
     static String getInvocationUrl(String scheme, HttpSession session) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////////////////
         // The following is the actual contract between an issuing server and a KeyGen2 client.
@@ -100,6 +102,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(false);
         session.setAttribute(USERNAME_SESSION_ATTR, DEFAULT_USER_NAME_JAVA);
+        session.setAttribute(CARDTYPE_SESSION_ATTR, DEFAULT_CARDTYPE_JAVA);
         HTML.standardPage(response, 
             "function paymentRequestError(msg) {\n" +
             "  console.info('Payment request error:' + msg);\n" +
@@ -112,7 +115,7 @@ public class KeyProviderInitServlet extends HttpServlet {
             "  let formData = new URLSearchParams();\n" +
             "  formData.append('" + USERNAME_SESSION_ATTR +
               "', document.forms.shoot.elements." + USERNAME_SESSION_ATTR + ".value);\n" +
-              "  formData.append('" + CARDTYPE_SESSION_ATTR +
+            "  formData.append('" + CARDTYPE_SESSION_ATTR +
               "', document.forms.shoot.elements." + CARDTYPE_SESSION_ATTR + ".value);\n" +
             "  formData.append('" + W3C_PAYMENT_REQUEST_MODE_PARM + "', 1);\n" +
             "  try {\n" +
@@ -251,7 +254,7 @@ public class KeyProviderInitServlet extends HttpServlet {
                     "style='border-color:#a9a9a9'>" +
                   "</div>" +
                   "<input type='hidden' name='" + CARDTYPE_SESSION_ATTR + 
-                    "' value='" + METALCARD_PARM + "'>" +
+                    "' value='" + DEFAULT_CARDTYPE_JAVA + "'>" +
                 "</div>" + 
               "</div>" + 
             "</form>" +

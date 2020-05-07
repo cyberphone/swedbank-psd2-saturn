@@ -365,7 +365,10 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             null).serializeToBytes(JSONOutputFormats.NORMALIZED));
 
                     // 4. Add personalized card image
-                    String cardImage = new String(LocalIntegrationService.svgCardImage);
+                    String cardImage = new String(
+                            LocalIntegrationService.cardImages.get(
+                                    (String)session.getAttribute(
+                                            KeyProviderInitServlet.CARDTYPE_SESSION_ATTR)));
                     String cardUserName = userName;
                     if (cardUserName.length() > MAX_CARD_NAME_LENGTH) {
                         cardUserName = cardUserName.substring(0, MAX_CARD_NAME_LENGTH);

@@ -17,7 +17,7 @@
   <condition property="inhouse" value="inhouse-" else="">
     <equals arg1="${inhouse_service_host}" arg2="${service_host}"/>
   </condition>
-
+    
   <property name="openkeystore.dir" location="${@openkeystore}"/>
   <property name="saturn.dir" location="${@saturn}"/>
     
@@ -53,7 +53,10 @@
   <!-- Ant command line overridables -->
   <property name="logging" value="false"/>
   <property name="biometricsupport" value="true"/>
-    
+  <condition property="inhouselogo" value="true" else="false">
+    <equals arg1="${inhouse_service_host}" arg2="${service_host}"/>
+  </condition>    
+
   <target name="help">
      <echo message="build tomcat createkeys"/>
   </target>
@@ -105,8 +108,8 @@
     <replace file="${temp.dir}/web.xml">
       <replacefilter token="@oauth2-client-id@" value="${oauth2_client_id}"/>
       <replacefilter token="@oauth2-client-secret@" value="${oauth2_client_secret}"/>
+      <replacefilter token="@inhouse-logo@" value="${inhouselogo}"/>
       <replacefilter token="@android-webpki-versions@" value="${@android.webpki.versions}"/>
-      <replacefilter token="@svg-card-image@" value="${inhouse}${svg_card_image}"/>
       <replacefilter token="@server-tls-certificate@" value="${kg2_tls_cert_file}"/>
       <replacefilter token="@test-merchant-url@" value="${test_merchant_url}"/>
       <replacefilter token="@use-w3c-payment-request@" value="${@w3c.paymentrequest}"/>
@@ -140,9 +143,7 @@
         <include name="${bank_eecert}"/>
         <include name="${bank_encrypt}"/>
       </zipfileset>
-      <zipfileset dir="${cards.dir}" prefix="${class_war_path}">
-        <include name="${inhouse}${svg_card_image}"/>
-      </zipfileset>
+      <zipfileset dir="${cards.dir}" prefix="${class_war_path}"/>
       <zipfileset file="${bank-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${acquirer-network-root}" prefix="${class_war_path}"/>
       <zipfileset file="${saturn-extensions}" prefix="${class_war_path}"/>

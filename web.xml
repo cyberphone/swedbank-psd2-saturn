@@ -60,9 +60,9 @@
     </context-param>
     
     <context-param>
-        <description>SVG Card Image</description>
-        <param-name>svg_card_image</param-name>
-        <param-value>@svg-card-image@</param-value>
+        <description>In-house Logo</description>
+        <param-name>inhouse_logo</param-name>
+        <param-value>@inhouse-logo@</param-value>
     </context-param>
 
     <context-param>
