@@ -50,6 +50,9 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     static final String KEYGEN2_SESSION_ATTR           = "keygen2";
     static final String USERNAME_SESSION_ATTR          = "userName";  // Dual use
+    static final String CARDTYPE_SESSION_ATTR          = "cardType";  // Dual use
+    static final String METALCARD_PARM                 = "metalcard";
+    static final String WHITECARD_PARM                 = "whitecard";
     static final String W3C_PAYMENT_REQUEST_MODE_PARM  = "w3cpr";
     public static final String ACCOUNT_SET_MODE_PARM   = "account";
     
@@ -109,6 +112,8 @@ public class KeyProviderInitServlet extends HttpServlet {
             "  let formData = new URLSearchParams();\n" +
             "  formData.append('" + USERNAME_SESSION_ATTR +
               "', document.forms.shoot.elements." + USERNAME_SESSION_ATTR + ".value);\n" +
+              "  formData.append('" + CARDTYPE_SESSION_ATTR +
+              "', document.forms.shoot.elements." + CARDTYPE_SESSION_ATTR + ".value);\n" +
             "  formData.append('" + W3C_PAYMENT_REQUEST_MODE_PARM + "', 1);\n" +
             "  try {\n" +
             "    const httpResponse = await fetch('" + THIS_SERVLET + "', {\n" +
@@ -123,6 +128,12 @@ public class KeyProviderInitServlet extends HttpServlet {
             "  } catch(err) {\n" +
             "    paymentRequestError(err.message);\n" +
             "  }\n" +
+            "}\n" +
+            "function setCardType(active, passive) {\n" +
+            "  document.getElementById(active).style.borderColor = 'blue';\n" +
+            "  document.getElementById(passive).style.borderColor = '#a9a9a9';\n" +
+            "  document.forms.shoot.elements." + CARDTYPE_SESSION_ATTR + ".value = active;\n" +
+            "  setUserName();\n" +
             "}\n" +
             "function waitForBrowserDisplay(result) {\n" +
             "  if (document.querySelector('#" + WAITING_ID + "')) {\n" +
@@ -212,44 +223,57 @@ public class KeyProviderInitServlet extends HttpServlet {
             "  }\n" +
             "}\n",
 
-            "<div class=\"header\">Create Virtual Payment Card</div>" + 
-            "<div class=\"centerbox\">" +
-              "<table style=\"border-collapse:collapse\">" + 
-                "<tr><td>Your name (real or made up):</td></tr>" + 
-                "<tr><td>" +
-                  "<form name=\"shoot\" method=\"POST\" action=\"" + THIS_SERVLET + "\">" + 
-                    "<input type=\"text\" name=\"" + USERNAME_SESSION_ATTR + 
-                      "\" value=\"" + DEFAULT_USER_NAME_HTML + 
-                      "\" size=\"30\" maxlength=\"50\" " + 
-                      "style=\"background-color:#def7fc\" oninput=\"setUserName()\">" +
-                  "</form>" +
-                "</td></tr>" + 
-              "</table>" +
-            "</div>" + 
-            "<div class=\"centerbox\">" +
-              "This name will be printed on your virtual payment cards." +
-            "</div>" + 
-            "<div id=\"" + ERROR_ID + "\" " +
-              "style=\"color:red;font-weight:bold;padding-top:1em;display:none\"></div>" +
-            "<img id=\"" + WAITING_ID + "\" src=\"images/waiting.gif\" " +
-              "style=\"padding-top:1em\" alt=\"waiting\">" +
-            "<div style=\"display:flex;justify-content:center\">" +
-              "<div id=\"" + BUTTON_ID + "\" style=\"display:none\" class=\"multibtn\" onclick=\"enroll()\">" +
+            "<div class='header'>Create Virtual Payment Card</div>" + 
+            "<form name='shoot' method='POST' action='" + THIS_SERVLET + "'>" + 
+              "<div class='centerbox'>" +
+                "<table style='border-collapse:collapse'>" + 
+                  "<tr><td>Your name (real or made up):</td></tr>" + 
+                  "<tr><td>" +
+                    "<input type='text' name='" + USERNAME_SESSION_ATTR + 
+                      "' value='" + DEFAULT_USER_NAME_HTML + 
+                      "' size='30' maxlength='50' " + 
+                      "style='background-color:#def7fc' oninput=\"setUserName()\">" +
+                  "</td></tr>" + 
+                "</table>" +
+              "</div>" + 
+              "<div class='centerbox'>" +
+                "This name will be printed on your virtual payment card." +
+              "</div>" + 
+              "<div class='centerbox'>" +
+                "<div style='margin:1em 0;display:inline-flex;align-items:center'>" +
+                  "<div>Card color:</div>" +
+                  "<div class='cardselbtn' id='" + METALCARD_PARM +
+                    "' onclick=\"setCardType('" + METALCARD_PARM + "','" + WHITECARD_PARM + "')\" " +
+                    "style='background-image:url(\"images/metalback.png\");border-color:blue'>" +
+                  "</div>" +
+                  "<div class='cardselbtn' id='" + WHITECARD_PARM +
+                    "' onclick=\"setCardType('" + WHITECARD_PARM + "','" + METALCARD_PARM + "')\" " +
+                    "style='border-color:#a9a9a9'>" +
+                  "</div>" +
+                  "<input type='hidden' name='" + CARDTYPE_SESSION_ATTR + 
+                    "' value='" + METALCARD_PARM + "'>" +
+                "</div>" + 
+              "</div>" + 
+            "</form>" +
+            "<div id='" + ERROR_ID + "' style='color:red;font-weight:bold;display:none'></div>" +
+            "<img id='" + WAITING_ID + "' src='images/waiting.gif' alt='waiting'>" +
+            "<div style='display:flex;justify-content:center'>" +
+              "<div id='" + BUTTON_ID + "' style='display:none' class='multibtn' onclick=\"enroll()\">" +
                 BUTTON_TEXT_HTML + 
               "</div>" +
             "</div>" + 
-            "<div style=\"padding:4em 0 1em 0\" class=\"centerbox\">" +
-              "<div class=\"description\">If you have not yet " +
+            "<div style='padding:3em 0 1em 0' class='centerbox'>" +
+              "<div class='description'>If you have not yet " +
               "installed the &quot;Wallet&quot;, this is the time but <i>please do not " +
               "start the application</i>, simply press " +
-              "<div style=\"display:inline;background:blue;color:white;" +
-              "font-weight:bold;padding:0 0.5em\">&lt;</div> " +
-              "after the installation!</i></div>" +
+              "<div style='display:inline;background:blue;color:white;" +
+              "font-weight:bold;padding:0 0.5em'>&lt;</div> " +
+              "after the installation!</div>" +
             "</div>" +
-            "<div style=\"cursor:pointer;display:flex;justify-content:center;align-items:center\">" +
-              "<img src=\"images/google-play-badge.png\" style=\"height:25pt;padding:0 15pt\" alt=\"image\" " +
-                "title=\"Android\" onclick=\"document.location.href = " +
-                "'https://play.google.com/store/apps/details?id=" +
+            "<div style='cursor:pointer;display:flex;justify-content:center;align-items:center'>" +
+              "<img src='images/google-play-badge.png' style='height:25pt;padding:0 15pt' alt='image' " +
+                "title='Android' onclick=\"document.location.href = '" +
+                "https://play.google.com/store/apps/details?id=" +
                 MobileProxyParameters.ANDROID_PACKAGE_NAME + "'\">" +
             "</div>");
     }
@@ -280,7 +304,7 @@ public class KeyProviderInitServlet extends HttpServlet {
 
             // We are still talking Open Banking
             // Client side provided data should always be validated
-            OpenBanking.getOpenBanking(request, response).setAndValidateAccountId(account);
+            OpenBanking.getOpenBanking(request, response).setAndValidateAccount(account);
 
             // Initiate KeyGen2
             ServerState serverState =
@@ -304,6 +328,11 @@ public class KeyProviderInitServlet extends HttpServlet {
             session.setAttribute(USERNAME_SESSION_ATTR, userName);
         }
 
+        String cardType = request.getParameter(CARDTYPE_SESSION_ATTR);
+        if (cardType != null) {
+            session.setAttribute(CARDTYPE_SESSION_ATTR, cardType);
+        }
+
         if (request.getParameter(W3C_PAYMENT_REQUEST_MODE_PARM) == null) {
             // Case 3
             HTML.standardPage(
@@ -315,9 +344,9 @@ public class KeyProviderInitServlet extends HttpServlet {
                     MobileProxyParameters.ANDROID_PACKAGE_NAME +
                     ";end';\n" +
                 "});\n",
-                "<div class=\"header\">Saturn App Bootstrap</div>" +
-                "<div class=\"centerbox\">" +
-                  "<div class=\"description\">If this is all you get there is " +
+                "<div class='header'>Saturn App Bootstrap</div>" +
+                "<div class='centerbox'>" +
+                  "<div class='description'>If this is all you get there is " +
                   "probably something wrong with the installation.</div>" +
                 "</div>");
         } else {

@@ -25,6 +25,8 @@ import java.security.PublicKey;
 
 import java.sql.SQLException;
 
+import java.util.LinkedHashMap;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -136,11 +138,13 @@ public class OpenBanking implements Serializable {
     
     Object userObject;
 
-    private String currentAccountId;
+    private Account currentAccount;
 
     String loginSuccessUrl;
 
     String identityToken;
+
+    LinkedHashMap<String, Account> accounts;
 
     public Object getUserObject() {
         return userObject;
@@ -190,12 +194,8 @@ public class OpenBanking implements Serializable {
     }
 
 
-    public void setAndValidateAccountId(String account) {
-        currentAccountId = account;
-    }
-
-    public String getAccountId() {
-        return currentAccountId;
+    public Account setAndValidateAccount(String accountId) {
+        return currentAccount = accounts.get(accountId);
     }
 
     public String createCredential(String userName,
@@ -204,7 +204,7 @@ public class OpenBanking implements Serializable {
                                    PublicKey optionalBalanceRequestKey)
     throws SQLException, IOException {
         return DataBaseOperations.createCredential(identityToken,
-                                                   currentAccountId,
+                                                   currentAccount.accountId,
                                                    userName,
                                                    paymentMethodUrl,
                                                    authorizationKey,
@@ -263,5 +263,9 @@ public class OpenBanking implements Serializable {
         }
         // MUST always be running
         new TokenRefresher(APICore.LIFETIME / 10).start();
+    }
+
+    public Account getCurrentAccount() {
+        return currentAccount;
     }
 }

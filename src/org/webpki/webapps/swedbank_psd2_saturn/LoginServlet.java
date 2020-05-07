@@ -70,7 +70,7 @@ public class LoginServlet extends HttpServlet {
             HTML.standardPage(
                 response,
                 null,
-                "<div class=\"label\">This proof-of-concept system only supports " +
+                "<div class='label'>This proof-of-concept system only supports " +
                   "Android and using the \"Chrome\" browser (min version: " + 
                   MINIMUM_CHROME_VERSION + ")" +
                 "</div>");
@@ -78,24 +78,24 @@ public class LoginServlet extends HttpServlet {
         }
 
         HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Login to Swedbank</div>" +
-            "<form name=\"login\" action=\"login\" method=\"POST\"></form>" +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">The login in the Swedbank Open Banking " +
+            "<div class='header'>Login to Swedbank</div>" +
+            "<form name='login' action='login' method='POST'></form>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>The login in the Swedbank Open Banking " +
                 "&quot;sandbox&quot; is rather primitive, respond with <i>any</i> " +
                  "data (like <b>55</b>) and proceed&nbsp;&#x1f642;</div>" +
             "</div>")
         .append(request.getParameter("demo") == null ?
-            "<div class=\"centerbox\" style=\"color:red;padding-top:1em\">" +
-              "<div class=\"description\">Due to a bug in the Swedbank &quot;sandbox&quot; " +
+            "<div class='centerbox' style='color:red;padding-top:1em'>" +
+              "<div class='description'>Due to a bug in the Swedbank &quot;sandbox&quot; " +
               "you may be requested for certificates.  Ignore this request and click CANCEL!</div>" +
             "</div>" : "")
         .append(
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                   "onclick=\"document.forms.login.submit()\" " +
-                  "title=\"Login and retrieve account list\">" +
+                  "title='Login and retrieve account list'>" +
                   "Login...</div></td></tr>" +
               "</table>" +
             "</div>"));

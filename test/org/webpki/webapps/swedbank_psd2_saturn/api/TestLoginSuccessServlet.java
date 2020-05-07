@@ -38,14 +38,14 @@ public class TestLoginSuccessServlet extends APICore {
         HTML.standardPage(response, 
             null,
             HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Login Succeeded!</div>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>Login Succeeded!</div>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                 "onclick=\"document.location.href = 'api.basicaccount'\" " +
-                "title=\"Get Basic Account Data (no consent needed)\">" +
+                "title='Get Basic Account Data (no consent needed)'>" +
                 "Step #2: Get Basic Account Data" +
                 "</div></td></tr>" +
               "</table>" +

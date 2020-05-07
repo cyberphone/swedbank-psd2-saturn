@@ -38,28 +38,28 @@ public class HomeServlet extends HttpServlet {
             throws IOException, ServletException {
 
         HTML.standardPage(response, null, new StringBuilder(
-            "<div class=\"header\">Swedbank PSD2/Saturn API Demo</div>")
+            "<div class='header'>Swedbank PSD2/Saturn API Demo</div>")
         .append(request.getParameter(SESSION_TIMEOUT) == null ? "" :
-            "<div class=\"error\">Session Timed Out</div>")
+            "<div class='error'>Session Timed Out</div>")
         .append(
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">This site permits testing a system using " +
+            "<div class='centerbox'>" +
+              "<div class='description'>This site permits testing a system using " +
               "Swedbank's PSD2 API, running in a partially emulated local mode to support Saturn.  " +
               "For accessing source code and documentation, click on the Saturn " +
               "PSD2 logotype.</div>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                 "onclick=\"document.location.href='login'\" " +
-                "title=\"Begin enrollment process\">" +
+                "title='Begin enrollment process'>" +
                 "Begin Enrollment" +
                 "</div></td></tr>" +
               "</table>" +
             "</div>" +
-            "<div style=\"padding-top:15pt;width:100%\"><a href=\"api.test\">" +
+            "<div style='padding-top:15pt;width:100%'><a href='api.test'>" +
               "&nbsp;&nbsp;Internal Testing Only</a></div>" +
             "</div>" + // Main window end tag
-            "<div class=\"sitefooter\">This system only uses session cookies."));
+            "<div class='sitefooter'>This system only uses session cookies."));
     }
 }

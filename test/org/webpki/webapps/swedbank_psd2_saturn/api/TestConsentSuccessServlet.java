@@ -65,19 +65,19 @@ public class TestConsentSuccessServlet extends APICore {
         String preSelected = null;
         BigDecimal highestAmount = BigDecimal.ZERO;
         for (String accountId : accounts.getAccountIds()) {
-            Accounts.Account account = accounts.getAccount(accountId);
+            Account account = accounts.getAccount(accountId);
             // Pre-select the account with most money :)
             if (account.getBalance().compareTo(highestAmount) > 0) {
                 highestAmount = account.getBalance();
                 preSelected = accountId;
             }
-            html.append("<tr style=\"cursor:pointer\" id=\"")
+            html.append("<tr style='cursor:pointer' id='")
                 .append(accountId)
-                .append("\" onclick=\"selectAccount('")
+                .append("' onclick=\"selectAccount('")
                 .append(accountId)
                 .append("')\"><td>")
                 .append(accountId)
-                .append("</td><td style=\"text-align:right\">")
+                .append("</td><td style='text-align:right'>")
                 .append(account.getBalance().toPlainString() + " " + account.getCurrency().toString())
                 .append("</td></tr>");
         }
@@ -105,18 +105,18 @@ public class TestConsentSuccessServlet extends APICore {
             html.append(
               "</table>" +
             "</div>" +
-            "<form name=\"paymentSetup\" action=\"api.paymentsetup\" method=\"POST\">" +
-            "<input type=\"hidden\" id=\"" +
+            "<form name='paymentSetup' action='api.paymentsetup' method='POST'>" +
+            "<input type='hidden' id='" +
               TestPaymentSetupServlet.ACCOUNT_ID_PARM +
-              "\" name=\"" +
+              "' name='" +
               TestPaymentSetupServlet.ACCOUNT_ID_PARM +
-              "\">" +
+              "'>" +
             "</form>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                 "onclick=\"spawnPaymentSetup()\" " +
-                "title=\"Prepare for a payment operation\">" +
+                "title='Prepare for a payment operation'>" +
                 "Step #5: Payment Operation Setup" +
                 "</div></td></tr>" +
               "</table>" +
@@ -153,14 +153,14 @@ public class TestConsentSuccessServlet extends APICore {
         HTML.standardPage(response, 
             null,
             HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Consent Succeeded.</div>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>Consent Succeeded.</div>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                 "onclick=\"document.location.href = 'api.consentsuccess'\" " +
-                "title=\"Get more data for the accounts\">" +
+                "title='Get more data for the accounts'>" +
                 "Step #4: Get Extended Account Data" +
                 "</div></td></tr>" +
               "</table>" +

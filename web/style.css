@@ -145,6 +145,16 @@ li {
   text-align:center;
 }
 
+.cardselbtn {
+  margin-left:0.5em;
+  cursor:pointer;
+  width:3em;
+  height:1.5em;
+  border-width:1pt;
+  border-style:solid;
+  border-radius:0.3em;
+}
+
 @media (max-width:768px) {
 
   .multibtn, .staticbox, .textbox {

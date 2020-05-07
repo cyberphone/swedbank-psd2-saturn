@@ -48,7 +48,7 @@ public class TestPaymentSetupServlet extends APICore {
     static final String PAYMENT_MESSAGE_ATTR   = "payment";
     
     String tableEntry(String name, String value) {
-        return "<tr><td style=\"text-align:right;font-weight:bold\">" +
+        return "<tr><td style='text-align:right;font-weight:bold'>" +
                name + "</td><td>" + value + "</td></tr>";
     }
     
@@ -84,11 +84,11 @@ public class TestPaymentSetupServlet extends APICore {
                                                refString));
         HTML.standardPage(response, null, new StringBuilder(
             HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Payment operation to be performed.</div>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>Payment operation to be performed.</div>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
-              "<table class=\"tftable\">")
+            "<div class='centerbox'>" +
+              "<table class='tftable'>")
             .append(tableEntry("Creditor Name", FIXED_CREDITOR_NAME))
             .append(tableEntry("Reference", refString))
             .append(tableEntry("Creditor Account (Fixed)", FIXED_CREDITOR_ACCOUNT))
@@ -98,11 +98,11 @@ public class TestPaymentSetupServlet extends APICore {
             .append(
               "</table>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                 "onclick=\"document.location.href = 'api.paymentsetup'\" " +
-                "title=\"Perform payment\">" +
+                "title='Perform payment'>" +
                 "Step #6: Perform Payment" +
                 "</div></td></tr>" +
               "</table>" +

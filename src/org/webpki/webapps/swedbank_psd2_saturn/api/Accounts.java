@@ -47,27 +47,10 @@ public class Accounts implements Serializable {
                 account.currency = Currencies.valueOf(balance.getString("currency"));
             }
         }
+        openBanking.accounts = accounts;
     }
 
     LinkedHashMap<String, Account> accounts = new LinkedHashMap<>();
-
-    public static class Account {
-        String accountId;
-        Currencies currency;
-        BigDecimal balance;  // May be null
-
-        public String getAccountId() {
-            return accountId;
-        }
-
-        public BigDecimal getBalance() {
-            return balance;
-        }
-        
-        public Currencies getCurrency() {
-            return currency;
-        }
-    }
 
     public String[] getAccountIds() {
         return accounts.keySet().toArray(new String[0]);

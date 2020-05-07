@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.webapps.swedbank_psd2_saturn.api.Account;
 import org.webpki.webapps.swedbank_psd2_saturn.api.Accounts;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
@@ -69,19 +70,19 @@ public class AccountsServlet extends HttpServlet {
         String preSelected = null;
         BigDecimal highestAmount = BigDecimal.ZERO;
         for (String accountId : accounts.getAccountIds()) {
-            Accounts.Account account = accounts.getAccount(accountId);
+            Account account = accounts.getAccount(accountId);
             // Pre-select the account with most money :)
             if (account.getBalance().compareTo(highestAmount) > 0) {
                 highestAmount = account.getBalance();
                 preSelected = accountId;
             }
-            html.append("<tr style=\"cursor:pointer\" id=\"")
+            html.append("<tr style='cursor:pointer' id='")
                 .append(accountId)
-                .append("\" onclick=\"selectAccount('")
+                .append("' onclick=\"selectAccount('")
                 .append(accountId)
                 .append("')\"><td>")
                 .append(accountId)
-                .append("</td><td style=\"text-align:right\">")
+                .append("</td><td style='text-align:right'>")
                 .append(account.getBalance().toPlainString() + " " + account.getCurrency().toString())
                 .append("</td></tr>");
         }
@@ -110,18 +111,18 @@ public class AccountsServlet extends HttpServlet {
             html.append(
               "</table>" +
             "</div>" +
-            "<form name=\"accountSelector\" action=\"kg2.init\" method=\"POST\">" +
-            "<input type=\"hidden\" id=\"" +
+            "<form name='accountSelector' action='kg2.init' method='POST'>" +
+            "<input type='hidden' id='" +
               KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
-              "\" name=\"" +
+              "' name='" +
               KeyProviderInitServlet.ACCOUNT_SET_MODE_PARM +
-              "\">" +
+              "'>" +
             "</form>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                   "onclick=\"initiateEnrollment()\" " +
-                  "title=\"Continue to enrollment\">" +
+                  "title='Continue to enrollment'>" +
                   "Next...</div></td></tr>" +
               "</table>" +
             "</div>"));
@@ -135,10 +136,10 @@ public class AccountsServlet extends HttpServlet {
             "window.addEventListener('load', (event) => {\n" +
             "  document.forms.accounts.submit();\n" +
             "});\n",
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Retrieving account information...</div>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>Retrieving account information...</div>" +
             "</div>" +
-            "<img src=\"images/waiting.gif\" style=\"padding-top:1em\" alt=\"waiting\">" +
-            "<form name=\"accounts\" action=\"accounts\" method=\"POST\"></form>");
+            "<img src='images/waiting.gif' style='padding-top:1em' alt='waiting'>" +
+            "<form name='accounts' action='accounts' method='POST'></form>");
     }
 }

@@ -61,7 +61,7 @@ public class TestNoGuiSuiteServlet extends APICore {
         String preSelectedAccount = null;
         BigDecimal highestAmount = BigDecimal.ZERO;
         for (String accountId : accounts.getAccountIds()) {
-            Accounts.Account account = accounts.getAccount(accountId);
+            Account account = accounts.getAccount(accountId);
             // Pre-select the account with most money :)
             if (account.getBalance().compareTo(highestAmount) > 0) {
                 highestAmount = account.getBalance();
@@ -82,9 +82,9 @@ public class TestNoGuiSuiteServlet extends APICore {
 
         HTML.standardPage(response, 
             null,
-            "<div class=\"header\">Test Suite GUI Less Operation</div>" +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Success!</i></div>" +
+            "<div class='header'>Test Suite GUI Less Operation</div>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>Success!</i></div>" +
             "</div>");
     }
 
@@ -94,17 +94,17 @@ public class TestNoGuiSuiteServlet extends APICore {
 
         HTML.standardPage(response, 
             null,
-            "<div class=\"header\">Test Suite GUI Less Operation</div>" +
-            "<form name=\"guiless\" action=\"api.guiless\" method=\"POST\"></form>" +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Start a set of tests using the " +
+            "<div class='header'>Test Suite GUI Less Operation</div>" +
+            "<form name='guiless' action='api.guiless' method='POST'></form>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>Start a set of tests using the " +
                "&quot;emulated&quot; API.</div>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                   "onclick=\"document.forms.guiless.submit()\" " +
-                  "title=\"Run test suite\">" +
+                  "title='Run test suite'>" +
                   "Run...</div></td></tr>" +
               "</table>" +
             "</div>");

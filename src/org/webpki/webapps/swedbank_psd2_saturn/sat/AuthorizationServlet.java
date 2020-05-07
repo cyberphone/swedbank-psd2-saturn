@@ -195,9 +195,9 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                                 amountInHtml(paymentRequest, DEMO_RBA_LIMIT) +
                                                 " require additional user authentication to " +
                                                 "be performed. Please enter your " +
-                                                "<span style=\"color:blue\">mother's maiden name</span>." +
+                                                "<span style='color:blue'>mother's maiden name</span>." +
                                                 "<br>&nbsp;<br>Since <i>this is a demo</i>, " +
-                                                "answer <span style=\"color:red\">" + 
+                                                "answer <span style='color:red'>" + 
                                                 MOTHER_NAME + 
                                                 "</span>&nbsp;&#x1f642;",
               new UserChallengeItem[]{new UserChallengeItem(RBA_PARM_MOTHER,

@@ -32,7 +32,6 @@ import java.security.PublicKey;
 
 import java.security.cert.X509Certificate;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import java.net.URLEncoder;
@@ -91,7 +90,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
-
+import org.webpki.webapps.swedbank_psd2_saturn.api.Account;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
 // KeyGen2 protocol runner that creates Saturn wallet keys.
@@ -295,7 +294,8 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     String userName = (String) session.getAttribute(
                             KeyProviderInitServlet.USERNAME_SESSION_ATTR);
                     OpenBanking openBanking = OpenBanking.getOpenBanking(request, response);
-                    String accountId = openBanking.getAccountId();
+                    Account account = openBanking.getCurrentAccount();
+                    String accountId = account.getAccountId();
 
                     // now create Saturn payment credentials
                     // 1. Get key and other input data
@@ -354,6 +354,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             paymentMethodUrl,
                             credentialId,
                             accountId,
+                            account.getCurrency(),
                             LocalIntegrationService.providerAuthorityUrl, 
                             HashAlgorithms.SHA256,
                             AsymSignatureAlgorithms.ECDSA_SHA256, 
@@ -361,10 +362,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             LocalIntegrationService.currentDecryptionKey.getKeyEncryptionAlgorithm(), 
                             LocalIntegrationService.currentDecryptionKey.getPublicKey(),
                             null,
-                            null,
-//TODO We are still waiting on the Balance solution for Saturn...
-                            new BigDecimal("5302.00"))
-                                .serializeToBytes(JSONOutputFormats.NORMALIZED));
+                            null).serializeToBytes(JSONOutputFormats.NORMALIZED));
 
                     // 4. Add personalized card image
                     String cardImage = new String(LocalIntegrationService.svgCardImage);

@@ -67,7 +67,7 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
     static final String MOTHER_NAME                 = "smith";
     
     static String amountInHtml(PaymentRequestDecoder paymentRequest, BigDecimal amount) throws IOException {
-        return "<span style=\"font-weight:bold;white-space:nowrap\">" + 
+        return "<span style='font-weight:bold;white-space:nowrap'>" + 
                paymentRequest.getCurrency().amountToDisplayString(amount, true) +
                "</span>";
     }

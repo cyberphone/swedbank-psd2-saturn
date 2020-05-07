@@ -53,11 +53,11 @@ public class TestBasicAccountServlet extends APICore {
         
         StringBuilder html = new StringBuilder(
             HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Basic Account information</div>" +
+            "<div class='centerbox'>" +
+              "<div class='description'>Basic Account information</div>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
-              "<table class=\"tftable\"><tr><th>Account ID</th></tr>");
+            "<div class='centerbox'>" +
+              "<table class='tftable'><tr><th>Account ID</th></tr>");
         for (String accountId : accounts.getAccountIds()) {
             html.append("<tr><td>")
                 .append(accountId)
@@ -67,11 +67,11 @@ public class TestBasicAccountServlet extends APICore {
         HTML.standardPage(response, null, html.append(
               "</table>" +
             "</div>" +
-            "<div class=\"centerbox\">" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                 "onclick=\"document.location.href = 'api.extendedaccount'\" " +
-                "title=\"Get consent for extended account data\">" +
+                "title='Get consent for extended account data'>" +
                 "Step #3: Get Extended Data Consent" +
                 "</div></td></tr>" +
               "</table>" +

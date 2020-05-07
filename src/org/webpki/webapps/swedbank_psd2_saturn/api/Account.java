@@ -16,28 +16,33 @@
  */
 package org.webpki.webapps.swedbank_psd2_saturn.api;
 
-import java.io.IOException;
+import java.io.Serializable;
 
-import javax.servlet.ServletException;
+import java.math.BigDecimal;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.webpki.saturn.common.Currencies;
 
-import org.webpki.webapps.swedbank_psd2_saturn.HTML;
-
-public class TestOperationFailedServlet extends APICore {
+public class Account implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    String accountId;
+    Currencies currency;
+    BigDecimal balance;  // May be null
     
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
-        HTML.standardPage(response, 
-            null,
-            HTML_HEADER +
-            "<div class='centerbox'>" +
-              "<div class='description'>The process either failed or " +
-              "was aborted by the user.</div>" +
-            "</div>");
+    Account() {
+        
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
+    
+    public Currencies getCurrency() {
+        return currency;
     }
 }

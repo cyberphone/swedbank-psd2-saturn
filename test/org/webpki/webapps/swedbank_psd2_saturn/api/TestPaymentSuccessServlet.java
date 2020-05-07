@@ -60,8 +60,8 @@ public class TestPaymentSuccessServlet extends APICore {
         HTML.standardPage(response,
             null,
             HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">" +
+            "<div class='centerbox'>" +
+              "<div class='description'>" +
                 "Payment Succeeded!" +
               "</div>" +
             "</div>");

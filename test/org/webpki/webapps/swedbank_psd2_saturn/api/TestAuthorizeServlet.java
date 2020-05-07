@@ -39,16 +39,16 @@ public class TestAuthorizeServlet extends APICore {
         HTML.standardPage(response, 
             null,
             HTML_HEADER +
-            "<div class=\"centerbox\">" +
-              "<div class=\"description\">Note that the \"sandbox\" " +
+            "<div class='centerbox'>" +
+              "<div class='description'>Note that the \"sandbox\" " +
               "login is a dummy, you can respond with anything.</div>" +
             "</div>" +
-            "<form name=\"authorize\" action=\"api.test\" method=\"POST\"></form>" +
-            "<div class=\"centerbox\">" +
+            "<form name='authorize' action='api.test' method='POST'></form>" +
+            "<div class='centerbox'>" +
               "<table>" +
-                "<tr><td><div class=\"multibtn\" " +
+                "<tr><td><div class='multibtn' " +
                 "onclick=\"document.forms.authorize.submit()\" " +
-                "title=\"Authorize Login\">" +
+                "title='Authorize Login'>" +
                 "Step #1: Authorize/Login" +
                 "</div></td></tr>" +
               "</table>" +
