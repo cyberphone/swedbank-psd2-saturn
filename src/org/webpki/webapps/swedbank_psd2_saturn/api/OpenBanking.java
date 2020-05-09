@@ -199,6 +199,7 @@ public class OpenBanking implements Serializable {
     }
 
     public String createCredential(String userName,
+                                   String ipAddress,
                                    String paymentMethodUrl,
                                    PublicKey authorizationKey,
                                    PublicKey optionalBalanceRequestKey)
@@ -206,6 +207,7 @@ public class OpenBanking implements Serializable {
         return DataBaseOperations.createCredential(identityToken,
                                                    currentAccount.accountId,
                                                    userName,
+                                                   ipAddress,
                                                    paymentMethodUrl,
                                                    authorizationKey,
                                                    optionalBalanceRequestKey);

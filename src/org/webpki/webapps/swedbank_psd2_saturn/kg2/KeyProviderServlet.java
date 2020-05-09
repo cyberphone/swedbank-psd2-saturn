@@ -303,6 +303,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     String paymentMethodUrl = PaymentMethods.BANK_DIRECT.getPaymentMethodUrl();
                     // A credentialId uniquely points to an account
                     String credentialId = openBanking.createCredential(userName,
+                                                                       request.getRemoteAddr(),
                                                                        paymentMethodUrl,
                                                                        key.getPublicKey(),
                                                                        null);

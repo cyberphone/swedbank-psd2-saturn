@@ -80,6 +80,8 @@ CREATE TABLE CREDENTIALS
 
     HumanName       VARCHAR(50) NOT NULL,                               -- "Card Holder"
     
+    IpAddress       VARCHAR(50) NOT NULL,                               -- "Statistics"
+    
     IdentityToken   VARCHAR(50) NOT NULL,                               -- For OAuth2 tokens
 
     Created         TIMESTAMP   NOT NULL  DEFAULT CURRENT_TIMESTAMP,    -- Administrator data
@@ -104,18 +106,21 @@ CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
                                      IN p_IdentityToken VARCHAR(50),
                                      IN p_AccountId VARCHAR(30),
                                      IN p_HumanName VARCHAR(50),
+                                     IN p_IpAddress VARCHAR(50),
                                      IN p_PaymentMethodUrl VARCHAR(50),
                                      IN p_S256PayReq BINARY(32),
                                      IN p_S256BalReq BINARY(32))
   BEGIN
     INSERT INTO CREDENTIALS(AccountId, 
-                            HumanName, 
+                            HumanName,
+                            IpAddress,
                             PaymentMethodUrl, 
                             IdentityToken, 
                             S256PayReq, 
                             S256BalReq) 
         VALUES(p_AccountId,
-               p_HumanName, 
+               p_HumanName,
+               p_IpAddress,
                p_PaymentMethodUrl,
                p_IdentityToken, 
                p_S256PayReq, 
@@ -201,6 +206,7 @@ SET @IdentityToken = "20010101-1234";
 SET @PaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104a';
 SET @AccountId = "SE6767676767676767676";
 SET @HumanName = "Luke Skywalker";
+SET @IpAddress = "127.0.0.1";
 SET @PaymentMethodUrl = "https://supercard.com";
 
 CALL StoreAccessTokenSP ("56b0762c-5834-4a53-a6b8-2d9eebff4514",
@@ -212,6 +218,7 @@ CALL CreateCredentialSP (@CredentialId,
                          @IdentityToken,
                          @AccountId,
                          @HumanName,
+                         @IpAddress,
                          @PaymentMethodUrl,
                          @PaymentKey,
                          NULL);

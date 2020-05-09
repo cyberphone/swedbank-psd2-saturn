@@ -46,6 +46,7 @@ class DataBaseOperations {
     static String createCredential(String identityToken,        // Credential bound to user
                                    String accountId,            // IBAN
                                    String humanName,            // On the card
+                                   String ipAddress,            // "Statistics"
                                    String paymentMethodUrl,     // Saturn method
                                    PublicKey authorizationKey,  // Payment authorization
                                    PublicKey optionalBalanceRequestKey)  // Not yet...
@@ -56,22 +57,24 @@ class DataBaseOperations {
             CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
                                                  IN p_IdentityToken VARCHAR(50),
                                                  IN p_AccountId VARCHAR(30),
-                                                 IN p_Name VARCHAR(50),
-                                                 IN p_PaymentMethod VARCHAR(50),
+                                                 IN p_HumanName VARCHAR(50),
+                                                 IN p_IpAddress VARCHAR(50),
+                                                 IN p_PaymentMethodUrl VARCHAR(50),
                                                  IN p_S256PayReq BINARY(32),
                                                  IN p_S256BalReq BINARY(32))
 */
 
             try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
                  CallableStatement stmt = 
-                    connection.prepareCall("{call CreateCredentialSP(?,?,?,?,?,?,?)}");) {
+                    connection.prepareCall("{call CreateCredentialSP(?,?,?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
                 stmt.setString(2, identityToken);
                 stmt.setString(3, accountId);
                 stmt.setString(4, humanName);
-                stmt.setString(5, paymentMethodUrl);
-                stmt.setBytes(6, s256(authorizationKey));
-                stmt.setBytes(7, s256(optionalBalanceRequestKey));
+                stmt.setString(5, ipAddress);
+                stmt.setString(6, paymentMethodUrl);
+                stmt.setBytes(7, s256(authorizationKey));
+                stmt.setBytes(8, s256(optionalBalanceRequestKey));
                 stmt.execute();
                 return String.valueOf(stmt.getInt(1));
             }
