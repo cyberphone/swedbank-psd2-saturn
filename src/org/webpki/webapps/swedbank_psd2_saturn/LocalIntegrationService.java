@@ -152,14 +152,18 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
     /////////////////////////////////////////////////////////////////////////////
     // KeyGen2 objects
     /////////////////////////////////////////////////////////////////////////////
-    static final String ANDROID_APP_VERSIONS        = "android_webpki_versions";
+    static final String ANDROID_WEBPKI_VERSIONS     = "android_webpki_versions";
+
+    static final String ANDROID_CHROME_VERSION      = "android_chrome_version";
 
     static final String TLS_CERTIFICATE             = "server_tls_certificate";
 
     public static X509Certificate serverCertificate;
 
-    public static String grantedVersions;
+    public static String androidWebPkiVersions;
     
+    public static int androidChromeVersion;
+
     public static String keygen2RunUrl;
 
     public static KeyStoreEnumerator keyManagementKey;
@@ -331,7 +335,12 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Android WebPKI version check (vlow-vhigh)
             ////////////////////////////////////////////////////////////////////////////////////////////
-            grantedVersions = getPropertyString(ANDROID_APP_VERSIONS);
+            androidWebPkiVersions = getPropertyString(ANDROID_WEBPKI_VERSIONS);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Android Chrome version check
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            androidChromeVersion = getPropertyInt(ANDROID_CHROME_VERSION);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Get TLS server certificate

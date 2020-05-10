@@ -110,6 +110,7 @@
       <replacefilter token="@oauth2-client-secret@" value="${oauth2_client_secret}"/>
       <replacefilter token="@inhouse-logo@" value="${inhouselogo}"/>
       <replacefilter token="@android-webpki-versions@" value="${@android.webpki.versions}"/>
+      <replacefilter token="@android-chrome-version@" value="${@android.chrome.version}"/>
       <replacefilter token="@server-tls-certificate@" value="${kg2_tls_cert_file}"/>
       <replacefilter token="@test-merchant-url@" value="${test_merchant_url}"/>
       <replacefilter token="@use-w3c-payment-request@" value="${@w3c.paymentrequest}"/>

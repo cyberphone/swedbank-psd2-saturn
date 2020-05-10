@@ -32,8 +32,6 @@ public class LoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    static final int MINIMUM_CHROME_VERSION    = 75;
-    
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
@@ -61,7 +59,7 @@ public class LoginServlet extends HttpServlet {
             int i = userAgent.indexOf(" Chrome/");
             if (i > 0) {
                 String chromeVersion = userAgent.substring(i + 8, userAgent.indexOf('.', i));
-                if (Integer.parseInt(chromeVersion) >= MINIMUM_CHROME_VERSION) {
+                if (Integer.parseInt(chromeVersion) >= LocalIntegrationService.androidChromeVersion) {
                     notOk = false;
                 }
             }
@@ -72,7 +70,7 @@ public class LoginServlet extends HttpServlet {
                 null,
                 "<div class='label'>This proof-of-concept system only supports " +
                   "Android and using the \"Chrome\" browser (min version: " + 
-                  MINIMUM_CHROME_VERSION + ")" +
+                  LocalIntegrationService.androidChromeVersion + ")" +
                 "</div>");
             return;
         }

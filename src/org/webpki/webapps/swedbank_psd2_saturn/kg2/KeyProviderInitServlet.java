@@ -95,7 +95,7 @@ public class KeyProviderInitServlet extends HttpServlet {
                "&" + MobileProxyParameters.PUP_INIT_URL   + "=" + urlEncoded + "%3F" + INIT_TAG + "%3Dtrue" +
                "&" + MobileProxyParameters.PUP_MAIN_URL   + "=" + urlEncoded +
                "&" + MobileProxyParameters.PUP_CANCEL_URL + "=" + urlEncoded + "%3F" + ABORT_TAG + "%3Dtrue" +
-               "&" + MobileProxyParameters.PUP_VERSIONS   + "=" + LocalIntegrationService.grantedVersions;
+               "&" + MobileProxyParameters.PUP_VERSIONS   + "=" + LocalIntegrationService.androidWebPkiVersions;
    }
     
     @Override
