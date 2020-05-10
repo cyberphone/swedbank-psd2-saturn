@@ -453,16 +453,16 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
         StringBuilder result = new StringBuilder();
         if (foundData(request, result, KeyProviderInitServlet.ERROR_TAG)) {
             html.append(
-                    "<div class=\"centerbox\">" +
+                    "<div class='centerbox'>" +
                       "<table><tr><td>Failure Report:</td></tr><tr><td>" +
-                      "<pre style=\"color:red;font-size:10pt\">")
+                      "<pre style='color:red;font-size:10pt'>")
                 .append(result)
                 .append("</pre></td></tr></table>");
         } else if (foundData(request, result, KeyProviderInitServlet.PARAM_TAG)) {
             html.append(result);
         } else if (foundData(request, result, KeyProviderInitServlet.ABORT_TAG)) {
             logger.info("KeyGen2 run aborted by the user");
-            html.append("<div class=\"header\">Aborted by the User!");
+            html.append("<div class='header'>Aborted by the User!");
         } else {
             HttpSession session = request.getSession(false);
             if (session == null) {
@@ -471,45 +471,16 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             }
             String completedCardImage = (String) session.getAttribute(CARD_IMAGE_ATTR);
             session.invalidate();
-            html.append(
-                "<div class=\"header\">Successful Enrollment!</div>")
-            .append("<svg style=\"width:80%\" " +
-                    "viewBox=\"0 0 318 190\" xmlns=\"http://www.w3.org/2000/svg\">" +
-                    "<defs>" +
-                    " <clipPath id=\"cardClip\">" +
-                    "  <rect rx=\"15\" ry=\"15\" height=\"180\" width=\"300\" y=\"0\" x=\"0\"/>" +
-                    " </clipPath>" +
-                    " <filter id=\"dropShaddow\">" +
-                    "  <feGaussianBlur stdDeviation=\"2.4\"/>" +
-                    " </filter>" +
-                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"innerCardBorder\">" +
-                    "  <stop offset=\"0\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
-                    "  <stop offset=\"0.48\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
-                    "  <stop offset=\"0.52\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
-                    "  <stop offset=\"1\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
-                    " </linearGradient>" +
-                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"outerCardBorder\">" +
-                    "  <stop offset=\"0\" stop-color=\"#b0b0b0\"/>" +
-                    "  <stop offset=\"0.48\" stop-color=\"#b0b0b0\"/>" +
-                    "  <stop offset=\"0.52\" stop-color=\"#808080\"/>" +
-                    "  <stop offset=\"1\" stop-color=\"#808080\"/>" +
-                    " </linearGradient>" +
-                    "</defs>" +
-                    "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
-                    "height=\"182\" width=\"302\" y=\"4\" x=\"12\" fill=\"#c0c0c0\"/>" +
-                    "<svg x=\"9\" y=\"1\" clip-path=\"url(#cardClip)\"")
-            .append(completedCardImage.substring(completedCardImage.indexOf('>')))
-            .append(
-                "<rect x=\"10\" y=\"2\" width=\"298\" height=\"178\" " +
-                "rx=\"14.7\" ry=\"14.7\" fill=\"none\" " +
-                "stroke=\"url(#innerCardBorder)\" stroke-width=\"2.7\"/>" +
-                "<rect x=\"8.5\" y=\"0.5\" width=\"301\" height=\"181\" " +
-                "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/></svg>" +
-                "<div class=\"centerbox\">" +
-                  "<div class=\"description\" style=\"padding-top:1em\">" +
-                    "You may now pay with the card at a merchant like:<br>" +
-                    "<a href=\"" + LocalIntegrationService.testMerchantUrl +
-                    "\">" + LocalIntegrationService.testMerchantUrl + "</a></div>");
+            html.append("<div class='header'>Successful Enrollment!</div>")
+                .append(KeyProviderInitServlet.cardImageConverter(completedCardImage))
+                .append("<div class='centerbox'>" +
+                          "<div class='description' style='padding-top:1em'>" +
+                           "You may now pay with the card at a merchant like:<br>" +
+                           "<a href='")
+                .append(LocalIntegrationService.testMerchantUrl)
+                .append("'>")
+                .append(LocalIntegrationService.testMerchantUrl)
+                .append("</a></div>");
         }
         HTML.standardPage(response,
                           null,

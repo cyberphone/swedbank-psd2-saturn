@@ -237,6 +237,7 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
         if (getPropertyBoolean(INHOUSE_LOGO)) {
             cardImage = cardImage.replace("</svg>", getEmbeddedResourceString("inhouse-flag.txt"));
         }
+        cardImage = cardImage.replace("\n", "");
         cardImages.put(cardTypeName, cardImage);
     }
 
