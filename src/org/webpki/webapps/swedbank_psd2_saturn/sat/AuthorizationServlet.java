@@ -65,8 +65,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         AuthorizationRequest authorizationRequest = new AuthorizationRequest(providerRequest);
 
         // Check that we actually were the intended party
-        if (!LocalIntegrationService.serviceUrl.equals(authorizationRequest.getRecepientUrl())) {
-            throw new IOException("Unexpected \"" + RECEPIENT_URL_JSON + "\" : " + authorizationRequest.getRecepientUrl());
+        if (!LocalIntegrationService.serviceUrl.equals(authorizationRequest.getRecipientUrl())) {
+            throw new IOException("Unexpected \"" + RECIPIENT_URL_JSON + "\" : " + authorizationRequest.getRecipientUrl());
         }
 
         // Verify that we understand the backend payment method

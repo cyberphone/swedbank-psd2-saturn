@@ -474,7 +474,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             html.append("<div class='header'>Successful Enrollment!</div>")
                 .append(KeyProviderInitServlet.cardImageConverter(completedCardImage))
                 .append("<div class='centerbox'>" +
-                          "<div class='description' style='padding-top:1em'>" +
+                          "<div class='description' style='padding-top:0.5em'>" +
                            "You may now pay with the card at a merchant like:<br>" +
                            "<a href='")
                 .append(LocalIntegrationService.testMerchantUrl)

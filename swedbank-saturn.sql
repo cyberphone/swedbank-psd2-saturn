@@ -90,9 +90,9 @@ CREATE TABLE CREDENTIALS
 -- by verifying that both SHA256 of the public key (in X.509 DER
 -- format) and claimed CredentialId match.
 
-    S256PayReq      BINARY(32)  NOT NULL,                               -- Payment request key hash 
+    S256AuthKey     BINARY(32)  NOT NULL,                               -- Payment request key hash 
 
-    S256BalReq      BINARY(32)  NULL,                                   -- Optional: Balance key hash 
+    S256BalKey      BINARY(32)  NULL,                                   -- Optional: Balance key hash 
 
     PRIMARY KEY (CredentialId),
     FOREIGN KEY (IdentityToken) REFERENCES OAUTH2TOKENS(IdentityToken) ON DELETE CASCADE
@@ -108,23 +108,23 @@ CREATE PROCEDURE CreateCredentialSP (OUT p_CredentialId INT,
                                      IN p_HumanName VARCHAR(50),
                                      IN p_IpAddress VARCHAR(50),
                                      IN p_PaymentMethodUrl VARCHAR(50),
-                                     IN p_S256PayReq BINARY(32),
-                                     IN p_S256BalReq BINARY(32))
+                                     IN p_S256AuthKey BINARY(32),
+                                     IN p_S256BalKey BINARY(32))
   BEGIN
     INSERT INTO CREDENTIALS(AccountId, 
                             HumanName,
                             IpAddress,
                             PaymentMethodUrl, 
                             IdentityToken, 
-                            S256PayReq, 
-                            S256BalReq) 
+                            S256AuthKey, 
+                            S256BalKey) 
         VALUES(p_AccountId,
                p_HumanName,
                p_IpAddress,
                p_PaymentMethodUrl,
                p_IdentityToken, 
-               p_S256PayReq, 
-               p_S256BalReq);
+               p_S256AuthKey, 
+               p_S256BalKey);
     SET p_CredentialId = LAST_INSERT_ID();
   END
 //
@@ -152,32 +152,33 @@ CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
 
 -- Note: the assumption is that the following variables are non-NULL otherwise
 -- you may get wrong answer due to the (weird) way SQL deals with comparing NULL!
+
                                        IN p_CredentialId INT,
                                        IN p_AccountId VARCHAR(30),
                                        IN p_PaymentMethodUrl VARCHAR(50),
-                                       IN p_S256PayReq BINARY(32))
+                                       IN p_S256AuthKey BINARY(32))
   BEGIN
     DECLARE v_AccountId VARCHAR(30);
     DECLARE v_PaymentMethodUrl VARCHAR(50);
-    DECLARE v_S256PayReq BINARY(32);
+    DECLARE v_S256AuthKey BINARY(32);
 
     SELECT HumanName, 
            IdentityToken,
            AccountId,
            PaymentMethodUrl,
-           S256PayReq
+           S256AuthKey
         INTO 
            p_HumanName,
            p_IdentityToken,
            v_AccountId,
            v_PaymentMethodUrl,
-           v_S256PayReq
+           v_S256AuthKey
         FROM CREDENTIALS WHERE CREDENTIALS.CredentialId = p_CredentialId;
     IF v_AccountId IS NULL THEN
       SET p_Error = 1;    -- No such credential
     ELSEIF v_AccountId <> p_AccountId THEN
       SET p_Error = 2;    -- Non-matching account
-    ELSEIF v_S256PayReq <> p_S256PayReq THEN
+    ELSEIF v_S256AuthKey <> p_S256AuthKey THEN
       SET p_Error = 3;    -- Non-matching key
     ELSEIF v_PaymentMethodUrl <> p_PaymentMethodUrl THEN
       SET p_Error = 4;    -- Non-matching payment method

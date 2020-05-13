@@ -101,7 +101,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     static StringBuilder cardImageConverter(String rawCardImage) {
         return new StringBuilder(
             "<svg style='width:80%' " +
-            "viewBox='0 0 318 190' xmlns='http://www.w3.org/2000/svg'>" +
+            "viewBox='0 0 320 200' xmlns='http://www.w3.org/2000/svg'>" +
             "<defs>" +
             " <clipPath id='cardClip'>" +
             "  <rect rx='15' ry='15' height='180' width='300' y='0' x='0'/>" +
@@ -110,8 +110,8 @@ public class KeyProviderInitServlet extends HttpServlet {
             "  <feGaussianBlur stdDeviation='2.4'/>" +
             " </filter>" +
             " <linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
-            "  <stop offset='0' stop-opacity='0.6' stop-color='white'/>" +
-            "  <stop offset='0.48' stop-opacity='0.6' stop-color='white'/>" +
+            "  <stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+            "  <stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
             "  <stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
             "  <stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
             " </linearGradient>" +
@@ -123,14 +123,14 @@ public class KeyProviderInitServlet extends HttpServlet {
             " </linearGradient>" +
             "</defs>" +
             "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
-            "height='182' width='302' y='4' x='12' fill='#c0c0c0'/>" +
-            "<svg x='9' y='1' clip-path='url(#cardClip)'")
+            "height='182' width='302' y='12' x='12' fill='#c0c0c0'/>" +
+            "<svg x='10' y='10' clip-path='url(#cardClip)'")
         .append(rawCardImage.substring(rawCardImage.indexOf('>')))
         .append(
-            "<rect x='10' y='2' width='298' height='178' " +
+            "<rect x='11' y='11' width='298' height='178' " +
             "rx='14.7' ry='14.7' fill='none' " +
             "stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
-            "<rect x='8.5' y='0.5' width='301' height='181' " +
+            "<rect x='9.5' y='9.5' width='301' height='181' " +
             "rx='16' ry='16' fill='none' stroke='url(#outerCardBorder)'/></svg>");
     }
     
