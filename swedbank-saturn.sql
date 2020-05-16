@@ -188,6 +188,39 @@ CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
   END
 //
 
+CREATE PROCEDURE AuthenticateBalReqSP (OUT p_Error INT,
+                                       OUT p_IdentityToken VARCHAR(50),
+
+-- Note: the assumption is that the following variables are non-NULL otherwise
+-- you may get wrong answer due to the (weird) way SQL deals with comparing NULL!
+
+                                       IN p_CredentialId INT,
+                                       IN p_AccountId VARCHAR(30),
+                                       IN p_S256BalKey BINARY(32))
+  BEGIN
+    DECLARE v_AccountId VARCHAR(30);
+    DECLARE v_S256BalKey BINARY(32);
+
+    SELECT IdentityToken,
+           AccountId,
+           S256BalKey
+        INTO 
+           p_IdentityToken,
+           v_AccountId,
+           v_S256BalKey
+        FROM CREDENTIALS WHERE CREDENTIALS.CredentialId = p_CredentialId;
+    IF v_AccountId IS NULL THEN
+      SET p_Error = 1;    -- No such credential
+    ELSEIF v_AccountId <> p_AccountId THEN
+      SET p_Error = 2;    -- Non-matching account
+    ELSEIF v_S256BalKey <> p_S256BalKey THEN
+      SET p_Error = 3;    -- Non-matching key
+    ELSE                       
+      SET p_Error = 0;    -- Success
+    END IF;
+  END
+//
+
 -- Test code only called by this script
 CREATE PROCEDURE ASSERT_TRUE (IN p_DidIt BOOLEAN,
                               IN p_Message VARCHAR(100))
@@ -205,6 +238,7 @@ DELIMITER ;
 
 SET @IdentityToken = "20010101-1234";
 SET @PaymentKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104a';
+SET @BalanceKey = x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b';
 SET @AccountId = "SE6767676767676767676";
 SET @HumanName = "Luke Skywalker";
 SET @IpAddress = "127.0.0.1";
@@ -222,7 +256,7 @@ CALL CreateCredentialSP (@CredentialId,
                          @IpAddress,
                          @PaymentMethodUrl,
                          @PaymentKey,
-                         NULL);
+                         @BalanceKey);
 
 CALL AuthenticatePayReqSP (@Error,
                            @ReadHumanName,
@@ -259,7 +293,7 @@ CALL AuthenticatePayReqSP (@Error,
                            @CredentialId,
                            @AccountId,
                            @PaymentMethodUrl,
-                           x'b3b76a196ced26e7e5578346b25018c0e86d04e52e5786fdc2810a2a10bd104b');
+                           @BalanceKey);
 CALL ASSERT_TRUE(@Error = 3, "Error code");
 
 CALL AuthenticatePayReqSP (@Error,
@@ -270,6 +304,35 @@ CALL AuthenticatePayReqSP (@Error,
                            "payme twice!",
                            @PaymentKey);
 CALL ASSERT_TRUE(@Error = 4, "Error code");
+
+CALL AuthenticateBalReqSP (@Error,
+                           @ReadIdentityToken,
+                           @CredentialId,
+                           @AccountId,
+                           @BalanceKey);
+CALL ASSERT_TRUE(@Error = 0, "Error code");
+CALL ASSERT_TRUE(@ReadIdentityToken = @IdentityToken, "Identity token");
+
+CALL AuthenticateBalReqSP (@Error,
+                           @ReadIdentityToken,
+                           @CredentialId + 1,
+                           @AccountId,
+                           @BalanceKey);
+CALL ASSERT_TRUE(@Error = 1, "Error code");
+
+CALL AuthenticateBalReqSP (@Error,
+                           @ReadIdentityToken,
+                           @CredentialId,
+                           "no such account",
+                           @BalanceKey);
+CALL ASSERT_TRUE(@Error = 2, "Error code");
+
+CALL AuthenticateBalReqSP (@Error,
+                           @ReadIdentityToken,
+                           @CredentialId,
+                           @AccountId,
+                           @PaymentKey);
+CALL ASSERT_TRUE(@Error = 3, "Error code");
 
 -- Remove all test data
 

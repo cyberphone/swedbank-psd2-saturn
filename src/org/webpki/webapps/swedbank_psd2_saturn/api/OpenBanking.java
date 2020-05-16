@@ -130,12 +130,6 @@ public class OpenBanking implements Serializable {
         return accountData;
     }
 
-    void consistencyCheck(boolean withBalance) throws IOException {
-        if (withBalance && accountData == null) {
-            throw new IOException("Wrong order of account data calls");
-        }
-    }
-    
     Object userObject;
 
     private Account currentAccount;
@@ -269,5 +263,17 @@ public class OpenBanking implements Serializable {
 
     public Account getCurrentAccount() {
         return currentAccount;
+    }
+
+    public BigDecimal requestAccountBalance(String accountId) throws IOException {
+        Accounts accounts = APICore.emulatedAccountDataAccess(new String[] {accountId}, this);
+        return accounts.getAccount(accountId).getBalance();
+    }
+
+    public static AuthenticationResult authenticateBalReq(String credentialId,
+                                                          String accountId,
+                                                          PublicKey balanceKey)
+    throws SQLException, IOException {
+        return DataBaseOperations.authenticateBalReq(credentialId, accountId, balanceKey);
     }
 }

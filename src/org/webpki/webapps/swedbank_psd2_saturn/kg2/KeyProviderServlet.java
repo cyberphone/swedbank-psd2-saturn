@@ -90,6 +90,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
 import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+
 import org.webpki.webapps.swedbank_psd2_saturn.api.Account;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
@@ -266,16 +267,23 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     // all testers use the same account but they get individual keys.
                     // For a fully dynamic solution, see the Saturn PoC.
                   
-                    ServerState.Key key = 
+                    // Create the authorization key
+                    ServerState.Key authKey = 
                             keygen2State.createKey(AppUsage.SIGNATURE,
                                                    new KeySpecifier(KeyAlgorithms.NIST_P_256),
                                                    standardPinPolicy);                           
-                    key.addEndorsedAlgorithm(AsymSignatureAlgorithms.ECDSA_SHA256);
-                    key.setFriendlyName(LocalIntegrationService.bankCommonName);
+                    authKey.addEndorsedAlgorithm(AsymSignatureAlgorithms.ECDSA_SHA256);
+                    authKey.setFriendlyName(LocalIntegrationService.bankCommonName);
                     if (keygen2State.isFeatureSupported(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT)) {
-                        key.setBiometricProtection(BiometricProtection.ALTERNATIVE);
+                        authKey.setBiometricProtection(BiometricProtection.ALTERNATIVE);
                     }
 
+                    // Then create the balance key
+                    keygen2State.createKey(AppUsage.SIGNATURE,
+                                           new KeySpecifier(KeyAlgorithms.NIST_P_256),
+                                           null)
+                        .setFriendlyName(LocalIntegrationService.bankCommonName + " balance key");
+ 
                     keygen2JSONBody(response, new KeyCreationRequestEncoder(keygen2State));
                     return;
 
@@ -297,60 +305,27 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     Account account = openBanking.getCurrentAccount();
                     String accountId = account.getAccountId();
 
-                    // now create Saturn payment credentials
-                    // 1. Get key and other input data
-                    key = keygen2State.getKeys()[0];
+                    // Now create Saturn payment credentials
+
+                    // 1. Get keys and other input data
+                    authKey = keygen2State.getKeys()[0];
+                    ServerState.Key balanceKey = keygen2State.getKeys()[1];
                     String paymentMethodUrl = PaymentMethods.BANK_DIRECT.getPaymentMethodUrl();
                     // A credentialId uniquely points to an account
                     String credentialId = openBanking.createCredential(userName,
                                                                        request.getRemoteAddr(),
                                                                        paymentMethodUrl,
-                                                                       key.getPublicKey(),
+                                                                       authKey.getPublicKey(),
                                                                        null);
 
-                    // 2. Create a "carrier" certificate for the signature key (SKS need that)
-                    CertSpec certSpec = new CertSpec();
-                    certSpec.setKeyUsageBit(KeyUsageBits.DIGITAL_SIGNATURE);
-                    certSpec.setSubject("CN=" + userName + ", serialNumber=" + accountId);
-                    Hashtable<String,String> issuer = new Hashtable<>();
-                    issuer.put("CN", "Saturn SKS Carrier Certificate");
-                    long startTime = System.currentTimeMillis();
-                    key.setCertificatePath(new X509Certificate[]{new CA().createCert(
-                        certSpec,
-                        new DistinguishedName(issuer),
-                        new BigInteger(credentialId),
-                        new Date(startTime),
-                        new Date(startTime + (20 * 365 * 24 * 3600 * 1000l)),
-                        AsymSignatureAlgorithms.ECDSA_SHA256,
-                        new AsymKeySignerInterface() {
+                    // 2. Create a "carrier" certificate for the authorization key (SKS need that)
+                    createCarrierCerificate(authKey, userName, credentialId, accountId);
 
-                            @Override
-                            public PublicKey getPublicKey() throws IOException {
-                                return LocalIntegrationService
-                                           .carrierCaKeyPair.getPublic();
-                            }
+                    // 4. Create a "carrier" certificate for the balance key as well
+                    createCarrierCerificate(balanceKey, userName, credentialId, accountId);
 
-                            @Override
-                            public byte[] signData(
-                                    byte[] data,
-                                    AsymSignatureAlgorithms algorithm)
-                                    throws IOException {
-                                try {
-                                    return new SignatureWrapper(algorithm,
-                                                                LocalIntegrationService
-                                                     .carrierCaKeyPair.getPrivate())
-                                        .setEcdsaSignatureEncoding(true)
-                                        .update(data)
-                                        .sign();
-                                } catch (GeneralSecurityException e) {
-                                    throw new IOException(e);
-                                }
-                            }
-                        },
-                        key.getPublicKey())});
-
-                    // 3. Add card data blob to the key entry
-                    key.addExtension(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI,
+                    // 5. Add card data blob to the authorization key
+                    authKey.addExtension(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI,
                         CardDataEncoder.encode(
                             paymentMethodUrl,
                             credentialId,
@@ -363,9 +338,10 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             LocalIntegrationService.currentDecryptionKey.getKeyEncryptionAlgorithm(), 
                             LocalIntegrationService.currentDecryptionKey.getPublicKey(),
                             null,
-                            null).serializeToBytes(JSONOutputFormats.NORMALIZED));
+                            HashAlgorithms.SHA256.digest(balanceKey.getPublicKey().getEncoded()))
+                                .serializeToBytes(JSONOutputFormats.NORMALIZED));
 
-                    // 4. Add personalized card image
+                    // 6. Add personalized card image
                     String cardImage = new String(
                             LocalIntegrationService.cardImages.get(
                                     (String)session.getAttribute(
@@ -387,7 +363,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             cardImage.replace(CardImageData.STANDARD_NAME, cardUserName)
                                      .replace(CardImageData.STANDARD_ACCOUNT, accountId);
                     session.setAttribute(CARD_IMAGE_ATTR, completedCardImage);
-                    key.addLogotype(KeyGen2URIs.LOGOTYPES.CARD, new MIMETypedObject() {
+                    authKey.addLogotype(KeyGen2URIs.LOGOTYPES.CARD, new MIMETypedObject() {
 
                         @Override
                         public byte[] getData() throws IOException {
@@ -431,6 +407,48 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             printerWriter.flush();
             returnKeyGen2Error(response, baos.toString("UTF-8"));
         }
+    }
+
+    void createCarrierCerificate(ServerState.Key key, 
+                                 String userName,
+                                 String credentialId,
+                                 String accountId) throws IOException {
+        CertSpec certSpec = new CertSpec();
+        certSpec.setKeyUsageBit(KeyUsageBits.DIGITAL_SIGNATURE);
+        certSpec.setSubject("CN=" + userName + ", serialNumber=" + accountId);
+        Hashtable<String, String> issuer = new Hashtable<>();
+        issuer.put("CN", "Saturn SKS Carrier Certificate");
+        long startTime = System.currentTimeMillis();
+        key.setCertificatePath(new X509Certificate[] { new CA().createCert(
+            certSpec, 
+            new DistinguishedName(issuer),
+            new BigInteger(credentialId), 
+            new Date(startTime),
+            new Date(startTime + (20 * 365 * 24 * 3600 * 1000l)), 
+            AsymSignatureAlgorithms.ECDSA_SHA256,
+            new AsymKeySignerInterface() {
+
+                @Override
+                public PublicKey getPublicKey() throws IOException {
+                    return LocalIntegrationService.carrierCaKeyPair.getPublic();
+                }
+
+                @Override
+                public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm)
+                throws IOException {
+                    try {
+                        return new SignatureWrapper(
+                                algorithm, 
+                                LocalIntegrationService.carrierCaKeyPair.getPrivate())
+                            .setEcdsaSignatureEncoding(true)
+                            .update(data)
+                            .sign();
+                    } catch (GeneralSecurityException e) {
+                        throw new IOException(e);
+                    }
+                }
+            }, key.getPublicKey())
+        });
     }
 
     boolean foundData(HttpServletRequest request, StringBuilder result, String tag) {

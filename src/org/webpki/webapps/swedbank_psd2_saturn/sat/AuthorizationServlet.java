@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat;
 
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
@@ -59,7 +61,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
     
     @Override
     JSONObjectWriter processCall(UrlHolder urlHolder,
-                                 JSONObjectReader providerRequest) throws Exception {
+                                 JSONObjectReader providerRequest,
+                                 HttpServletRequest httpServletRequest) throws Exception {
  
         // Decode authorization request message
         AuthorizationRequest authorizationRequest = new AuthorizationRequest(providerRequest);

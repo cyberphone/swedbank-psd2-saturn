@@ -125,7 +125,7 @@ abstract class APICore extends HttpServlet {
             }
             html = wrapper.getDataUTF8();
             if (LocalIntegrationService.logging) {
- //               logger.info("Scraping html:\n" + html);
+                logger.info("Scraping html:\n" + html);
             }
         }
         
@@ -422,7 +422,6 @@ abstract class APICore extends HttpServlet {
 
     static Accounts getAccountData(boolean withBalance,
                                    OpenBanking openBanking) throws IOException {
-        openBanking.consistencyCheck(withBalance);
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
             .setBic()
             .addParameter("withBalance", String.valueOf(withBalance))
@@ -599,7 +598,10 @@ abstract class APICore extends HttpServlet {
 
         wrapper = getBrowserEmulator(openBanking);
         wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
-        logger.info(location);
+        if (LocalIntegrationService.logging) {
+            logger.info("Faking user at: " + location +
+                        "\nwith data: " + new String(formData.toByteArray(),"utf-8"));
+        }
         wrapper.makePostRequest(location, formData.toByteArray());
         webScraper = new WebScraper(wrapper);
         if (!webScraper.scanTo("<form ")

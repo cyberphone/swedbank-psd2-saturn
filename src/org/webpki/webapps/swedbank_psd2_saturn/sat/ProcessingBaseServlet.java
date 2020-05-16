@@ -84,7 +84,8 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
     }
 
     abstract JSONObjectWriter processCall(UrlHolder urlHolder, 
-                                          JSONObjectReader providerRequest) throws Exception;
+                                          JSONObjectReader providerRequest,
+                                          HttpServletRequest httpServletRequest) throws Exception;
     
     static class InternalException extends Exception {
 
@@ -119,7 +120,9 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             /////////////////////////////////////////////////////////////////////////////////////////
             // Each method has its own servlet in this setup but that is just an option            //
             /////////////////////////////////////////////////////////////////////////////////////////
-            JSONObjectWriter providerResponse = processCall(urlHolder, providerRequest);
+            JSONObjectWriter providerResponse = processCall(urlHolder, 
+                                                            providerRequest,
+                                                            request);
 
             if (LocalIntegrationService.logging) {
                 logger.info("Responded to caller"  + urlHolder.getCallerAddress() + 

@@ -49,7 +49,7 @@ class DataBaseOperations {
                                    String ipAddress,            // "Statistics"
                                    String paymentMethodUrl,     // Saturn method
                                    PublicKey authorizationKey,  // Payment authorization
-                                   PublicKey optionalBalanceRequestKey)  // Not yet...
+                                   PublicKey balanceRequestKey) // Balance request authorization
     throws SQLException, IOException {
         try {
 
@@ -74,7 +74,7 @@ class DataBaseOperations {
                 stmt.setString(5, ipAddress);
                 stmt.setString(6, paymentMethodUrl);
                 stmt.setBytes(7, s256(authorizationKey));
-                stmt.setBytes(8, s256(optionalBalanceRequestKey));
+                stmt.setBytes(8, s256(balanceRequestKey));
                 stmt.execute();
                 return String.valueOf(stmt.getInt(1));
             }
@@ -98,6 +98,7 @@ class DataBaseOperations {
         
         -- Note: the assumption is that the following variables are non-NULL otherwise
         -- you may get wrong answer due to the (weird) way SQL deals with comparing NULL!
+
                                                IN p_CredentialId INT,
                                                IN p_AccountId VARCHAR(30),
                                                IN p_PaymentMethodUrl VARCHAR(50),
@@ -145,6 +146,58 @@ class DataBaseOperations {
             failed(e);
             throw e;
         }            
+    }
+
+    static OpenBanking.AuthenticationResult authenticateBalReq(String credentialId,
+                                                               String accountId,
+                                                               PublicKey balanceKey)
+        throws SQLException, IOException {
+        try {
+        
+/*
+        CREATE PROCEDURE AuthenticateBalReqSP (OUT p_Error INT,
+                                               OUT p_IdentityToken VARCHAR(50),
+        
+        -- Note: the assumption is that the following variables are non-NULL otherwise
+        -- you may get wrong answer due to the (weird) way SQL deals with comparing NULL!
+        
+                                               IN p_CredentialId INT,
+                                               IN p_AccountId VARCHAR(30),
+                                               IN p_S256BalKey BINARY(32))
+*/
+        
+        try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+                CallableStatement stmt = connection.prepareCall("{call AuthenticateBalReqSP(?,?,?,?,?)}");) {
+            stmt.registerOutParameter(1, java.sql.Types.INTEGER);
+            stmt.registerOutParameter(2, java.sql.Types.VARCHAR);
+            stmt.setInt(3, Integer.valueOf(credentialId));
+            stmt.setString(4, accountId);
+            stmt.setBytes(5, s256(balanceKey));
+            stmt.execute();
+            OpenBanking.AuthenticationResult authenticationResult = new OpenBanking.AuthenticationResult();
+            switch (stmt.getInt(1)) {
+                case 0:
+                    authenticationResult.identityToken = stmt.getString(2);
+                    break;
+            
+                case 1:
+                    authenticationResult.error = "Credential not found";
+                    break;
+            
+                case 2:
+                    authenticationResult.error = "AccountId mismatch";
+                    break;
+            
+                default:
+                    authenticationResult.error = "Key does not match credentialId";
+                    break;
+                }
+                return authenticationResult;
+            }
+        } catch (SQLException e) {
+            failed(e);
+            throw e;
+        }
     }
 
     private static byte[] s256(PublicKey publicKey) throws IOException {

@@ -1,1 +1,4 @@
 
+{
+  "https://webpki.github.io/saturn/v3/extensions#balance": "${host}/sat.balance"
+}
