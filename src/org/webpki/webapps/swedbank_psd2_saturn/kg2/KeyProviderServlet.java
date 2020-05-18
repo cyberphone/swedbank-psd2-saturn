@@ -316,7 +316,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                                                        request.getRemoteAddr(),
                                                                        paymentMethodUrl,
                                                                        authKey.getPublicKey(),
-                                                                       null);
+                                                                       balanceKey.getPublicKey());
 
                     // 2. Create a "carrier" certificate for the authorization key (SKS need that)
                     createCarrierCerificate(authKey, userName, credentialId, accountId);

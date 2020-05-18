@@ -80,7 +80,11 @@ CREATE TABLE CREDENTIALS
 
     HumanName       VARCHAR(50) NOT NULL,                               -- "Card Holder"
     
+    AccessCount     INT         NOT NULL  DEFAULT 0,                    -- "Statistics"
+    
     IpAddress       VARCHAR(50) NOT NULL,                               -- "Statistics"
+
+    LastAccess      TIMESTAMP   NULL,                                   -- "Statistics"
     
     IdentityToken   VARCHAR(50) NOT NULL,                               -- For OAuth2 tokens
 
@@ -92,7 +96,7 @@ CREATE TABLE CREDENTIALS
 
     S256AuthKey     BINARY(32)  NOT NULL,                               -- Payment request key hash 
 
-    S256BalKey      BINARY(32)  NULL,                                   -- Optional: Balance key hash 
+    S256BalKey      BINARY(32)  NOT NULL,                               -- Balance key hash 
 
     PRIMARY KEY (CredentialId),
     FOREIGN KEY (IdentityToken) REFERENCES OAUTH2TOKENS(IdentityToken) ON DELETE CASCADE
@@ -184,6 +188,7 @@ CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
       SET p_Error = 4;    -- Non-matching payment method
     ELSE                       
       SET p_Error = 0;    -- Success
+      UPDATE CREDENTIALS SET LastAccess = CURRENT_TIMESTAMP, AccessCount = AccessCount + 1;
     END IF;
   END
 //
