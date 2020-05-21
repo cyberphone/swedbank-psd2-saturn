@@ -622,7 +622,7 @@ abstract class APICore extends HttpServlet {
                 new JSONObjectWriter().setString("bban", creditorAccount))
             .setObject("debtorAccount",
                 new JSONObjectWriter().setString("iban", debtorAccount))
-            .setString("debtorAccountStatementText", creditorName)
+            .setString("debtorAccountStatementText", "just me paying " + creditorName)
             .setObject("instructedAmount",
                 new JSONObjectWriter()
                     .setString("amount", amount.toPlainString())
