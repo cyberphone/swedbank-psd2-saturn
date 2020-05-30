@@ -1,338 +1,371 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-    version="2.4">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+  version="2.4">
 
-    <resource-ref>
-        <description>DB Connection</description>
-        <res-ref-name>jdbc/SWEDBANK_SATURN</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <res-auth>Container</res-auth>
-    </resource-ref>
+  <resource-ref>
+    <description>DB Connection</description>
+    <res-ref-name>jdbc/SWEDBANK_SATURN</res-ref-name>
+    <res-type>javax.sql.DataSource</res-type>
+    <res-auth>Container</res-auth>
+  </resource-ref>
 
-    <context-param>
-        <description>Logging flag</description>
-        <param-name>logging</param-name>
-        <param-value>@logging@</param-value>
-    </context-param>
+  <context-param>
+    <description>Logging flag</description>
+    <param-name>logging</param-name>
+    <param-value>@logging@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Biometric Support</description>
-        <param-name>biometric_support</param-name>
-        <param-value>@biometric-support@</param-value>
-    </context-param>
-    
-    <context-param>
-        <description>OAuth2 Client ID</description>
-        <param-name>oauth2_client_id</param-name>
-        <param-value>@oauth2-client-id@</param-value>
-    </context-param>
+  <context-param>
+    <description>Biometric Support</description>
+    <param-name>biometric_support</param-name>
+    <param-value>@biometric-support@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>OAuth2 Client Secret</description>
-        <param-name>oauth2_client_secret</param-name>
-        <param-value>@oauth2-client-secret@</param-value>
-    </context-param>
+  <context-param>
+    <description>OAuth2 Client ID</description>
+    <param-name>oauth2_client_id</param-name>
+    <param-value>@oauth2-client-id@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Test Merchant URL</description>
-        <param-name>test_merchant_url</param-name>
-        <param-value>@test-merchant-url@</param-value>
-    </context-param>
+  <context-param>
+    <description>OAuth2 Client Secret</description>
+    <param-name>oauth2_client_secret</param-name>
+    <param-value>@oauth2-client-secret@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Use W3C PaymentRequest Flag</description>
-        <param-name>use_w3c_payment_request</param-name>
-        <param-value>@use-w3c-payment-request@</param-value>
-    </context-param>
+  <context-param>
+    <description>Test Merchant URL</description>
+    <param-name>test_merchant_url</param-name>
+    <param-value>@test-merchant-url@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>W3C PaymentRequest URL</description>
-        <param-name>w3c_payment_request_url</param-name>
-        <param-value>@w3c-payment-request-url@</param-value>
-    </context-param>
+  <context-param>
+    <description>Use W3C PaymentRequest Flag</description>
+    <param-name>use_w3c_payment_request</param-name>
+    <param-value>@use-w3c-payment-request@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Android Application Version Check</description>
-        <param-name>android_webpki_versions</param-name>
-        <param-value>@android-webpki-versions@</param-value>
-    </context-param>
+  <context-param>
+    <description>W3C PaymentRequest URL</description>
+    <param-name>w3c_payment_request_url</param-name>
+    <param-value>@w3c-payment-request-url@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Android Chrome Version Check</description>
-        <param-name>android_chrome_version</param-name>
-        <param-value>@android-chrome-version@</param-value>
-    </context-param>
-    
-    <context-param>
-        <description>In-house Logo</description>
-        <param-name>inhouse_logo</param-name>
-        <param-value>@inhouse-logo@</param-value>
-    </context-param>
+  <context-param>
+    <description>Android Application Version Check</description>
+    <param-name>android_webpki_versions</param-name>
+    <param-value>@android-webpki-versions@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Bank (Application) Base URL</description>
-        <param-name>bank_base_url</param-name>
-        <param-value>@bank-base-url@</param-value>
-    </context-param>
+  <context-param>
+    <description>Android Chrome Version Check</description>
+    <param-name>android_chrome_version</param-name>
+    <param-value>@android-chrome-version@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Key Password</description>
-        <param-name>key_password</param-name>
-        <param-value>@key-password@</param-value>
-    </context-param>
+  <context-param>
+    <description>In-house Logo</description>
+    <param-name>inhouse_logo</param-name>
+    <param-value>@inhouse-logo@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Bank Common Name</description>
-        <param-name>bank_common_name</param-name>
-        <param-value>@bank-common-name@</param-value>
-    </context-param>
-    
-    <context-param>
-        <description>Bank Keygen2 Key Management Key</description>
-        <param-name>bank_kg2kmk</param-name>
-        <param-value>@bank-kg2kmk@</param-value>
-    </context-param>
+  <context-param>
+    <description>Bank (Application) Base URL</description>
+    <param-name>bank_base_url</param-name>
+    <param-value>@bank-base-url@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Bank EE Certificate and Key</description>
-        <param-name>bank_eecert</param-name>
-        <param-value>@bank-eecert@</param-value>
-    </context-param>
+  <context-param>
+    <description>Key Password</description>
+    <param-name>key_password</param-name>
+    <param-value>@key-password@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Bank Encryption Key</description>
-        <param-name>bank_encrypt</param-name>
-        <param-value>@bank-encrypt@</param-value>
-    </context-param>
+  <context-param>
+    <description>Bank Common Name</description>
+    <param-name>bank_common_name</param-name>
+    <param-value>@bank-common-name@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Bank Network Root</description>
-        <param-name>bank_network_root</param-name>
-        <param-value>@bank-network-root@</param-value>
-    </context-param>
+  <context-param>
+    <description>Bank Keygen2 Key Management Key</description>
+    <param-name>bank_kg2kmk</param-name>
+    <param-value>@bank-kg2kmk@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Acquirer Network Root</description>
-        <param-name>acquirer_network_root</param-name>
-        <param-value>@acquirer-network-root@</param-value>
-    </context-param>
+  <context-param>
+    <description>Bank EE Certificate and Key</description>
+    <param-name>bank_eecert</param-name>
+    <param-value>@bank-eecert@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Server TLS Certificate</description>
-        <param-name>server_tls_certificate</param-name>
-        <param-value>@server-tls-certificate@</param-value>
-    </context-param>
+  <context-param>
+    <description>Bank Encryption Key</description>
+    <param-name>bank_encrypt</param-name>
+    <param-value>@bank-encrypt@</param-value>
+  </context-param>
 
-    <context-param>
-        <description>Saturn Extensions (JSON)</description>
-        <param-name>saturn_extensions</param-name>
-        <param-value>@saturn-extensions@</param-value>
-    </context-param>
+  <context-param>
+    <description>Bank Network Root</description>
+    <param-name>bank_network_root</param-name>
+    <param-value>@bank-network-root@</param-value>
+  </context-param>
 
-    <listener>
-        <listener-class>org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService</listener-class>
-    </listener>
+  <context-param>
+    <description>Acquirer Network Root</description>
+    <param-name>acquirer_network_root</param-name>
+    <param-value>@acquirer-network-root@</param-value>
+  </context-param>
 
-    <servlet>
-        <servlet-name>DebugServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.DebugServlet</servlet-class>
-    </servlet>
+  <context-param>
+    <description>Server TLS Certificate</description>
+    <param-name>server_tls_certificate</param-name>
+    <param-value>@server-tls-certificate@</param-value>
+  </context-param>
 
-    <servlet>
-        <servlet-name>HomeServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.HomeServlet</servlet-class>
-    </servlet>
+  <context-param>
+    <description>Saturn Extensions (JSON)</description>
+    <param-name>saturn_extensions</param-name>
+    <param-value>@saturn-extensions@</param-value>
+  </context-param>
 
-    <servlet>
-        <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.LoginServlet</servlet-class>
-    </servlet>
+  <listener>
+    <listener-class>org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService</listener-class>
+  </listener>
 
-    <servlet>
-        <servlet-name>AccountsServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AccountsServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>DebugServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.DebugServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>ProviderAuthorityServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.prv.ProviderAuthorityServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>HomeServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.HomeServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>AuthorizationServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.sat.AuthorizationServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>LoginServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.LoginServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>BalanceRequestServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.sat.BalanceRequestServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>AccountsServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.AccountsServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>KeyProviderInitServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>ProviderAuthorityServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.prv.ProviderAuthorityServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>KeyProviderServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>AuthorizationServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.sat.AuthorizationServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>AuthRedirectServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.AuthRedirectServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>BalanceRequestServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.sat.BalanceRequestServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestAuthorizeServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthorizeServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>KeyProviderInitServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestLoginSuccessServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestLoginSuccessServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>KeyProviderServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestBasicAccountServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestBasicAccountServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>AuthRedirectServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.AuthRedirectServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestExtendedAccountServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestExtendedAccountServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>TestAuthorizeServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestAuthorizeServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestConsentSuccessServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestConsentSuccessServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>TestLoginSuccessServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestLoginSuccessServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestOperationFailedServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestOperationFailedServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>TestBasicAccountServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestBasicAccountServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestPaymentSetupServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestPaymentSetupServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>TestExtendedAccountServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestExtendedAccountServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestPaymentSuccessServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestPaymentSuccessServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>TestConsentSuccessServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestConsentSuccessServlet</servlet-class>
+  </servlet>
 
-    <servlet>
-        <servlet-name>TestNoGuiSuiteServlet</servlet-name>
-        <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestNoGuiSuiteServlet</servlet-class>
-    </servlet>
+  <servlet>
+    <servlet-name>TestOperationFailedServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestOperationFailedServlet</servlet-class>
+  </servlet>
 
-    <servlet-mapping>
-        <servlet-name>DebugServlet</servlet-name>
-        <url-pattern>/debug</url-pattern>
-    </servlet-mapping>
+  <servlet>
+    <servlet-name>TestPaymentSetupServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestPaymentSetupServlet</servlet-class>
+  </servlet>
 
-    <servlet-mapping>
-        <servlet-name>HomeServlet</servlet-name>
-        <url-pattern>/home</url-pattern>
-    </servlet-mapping>
+  <servlet>
+    <servlet-name>TestPaymentSuccessServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestPaymentSuccessServlet</servlet-class>
+  </servlet>
 
-    <servlet-mapping>
-        <servlet-name>LoginServlet</servlet-name>
-        <url-pattern>/login</url-pattern>
-    </servlet-mapping>
+  <servlet>
+    <servlet-name>TestNoGuiSuiteServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.api.TestNoGuiSuiteServlet</servlet-class>
+  </servlet>
 
-    <servlet-mapping>
-        <servlet-name>AccountsServlet</servlet-name>
-        <url-pattern>/accounts</url-pattern>
-    </servlet-mapping>
+  <servlet>
+    <servlet-name>CredentialListingServlet</servlet-name>
+    <servlet-class>org.webpki.webapps.swedbank_psd2_saturn.adm.CredentialListingServlet</servlet-class>
+  </servlet>
 
-    <servlet-mapping>
-        <servlet-name>ProviderAuthorityServlet</servlet-name>
-        <url-pattern>/prv.authority</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>DebugServlet</servlet-name>
+    <url-pattern>/debug</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>AuthorizationServlet</servlet-name>
-        <url-pattern>/sat.service</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>HomeServlet</servlet-name>
+    <url-pattern>/home</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>BalanceRequestServlet</servlet-name>
-        <url-pattern>/sat.balance</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>LoginServlet</servlet-name>
+    <url-pattern>/login</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>KeyProviderInitServlet</servlet-name>
-        <url-pattern>/kg2.init</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>AccountsServlet</servlet-name>
+    <url-pattern>/accounts</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>KeyProviderServlet</servlet-name>
-        <url-pattern>/kg2.runner</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ProviderAuthorityServlet</servlet-name>
+    <url-pattern>/prv.authority</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>AuthRedirectServlet</servlet-name>
-        <url-pattern>/api.authredirect</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>AuthorizationServlet</servlet-name>
+    <url-pattern>/sat.service</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestAuthorizeServlet</servlet-name>
-        <url-pattern>/api.test</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>BalanceRequestServlet</servlet-name>
+    <url-pattern>/sat.balance</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestLoginSuccessServlet</servlet-name>
-        <url-pattern>/api.loginsuccess</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>KeyProviderInitServlet</servlet-name>
+    <url-pattern>/kg2.init</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestBasicAccountServlet</servlet-name>
-        <url-pattern>/api.basicaccount</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>KeyProviderServlet</servlet-name>
+    <url-pattern>/kg2.runner</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestExtendedAccountServlet</servlet-name>
-        <url-pattern>/api.extendedaccount</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>AuthRedirectServlet</servlet-name>
+    <url-pattern>/api.authredirect</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestConsentSuccessServlet</servlet-name>
-        <url-pattern>/api.consentsuccess</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>TestAuthorizeServlet</servlet-name>
+    <url-pattern>/api.test</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestOperationFailedServlet</servlet-name>
-        <url-pattern>/api.operationfailed</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>TestLoginSuccessServlet</servlet-name>
+    <url-pattern>/api.loginsuccess</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestPaymentSetupServlet</servlet-name>
-        <url-pattern>/api.paymentsetup</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>TestBasicAccountServlet</servlet-name>
+    <url-pattern>/api.basicaccount</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestPaymentSuccessServlet</servlet-name>
-        <url-pattern>/api.paymentsuccess</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>TestExtendedAccountServlet</servlet-name>
+    <url-pattern>/api.extendedaccount</url-pattern>
+  </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>TestNoGuiSuiteServlet</servlet-name>
-        <url-pattern>/api.guiless</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>TestConsentSuccessServlet</servlet-name>
+    <url-pattern>/api.consentsuccess</url-pattern>
+  </servlet-mapping>
 
-    <security-constraint>
-      <web-resource-collection>
-        <web-resource-name>The app</web-resource-name>
-        <url-pattern>/*</url-pattern>
-      </web-resource-collection>
-      <user-data-constraint>
-        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-    </security-constraint>
+  <servlet-mapping>
+    <servlet-name>TestOperationFailedServlet</servlet-name>
+    <url-pattern>/api.operationfailed</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>TestPaymentSetupServlet</servlet-name>
+    <url-pattern>/api.paymentsetup</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>TestPaymentSuccessServlet</servlet-name>
+    <url-pattern>/api.paymentsuccess</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>TestNoGuiSuiteServlet</servlet-name>
+    <url-pattern>/api.guiless</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>CredentialListingServlet</servlet-name>
+    <url-pattern>/admin/credentials</url-pattern>
+  </servlet-mapping>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>The app</web-resource-name>
+      <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <user-data-constraint>
+      <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Bank admin manager</web-resource-name>
+      <url-pattern>/admin/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>manager</role-name>
+    </auth-constraint>
+    <user-data-constraint>
+      <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>Bank admin</realm-name>
+  </login-config>
+
+  <security-role>
+    <description>The role that is required to log in as admin</description>
+    <role-name>manager</role-name>
+  </security-role>
 
 </web-app>
