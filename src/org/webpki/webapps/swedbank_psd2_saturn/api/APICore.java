@@ -59,7 +59,7 @@ import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
 // This is the core API class.  It is both API and provider specific
 //
 // Methods starting with "emulated" use Web scraping to achieve what a
-// genuine Dual-mode Open Banking API implementation would do.
+// genuine "Direct Mode" Open Banking API implementation would do.
 
 abstract class APICore extends HttpServlet {
     

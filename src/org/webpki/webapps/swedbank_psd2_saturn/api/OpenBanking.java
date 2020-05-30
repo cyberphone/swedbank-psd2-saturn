@@ -39,7 +39,7 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.saturn.common.Currencies;
 
 // This is the only class a normal application is supposed to use
-// for accessing Dual-mode Open Banking methods.
+// for accessing "Direct Mode" Open Banking methods.
 
 public class OpenBanking implements Serializable {
     
