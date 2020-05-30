@@ -186,7 +186,8 @@ CREATE PROCEDURE AuthenticatePayReqSP (OUT p_Error INT,
       SET p_Error = 4;    -- Non-matching payment method
     ELSE                       
       SET p_Error = 0;    -- Success
-      UPDATE CREDENTIALS SET LastAccess = CURRENT_TIMESTAMP, AccessCount = AccessCount + 1;
+      UPDATE CREDENTIALS SET LastAccess = CURRENT_TIMESTAMP, AccessCount = AccessCount + 1
+          WHERE CREDENTIALS.CredentialId = p_CredentialId;
     END IF;
   END
 //
