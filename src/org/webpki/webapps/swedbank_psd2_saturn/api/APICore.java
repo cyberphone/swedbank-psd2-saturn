@@ -162,6 +162,20 @@ abstract class APICore extends HttpServlet {
         }
     }
     
+    private static void setHeader(HTTPSWrapper wrapper, String key, String value) throws IOException {
+        wrapper.setHeader(key, value);
+        if (LocalIntegrationService.logging) {
+            logger.info(key + ": " + value);
+        }
+    }
+    
+    private static void postData(HTTPSWrapper wrapper, String url, byte[] data) throws IOException {
+        if (LocalIntegrationService.logging) {
+            logger.info("POST to " + url + " data=\n" + new String(data, "utf-8"));
+        }
+        wrapper.makePostRequest(url, data);
+    }
+    
     static OpenBanking getOpenBanking(HttpServletRequest request, 
                                       HttpServletResponse response) 
     throws IOException {
@@ -196,13 +210,13 @@ abstract class APICore extends HttpServlet {
 
     static HTTPSWrapper getHTTPSWrapper() throws IOException {
         HTTPSWrapper wrapper = new HTTPSWrapper();
-        wrapper.setHeader("Date", httpDateFormat.format(ZonedDateTime.now(ZoneOffset.UTC)));
+        setHeader(wrapper, "Date", httpDateFormat.format(ZonedDateTime.now(ZoneOffset.UTC)));
         return wrapper;
     }
     
     static HTTPSWrapper getBrowserEmulator(OpenBanking openBanking) throws IOException {
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_USER_AGENT, openBanking.userAgent);
+        setHeader(wrapper, HTTP_HEADER_USER_AGENT, openBanking.userAgent);
         return wrapper;
     }
     
@@ -339,7 +353,7 @@ abstract class APICore extends HttpServlet {
         }
         HTTPSWrapper wrapper = getHTTPSWrapper();
         synchronized (refreshLock) {
-            wrapper.makePostRequest(OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
+            postData(wrapper, OPEN_BANKING_HOST + "/psd2/token", formData.toByteArray());
             JSONObjectReader jsonResponse = getJsonData(wrapper);
             if (!refresh) {
                 // This is where the described update of OAuth2 authorize would happen.
@@ -355,7 +369,8 @@ abstract class APICore extends HttpServlet {
 
     static void setAuthorization(HTTPSWrapper wrapper,
                                  OpenBanking openBanking) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_AUTHORIZATION, "Bearer " + DataBaseOperations.getAccessToken(openBanking.identityToken));
+        setHeader(wrapper, HTTP_HEADER_AUTHORIZATION, 
+                           "Bearer " + DataBaseOperations.getAccessToken(openBanking.identityToken));
     }
 
     static JSONObjectReader postJson(RESTUrl restUrl,
@@ -365,8 +380,8 @@ abstract class APICore extends HttpServlet {
         if (LocalIntegrationService.logging) {
             logger.info("JSON to be POSTed (" + restUrl + ")\n" + jsonRequestData.toString());
         }
-        wrapper.setHeader(HttpSupport.HTTP_CONTENT_TYPE_HEADER,
-                          BaseProperties.JSON_CONTENT_TYPE);
+        setHeader(wrapper, HttpSupport.HTTP_CONTENT_TYPE_HEADER,
+                           BaseProperties.JSON_CONTENT_TYPE);
         wrapper.makePostRequest(restUrl.toString(), 
                                 jsonRequestData.serializeToBytes(JSONOutputFormats.NORMALIZED));
         return getJsonData(wrapper, expectedResponseCode);
@@ -378,14 +393,14 @@ abstract class APICore extends HttpServlet {
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, openBanking.clientIpAddress);
-        wrapper.setHeader(HTTP_HEADER_PSU_IP_PORT, "8442");
-        wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
-        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
-        wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
-                          LocalIntegrationService.bankBaseUrl + CONSENT_SUCCESS_PATH);
-        wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
-                          LocalIntegrationService.bankBaseUrl + OPERATION_FAILED_PATH);
+        setHeader(wrapper, HTTP_HEADER_PSU_IP_ADDRESS, openBanking.clientIpAddress);
+        setHeader(wrapper, HTTP_HEADER_PSU_IP_PORT, "8442");
+        setHeader(wrapper, HTTP_HEADER_PSU_HTTP_METHOD, "GET");
+        setHeader(wrapper, HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
+        setHeader(wrapper, HTTP_HEADER_TTP_REDIRECT_URI,
+                           LocalIntegrationService.bankBaseUrl + CONSENT_SUCCESS_PATH);
+        setHeader(wrapper, HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
+                           LocalIntegrationService.bankBaseUrl + OPERATION_FAILED_PATH);
         setRequestId(wrapper);
         JSONObjectReader json;
         synchronized (refreshLock) {
@@ -438,11 +453,11 @@ abstract class APICore extends HttpServlet {
     
     static void setConsentId(HTTPSWrapper wrapper,
                              OpenBanking openBanking) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_CONSENT_ID, openBanking.consentId);
+        setHeader(wrapper, HTTP_HEADER_CONSENT_ID, openBanking.consentId);
     }
     
     static void setRequestId(HTTPSWrapper wrapper) throws IOException {
-        wrapper.setHeader(HTTP_HEADER_X_REQUEST_ID, UUID.randomUUID().toString());
+        setHeader(wrapper, HTTP_HEADER_X_REQUEST_ID, UUID.randomUUID().toString());
     }
     
     private static void checkReturnStatus(boolean scaFlag,
@@ -526,7 +541,7 @@ abstract class APICore extends HttpServlet {
         openBanking.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
  
         wrapper = getBrowserEmulator(openBanking);
-        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
+        setHeader(wrapper, "cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makeGetRequest(location);
         webScraper = new WebScraper(wrapper);
@@ -538,7 +553,7 @@ abstract class APICore extends HttpServlet {
         location = restUrl.toString();
 
         wrapper = getBrowserEmulator(openBanking);
-        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
+        setHeader(wrapper, "cookie", openBanking.emulatorModeCookie);
         logger.info(location);
         wrapper.makeGetRequest(location);
         logger.info(String.valueOf(wrapper.getResponseCode()));
@@ -552,9 +567,9 @@ abstract class APICore extends HttpServlet {
             .addScrapedNameValue(webScraper, "bic");
 
         wrapper = getBrowserEmulator(openBanking);
-        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
+        setHeader(wrapper, "cookie", openBanking.emulatorModeCookie);
         logger.info(location);
-        wrapper.makePostRequest(location, formData.toByteArray());
+        postData(wrapper, location, formData.toByteArray());
         location = getLocation(wrapper);
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -597,12 +612,12 @@ abstract class APICore extends HttpServlet {
             .addScrapedNameValue(webScraper, "action");
 
         wrapper = getBrowserEmulator(openBanking);
-        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
+        setHeader(wrapper, "cookie", openBanking.emulatorModeCookie);
         if (LocalIntegrationService.logging) {
             logger.info("Faking user at: " + location +
                         "\nwith data: " + new String(formData.toByteArray(),"utf-8"));
         }
-        wrapper.makePostRequest(location, formData.toByteArray());
+        postData(wrapper, location, formData.toByteArray());
         webScraper = new WebScraper(wrapper);
         if (!webScraper.scanTo("<form ")
                 .findWithin("action").endsWith(CONSENT_SUCCESS_PATH)) {
@@ -641,14 +656,14 @@ abstract class APICore extends HttpServlet {
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
-        wrapper.setHeader(HTTP_HEADER_PSU_IP_ADDRESS, openBanking.clientIpAddress);
-        wrapper.setHeader(HTTP_HEADER_PSU_IP_PORT, "8442");
-        wrapper.setHeader(HTTP_HEADER_PSU_HTTP_METHOD, "GET");
-        wrapper.setHeader(HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
-        wrapper.setHeader(HTTP_HEADER_TTP_REDIRECT_URI,
-                          LocalIntegrationService.bankBaseUrl + PAYMENT_SUCCESS_PATH);
-        wrapper.setHeader(HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
-                          LocalIntegrationService.bankBaseUrl + OPERATION_FAILED_PATH);
+        setHeader(wrapper, HTTP_HEADER_PSU_IP_ADDRESS, openBanking.clientIpAddress);
+        setHeader(wrapper, HTTP_HEADER_PSU_IP_PORT, "8442");
+        setHeader(wrapper, HTTP_HEADER_PSU_HTTP_METHOD, "GET");
+        setHeader(wrapper, HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
+        setHeader(wrapper, HTTP_HEADER_TTP_REDIRECT_URI,
+                           LocalIntegrationService.bankBaseUrl + PAYMENT_SUCCESS_PATH);
+        setHeader(wrapper, HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
+                           LocalIntegrationService.bankBaseUrl + OPERATION_FAILED_PATH);
         setRequestId(wrapper);
         JSONObjectReader json;
         synchronized (refreshLock) {
@@ -699,8 +714,8 @@ abstract class APICore extends HttpServlet {
             .addScrapedNameValue(webScraper, "bic")
             .addScrapedNameValue(webScraper, "action");
         wrapper = getBrowserEmulator(openBanking);
-        wrapper.setHeader("cookie", openBanking.emulatorModeCookie);
-        wrapper.makePostRequest(location, formData.toByteArray());
+        setHeader(wrapper, "cookie", openBanking.emulatorModeCookie);
+        postData(wrapper, location, formData.toByteArray());
         webScraper = new WebScraper(wrapper);
         if (!webScraper.scanTo("<form ")
                 .findWithin("action").endsWith(PAYMENT_SUCCESS_PATH)) {

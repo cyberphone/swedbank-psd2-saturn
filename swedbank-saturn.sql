@@ -48,26 +48,24 @@ USE SWEDBANK_SATURN;
 /*                OAUTH2TOKENS                 */
 /*=============================================*/
 
-CREATE TABLE OAUTH2TOKENS
-  (
+CREATE TABLE OAUTH2TOKENS (
     IdentityToken   VARCHAR(50) NOT NULL UNIQUE,                        -- Unique User ID
 
-    AccessToken     CHAR(36)    NOT NULL,                               -- The one we normally use
+    AccessToken     CHAR(36)    NOT NULL UNIQUE,                        -- The token we normally use
     
-    RefreshToken    CHAR(36)    NOT NULL,                               -- Refreshing
+    RefreshToken    CHAR(36)    NOT NULL UNIQUE,                        -- For refreshing AccessToken
     
     Expires         INT         NOT NULL,                               -- In UNIX "epoch" style
                                                                         
     PRIMARY KEY (IdentityToken)
-  );
+);
 
 
 /*=============================================*/
 /*                CREDENTIALS                  */
 /*=============================================*/
 
-CREATE TABLE CREDENTIALS
-  (
+CREATE TABLE CREDENTIALS (
 
 -- Note: a Credential holds an external representation of an Account ID
 -- like an IBAN or Card Number + and an Authorization key
@@ -100,7 +98,7 @@ CREATE TABLE CREDENTIALS
 
     PRIMARY KEY (CredentialId),
     FOREIGN KEY (IdentityToken) REFERENCES OAUTH2TOKENS(IdentityToken) ON DELETE CASCADE
-  ) AUTO_INCREMENT=200500123;                                           -- Brag about "users" :-)
+) AUTO_INCREMENT=200500123;                                           -- Brag about "users" :-)
 
 
 DELIMITER //
