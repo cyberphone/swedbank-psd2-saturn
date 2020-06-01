@@ -60,11 +60,11 @@ public class CredentialListingServlet extends HttpServlet {
                         "<title>Registered Credentials</title>" +
                         AuthorityBaseServlet.REST_ELEMENT +
                         "<body><div class='header' style='margin-left:auto;margin-right:auto'>" +
-                        "User List</div>" +
+                        "Credential List</div>" +
                         "<div style='padding-bottom:10pt'>This " +
                         AuthorityBaseServlet.SATURN_LINK +
                         " service shows the last " + MAX_ROWS +
-                        " users in the payers' bank." +
+                        " registered credentials." +
                         "</div><table class='tftable'><tr>" +
                         "<th>Credential ID</th>" +
                         "<th>Account ID</th>" +
