@@ -98,7 +98,7 @@ CREATE TABLE CREDENTIALS (
 
     PRIMARY KEY (CredentialId),
     FOREIGN KEY (IdentityToken) REFERENCES OAUTH2TOKENS(IdentityToken) ON DELETE CASCADE
-) AUTO_INCREMENT=200500123;                                           -- Brag about "users" :-)
+) AUTO_INCREMENT=200500123;                                             -- Brag about "users" :-)
 
 
 DELIMITER //
