@@ -2,7 +2,7 @@
 
 Proof of concept system using Swedbank's Open Banking "sandbox".
 
-Core concept: https://cyberphone.github.io/openbankingwallet/
+Architecture: ![Saturn is great](https://cyberphone.github.io/doc/saturn/saturn-openbanking.png)
 
 Note: some of the code is not entirely "kosher" because the system uses an *unmodified* Open Banking API.
 
