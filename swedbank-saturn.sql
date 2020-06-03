@@ -36,11 +36,11 @@ GRANT SELECT ON mysql.proc TO 'swedbank-saturn'@localhost;
 --
 -- Create tables and stored procedures
 --
--- #############################################################
--- # This is the Payer side of a PoC database for "Dual Mode"  #
--- # Open Banking APIs.  The database holds information about  #
--- # Credentials and OAuth tokens                              #
--- #############################################################
+-- ###############################################################
+-- # This is the Payer side of a PoC database for "Direct Mode"  #
+-- # Open Banking APIs.  The database holds information about    #
+-- # Credentials and OAuth2 tokens                               #
+-- ###############################################################
 
 USE SWEDBANK_SATURN;
 
