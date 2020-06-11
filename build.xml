@@ -34,8 +34,6 @@
   <property name="cards.dir" location="card-images"/>
   <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/swedbank_psd2_saturn"/>
 
-  <property name="bouncycastle" value="true"/>
-  
   <property name="application" value="${service_path}.war"/>
 
   <property name="saturn-extensions" value="saturn-extensions.json"/>
@@ -44,12 +42,6 @@
   <property name="webpki.lib.dir" location="${openkeystore.dir}/library/dist"/>
   <property name="reference.lib.dir" location="${openkeystore.dir}/resources/third-party-jars"/>
   
-  <property name="javaversion" value="1.8"/>
-  <property name="debug" value="on"/>
-
-  <property environment="env"/>
-  <property name="catalina.home" value="${env.CATALINA_HOME}"/>
-
   <!-- Ant command line overridables -->
   <property name="logging" value="false"/>
   <property name="biometricsupport" value="true"/>
@@ -57,24 +49,37 @@
     <equals arg1="${inhouse_service_host}" arg2="${service_host}"/>
   </condition>    
 
+  <property name="debug" value="on"/>
+
+  <property name="javaversion" value="${ant.java.version}"/>
+  <condition property="tested.version" else="false">
+    <equals arg1="11" arg2="${javaversion}"/>
+  </condition>
+
+  <target name="_jdk11" unless="${tested.version}">
+    <echo message="&#10;
+***************************************************************&#10;
+    WARNING - This package has only been tested with Java 11!&#10;
+***************************************************************&#10;&#10;"/>
+  </target>
+
+  <property environment="env"/>
+  <condition property="catalina.home" value="${env.CATALINA_HOME}">
+    <isset property="env.CATALINA_HOME"/>
+  </condition>
+    
   <target name="help">
      <echo message="build tomcat createkeys"/>
   </target>
 
-  <target name="_init" unless="app_path">
-    <!-- Set up where application should reside --> 
-    <condition property="tomcat_app_root_set">
-      <isset property="env.CATALINA_HOME"/>
-    </condition>
-    <fail message="CATALINA_HOME must be set to environment!" unless="tomcat_app_root_set"/>
-  </target>
-
-  <target name="tomcat" depends="_init">
+  <target name="tomcat">
+    <fail message="CATALINA_HOME must be set to environment!" unless="catalina.home"/>
     <antcall target="build"/>
-    <copy file="${dist.dir}/${application}" todir="${env.CATALINA_HOME}/webapps" overwrite="true" preservelastmodified="true"/>
+    <copy file="${dist.dir}/${application}" todir="${catalina.home}/webapps" overwrite="true" preservelastmodified="true"/>
   </target>
 
   <target name="build">
+    <antcall target="_jdk11"/>
     <property name="zip.webpki.lib.dir" value="${webpki.lib.dir}"/>
     <basename property="bank-network-root.base" file="${bank-network-root}"/>
     <basename property="acquirer-network-root.base" file="${acquirer-network-root}"/>
@@ -89,8 +94,6 @@
        includes="**/*.java, **/*.css, **/*.svg, **/*.xml, **/*.sql, **/*.json, *.properties"/>
     <copy file="web.xml" todir="${temp.dir}"/>
     <javac debug="${debug}"
-           source="${javaversion}"
-           target="${javaversion}"
            srcdir="${src.dir}:${test.dir}:${saturn.dir}/resources/common:${saturn.dir}/account-types/src"
            destdir="${temp.dir}"
            includeAntRuntime="false">
