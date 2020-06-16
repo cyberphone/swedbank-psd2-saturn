@@ -39,8 +39,10 @@
   <property name="saturn-extensions" value="saturn-extensions.json"/>
   
   <property name="hashalg" value=""/>
-  <property name="webpki.lib.dir" location="${openkeystore.dir}/library/dist"/>
-  <property name="zip.webpki.lib.dir" value="${webpki.lib.dir}"/>
+  <property name="webpki.lib.dir" value="${openkeystore.dir}/library/dist"/>
+  <condition property="zip.webpki.lib.dir" value="${webpki.lib.dir}" else="empty.lib">
+    <isset property="include.webpki.in.war"/>
+  </condition>
   <property name="reference.lib.dir" location="${openkeystore.dir}/resources/third-party-jars"/>
   
   <!-- Ant command line overridables -->
