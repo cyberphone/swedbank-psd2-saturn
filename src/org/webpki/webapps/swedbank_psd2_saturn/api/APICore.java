@@ -65,6 +65,9 @@ abstract class APICore extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
 
+    static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
+    static final String API_VERSION       = "v3";
+
     static final String OPEN_BANKING_SESSION_ATTR        = "j7543sLk.6";  // Unique?
     
     static final String DEFAULT_USER                     = "20010101-1234";  // IdentityToken
@@ -107,8 +110,6 @@ abstract class APICore extends HttpServlet {
     
     static DateTimeFormatter httpDateFormat = 
            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O", Locale.US);
-
-    static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
 
     static final SimpleDateFormat dateOnly = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -389,7 +390,8 @@ abstract class APICore extends HttpServlet {
 
     static String getConsent(String[] accountIds, 
                              OpenBanking openBanking) throws IOException {
-        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/consents")
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
+                                      "/sandbox/" + API_VERSION + "/consents")
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();
@@ -437,7 +439,8 @@ abstract class APICore extends HttpServlet {
 
     static Accounts getAccountData(boolean withBalance,
                                    OpenBanking openBanking) throws IOException {
-        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/sandbox/v2/accounts")
+        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
+                                      "/sandbox/" + API_VERSION + "/accounts")
             .setBic()
             .addParameter("withBalance", String.valueOf(withBalance))
             .setAppId();
@@ -651,8 +654,9 @@ abstract class APICore extends HttpServlet {
     
     static String initiatePayment(OpenBanking openBanking, 
                                   JSONObjectWriter paymentData) throws IOException {
-        RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + 
-                                      "/sandbox/v2/payments/se-domestic-credit-transfers")
+        RESTUrl restUrl = 
+                new RESTUrl(OPEN_BANKING_HOST + 
+                            "/sandbox/" + API_VERSION + "/payments/se-domestic-credit-transfers")
             .setBic()
             .setAppId();
         HTTPSWrapper wrapper = getHTTPSWrapper();

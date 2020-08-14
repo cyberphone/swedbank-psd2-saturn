@@ -490,7 +490,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             String completedCardImage = (String) session.getAttribute(CARD_IMAGE_ATTR);
             session.invalidate();
             html.append("<div class='header'>Successful Enrollment!</div>")
-                .append(KeyProviderInitServlet.cardImageConverter(completedCardImage))
+                .append(CardImageData.viewableFormat(completedCardImage, "80%"))
                 .append("<div class='centerbox'>" +
                           "<div class='description' style='padding-top:0.5em'>" +
                            "You may now pay with the card at a merchant like:<br>" +
