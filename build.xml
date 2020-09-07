@@ -119,7 +119,7 @@
       <replacefilter token="@server-tls-certificate@" value="${kg2_tls_cert_file}"/>
       <replacefilter token="@test-merchant-url@" value="${test_merchant_url}"/>
       <replacefilter token="@use-w3c-payment-request@" value="${@w3c.paymentrequest}"/>
-      <replacefilter token="@w3c-payment-request-url@" value="${@w3c.manifesthost}/${@w3c.manifestpath}/method"/>
+      <replacefilter token="@w3c-payment-request-url@" value="${@w3c.manifesturl}"/>
       <replacefilter token="@bank-base-url@" value="${bank_base_url}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
       <replacefilter token="@biometric-support@" value="${biometricsupport}"/>
