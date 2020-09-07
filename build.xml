@@ -136,6 +136,9 @@
       <classes dir="${temp.dir}">
          <exclude name="web.xml"/>
       </classes>
+      <metainf dir=".">
+        <include name="context.xml"/>
+      </metainf>
       <lib dir="${zip.webpki.lib.dir}">
          <include name="webpki.org-libext*.jar"/>
          <include name="webpki.org-webutil*.jar"/>
