@@ -4,6 +4,6 @@
     <Resource name="jdbc/SWEDBANK_SATURN" auth="Container" type="javax.sql.DataSource"
               maxTotal="100" maxIdle="30" maxWaitMillis="10000"
               username="swedbank-saturn" password="foo123" driverClassName="com.mysql.cj.jdbc.Driver"
-              url="jdbc:mysql://localhost:3306/SWEDBANK_SATURN?useUnicode=true&amp;characterEncoding=utf8"/>
+              url="jdbc:mysql://localhost:3306/SWEDBANK_SATURN?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=CET"/>
 
 </Context>
