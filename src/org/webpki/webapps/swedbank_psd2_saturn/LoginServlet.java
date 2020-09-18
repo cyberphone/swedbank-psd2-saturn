@@ -37,11 +37,12 @@ public class LoginServlet extends HttpServlet {
     throws IOException, ServletException {
         ////////////////////////////////////////////////////////////////////////////////
         // Before you can do anything you must be authenticated                       //
-        // Note: this servlet is called by the browser from LIS                       //
-        // The code below creates a session between LIS and the Open Banking service  //
-        // for a specific user.  Note: Swedbank's Sandbox only supports a single user //
-        // but we do this anyway to obtain consistency between implementations and be //
-        // closer to a production version using an enhanced Open Banking API          //
+        // Note: this servlet is called by the browser through the local service.     //
+        // The code below creates a session between the local service and the         //
+        // Open Banking service for a specific user.  Note: Swedbank's Sandbox only   //
+        // supports a single user but we do this anyway to obtain consistency between //
+        // implementations and be closer to a production version using an enhanced    //
+        // Open Banking API                                                           //
         ////////////////////////////////////////////////////////////////////////////////
         
         ////////////////////////////////////////////////////////////////////////////////

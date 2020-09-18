@@ -73,7 +73,7 @@ import org.webpki.webutil.InitPropertyReader;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
 
-// This is the starting point for LIS (Local Integration Service)
+// This is the starting point for the Direct Mode service
 
 public class SaturnDirectModeService extends InitPropertyReader implements ServletContextListener {
 

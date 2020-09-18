@@ -518,7 +518,7 @@ abstract class APICore extends HttpServlet {
     
     static void emulatedAuthorize(OpenBanking openBanking) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////
-        // Initial LIS to API session creation.                                       //
+        // Initial Direct Mode to API session creation.                                       //
         ////////////////////////////////////////////////////////////////////////////////
         String location = coreInit();
 

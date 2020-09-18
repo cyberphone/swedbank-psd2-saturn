@@ -100,7 +100,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
-    		throws IOException, ServletException {
+            throws IOException, ServletException {
         HttpSession session = request.getSession(false);
         session.setAttribute(USERNAME_SESSION_ATTR, DEFAULT_USER_NAME_JAVA);
         session.setAttribute(CARDTYPE_SESSION_ATTR, DEFAULT_CARDTYPE_JAVA);

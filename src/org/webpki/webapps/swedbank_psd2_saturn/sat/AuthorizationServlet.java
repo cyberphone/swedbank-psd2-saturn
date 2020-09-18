@@ -124,7 +124,7 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         // Verify that the authority objects were signed by a genuine payment partner
         providerAuthority.getSignatureDecoder().verify(cardPayment ? 
                               SaturnDirectModeService.acquirerNetworkRoot :
-                            	  SaturnDirectModeService.bankNetworkRoot);
+                                  SaturnDirectModeService.bankNetworkRoot);
 
         // Verify Payee signature key.  It may be one generation back as well
         PayeeCoreProperties payeeCoreProperties = payeeAuthority.getPayeeCoreProperties();
