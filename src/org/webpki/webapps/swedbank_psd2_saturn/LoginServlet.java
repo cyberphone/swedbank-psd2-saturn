@@ -59,7 +59,7 @@ public class LoginServlet extends HttpServlet {
             int i = userAgent.indexOf(" Chrome/");
             if (i > 0) {
                 String chromeVersion = userAgent.substring(i + 8, userAgent.indexOf('.', i));
-                if (Integer.parseInt(chromeVersion) >= LocalIntegrationService.androidChromeVersion) {
+                if (Integer.parseInt(chromeVersion) >= SaturnDirectModeService.androidChromeVersion) {
                     notOk = false;
                 }
             }
@@ -70,7 +70,7 @@ public class LoginServlet extends HttpServlet {
                 null,
                 "<div class='label'>This proof-of-concept system only supports " +
                   "Android and using the \"Chrome\" browser (min version: " + 
-                  LocalIntegrationService.androidChromeVersion + ")" +
+                  SaturnDirectModeService.androidChromeVersion + ")" +
                 "</div>");
             return;
         }

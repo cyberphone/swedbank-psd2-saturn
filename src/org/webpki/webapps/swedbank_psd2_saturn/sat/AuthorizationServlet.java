@@ -31,21 +31,21 @@ import org.webpki.json.JSONObjectWriter;
 
 import org.webpki.saturn.common.PayeeCoreProperties;
 import org.webpki.saturn.common.UrlHolder;
-import org.webpki.saturn.common.AuthorizationRequest;
-import org.webpki.saturn.common.AuthorizationResponse;
+import org.webpki.saturn.common.AuthorizationRequestDecoder;
+import org.webpki.saturn.common.AuthorizationResponseEncoder;
 import org.webpki.saturn.common.NonDirectPaymentDecoder;
 import org.webpki.saturn.common.UserChallengeItem;
-import org.webpki.saturn.common.PayeeAuthority;
+import org.webpki.saturn.common.PayeeAuthorityDecoder;
 import org.webpki.saturn.common.AccountDataDecoder;
 import org.webpki.saturn.common.AccountDataEncoder;
 import org.webpki.saturn.common.AuthorizationDataDecoder;
 import org.webpki.saturn.common.PaymentRequestDecoder;
-import org.webpki.saturn.common.ProviderAuthority;
+import org.webpki.saturn.common.ProviderAuthorityDecoder;
 import org.webpki.saturn.common.UserResponseItem;
 
 import org.webpki.util.ISODateTime;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
@@ -65,16 +65,16 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                                  HttpServletRequest httpServletRequest) throws Exception {
  
         // Decode authorization request message
-        AuthorizationRequest authorizationRequest = new AuthorizationRequest(providerRequest);
+        AuthorizationRequestDecoder authorizationRequest = new AuthorizationRequestDecoder(providerRequest);
 
         // Check that we actually were the intended party
-        if (!LocalIntegrationService.serviceUrl.equals(authorizationRequest.getRecipientUrl())) {
+        if (!SaturnDirectModeService.serviceUrl.equals(authorizationRequest.getRecipientUrl())) {
             throw new IOException("Unexpected \"" + RECIPIENT_URL_JSON + "\" : " + authorizationRequest.getRecipientUrl());
         }
 
         // Verify that we understand the backend payment method
         AccountDataDecoder payeeReceiveAccount =
-            authorizationRequest.getPayeeReceiveAccount(LocalIntegrationService.knownPayeeMethods);
+            authorizationRequest.getPayeeReceiveAccount(SaturnDirectModeService.knownPayeeMethods);
 
         // Fetch the payment request object
         PaymentRequestDecoder paymentRequest = authorizationRequest.getPaymentRequest();
@@ -89,21 +89,21 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         boolean cardPayment = authorizationRequest.getPaymentMethod().isCardPayment();
         
         // Get the providers. Note that caching could play tricks on you!
-        PayeeAuthority payeeAuthority;
-        ProviderAuthority providerAuthority;
+        PayeeAuthorityDecoder payeeAuthority;
+        ProviderAuthorityDecoder providerAuthority;
         boolean nonCached = false;
         while (true) {
             // Lookup of Payee
             urlHolder.setNonCachedMode(nonCached);
             payeeAuthority = 
-                LocalIntegrationService.externalCalls
+                SaturnDirectModeService.externalCalls
                     .getPayeeAuthority(urlHolder,
                                        authorizationRequest.getPayeeAuthorityUrl());
 
             // Lookup of Payee's Provider
             urlHolder.setNonCachedMode(nonCached);
             providerAuthority =
-                LocalIntegrationService.externalCalls
+                SaturnDirectModeService.externalCalls
                     .getProviderAuthority(urlHolder,
                                           payeeAuthority.getProviderAuthorityUrl());
 
@@ -123,7 +123,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
 
         // Verify that the authority objects were signed by a genuine payment partner
         providerAuthority.getSignatureDecoder().verify(cardPayment ? 
-                              LocalIntegrationService.acquirerNetworkRoot : LocalIntegrationService.bankNetworkRoot);
+                              SaturnDirectModeService.acquirerNetworkRoot :
+                            	  SaturnDirectModeService.bankNetworkRoot);
 
         // Verify Payee signature key.  It may be one generation back as well
         PayeeCoreProperties payeeCoreProperties = payeeAuthority.getPayeeCoreProperties();
@@ -135,8 +136,8 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
         // Decrypt and validate the encrypted Payer authorization
         AuthorizationDataDecoder authorizationData = 
                 authorizationRequest.getDecryptedAuthorizationData(
-                        LocalIntegrationService.decryptionKeys,
-                        LocalIntegrationService.AUTHORIZATION_SIGNATURE_POLICY);
+                        SaturnDirectModeService.decryptionKeys,
+                        SaturnDirectModeService.AUTHORIZATION_SIGNATURE_POLICY);
 
         // Verify that the there is a matching Payer account
         //
@@ -252,12 +253,13 @@ public class AuthorizationServlet extends ProcessingBaseServlet {
                     ", Method Specific=" + payeeReceiveAccount.logLine());
 
         // We did it!
-        return AuthorizationResponse.encode(authorizationRequest,
-                                            providerAuthority.getEncryptionParameters()[0],
-                                            accountData,
-                                            accountData.getPartialAccountIdentifier(accountId),
-                                            transactionId,
-                                            optionalLogData,
-                                            LocalIntegrationService.bankKey);
+        return AuthorizationResponseEncoder
+                .encode(authorizationRequest,
+                        providerAuthority.getEncryptionParameters()[0],
+                        accountData,
+                        accountData.getPartialAccountIdentifier(accountId),
+                        transactionId,
+                        optionalLogData,
+                        SaturnDirectModeService.bankKey);
     }
 }

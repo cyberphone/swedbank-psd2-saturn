@@ -132,7 +132,7 @@
   </context-param>
 
   <listener>
-    <listener-class>org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService</listener-class>
+    <listener-class>org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService</listener-class>
   </listener>
 
   <servlet>

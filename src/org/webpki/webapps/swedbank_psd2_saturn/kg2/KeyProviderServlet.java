@@ -89,7 +89,7 @@ import org.webpki.json.JSONOutputFormats;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.Account;
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
@@ -111,7 +111,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Server errors are returned as HTTP redirects taking the client out of its KeyGen2 mode
         ////////////////////////////////////////////////////////////////////////////////////////////
-        response.sendRedirect(LocalIntegrationService.keygen2RunUrl + 
+        response.sendRedirect(SaturnDirectModeService.keygen2RunUrl + 
                               "?" +
                               KeyProviderInitServlet.ERROR_TAG +
                               "=" +
@@ -120,7 +120,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
     
     void keygen2JSONBody(HttpServletResponse response, JSONEncoder object) throws IOException {
         byte[] jsonData = object.serializeJSONDocument(JSONOutputFormats.PRETTY_PRINT);
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("Sent message\n" + new String(jsonData, "UTF-8"));
         }
         response.setContentType(JSON_CONTENT_TYPE);
@@ -162,7 +162,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             if (init) {
                 InvocationRequestEncoder invocationRequest = new InvocationRequestEncoder(keygen2State);
                 keygen2State.addImageAttributesQuery(KeyGen2URIs.LOGOTYPES.LIST);
-                if (LocalIntegrationService.biometricSupport) {
+                if (SaturnDirectModeService.biometricSupport) {
                     keygen2State.addFeatureQuery(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT);
                 }
                 keygen2JSONBody(response, invocationRequest);
@@ -176,7 +176,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             if (!request.getContentType().equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Wrong \"Content-Type\": " + request.getContentType());
             }
-            if (LocalIntegrationService.logging) {
+            if (SaturnDirectModeService.logging) {
                 logger.info("Received message:\n" + new String(jsonData, "UTF-8"));
             }
             JSONDecoder jsonObject = ServerState.parseReceivedMessage(jsonData);
@@ -192,7 +192,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                                                        (short)1000,
                                                                        (short)50);
                     provisioningInitRequest.setKeyManagementKey(
-                            LocalIntegrationService.keyManagementKey.getPublicKey());
+                            SaturnDirectModeService.keyManagementKey.getPublicKey());
                     keygen2JSONBody(response, provisioningInitRequest);
                     return;
 
@@ -211,7 +211,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     CredentialDiscoveryRequestEncoder credentialDiscoveryRequest =
                             new CredentialDiscoveryRequestEncoder(keygen2State);
                     credentialDiscoveryRequest.addLookupDescriptor(
-                            LocalIntegrationService.keyManagementKey.getPublicKey());
+                            SaturnDirectModeService.keyManagementKey.getPublicKey());
                     keygen2JSONBody(response, credentialDiscoveryRequest);
                     return;
 
@@ -247,7 +247,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                     matchingCredential.getClientSessionId(), 
                                     matchingCredential.getServerSessionId(),
                                     endEntityCertificate,
-                                    LocalIntegrationService.keyManagementKey.getPublicKey());
+                                    SaturnDirectModeService.keyManagementKey.getPublicKey());
                           logger.info("Deleting key=" + certificateData(endEntityCertificate));
                         }
                     }
@@ -273,7 +273,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                                    new KeySpecifier(KeyAlgorithms.NIST_P_256),
                                                    standardPinPolicy);                           
                     authKey.addEndorsedAlgorithm(AsymSignatureAlgorithms.ECDSA_SHA256);
-                    authKey.setFriendlyName(LocalIntegrationService.bankCommonName);
+                    authKey.setFriendlyName(SaturnDirectModeService.bankCommonName);
                     if (keygen2State.isFeatureSupported(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT)) {
                         authKey.setBiometricProtection(BiometricProtection.ALTERNATIVE);
                     }
@@ -282,7 +282,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     keygen2State.createKey(AppUsage.SIGNATURE,
                                            new KeySpecifier(KeyAlgorithms.NIST_P_256),
                                            null)
-                        .setFriendlyName(LocalIntegrationService.bankCommonName + " balance key");
+                        .setFriendlyName(SaturnDirectModeService.bankCommonName + " balance key");
  
                     keygen2JSONBody(response, new KeyCreationRequestEncoder(keygen2State));
                     return;
@@ -331,19 +331,19 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                             credentialId,
                             accountId,
                             account.getCurrency(),
-                            LocalIntegrationService.providerAuthorityUrl, 
+                            SaturnDirectModeService.providerAuthorityUrl, 
                             HashAlgorithms.SHA256,
                             AsymSignatureAlgorithms.ECDSA_SHA256, 
-                            LocalIntegrationService.dataEncryptionAlgorithm, 
-                            LocalIntegrationService.currentDecryptionKey.getKeyEncryptionAlgorithm(), 
-                            LocalIntegrationService.currentDecryptionKey.getPublicKey(),
+                            SaturnDirectModeService.dataEncryptionAlgorithm, 
+                            SaturnDirectModeService.currentDecryptionKey.getKeyEncryptionAlgorithm(), 
+                            SaturnDirectModeService.currentDecryptionKey.getPublicKey(),
                             null,
                             HashAlgorithms.SHA256.digest(balanceKey.getPublicKey().getEncoded()))
                                 .serializeToBytes(JSONOutputFormats.NORMALIZED));
 
                     // 6. Add personalized card image
                     String cardImage = new String(
-                            LocalIntegrationService.cardImages.get(
+                            SaturnDirectModeService.cardImages.get(
                                     (String)session.getAttribute(
                                             KeyProviderInitServlet.CARDTYPE_SESSION_ATTR)));
                     String cardUserName = userName;
@@ -390,7 +390,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     // We are done, return an HTTP redirect taking 
                     // the client out of its KeyGen2 mode
                     ////////////////////////////////////////////////////////////////////////
-                    response.sendRedirect(LocalIntegrationService.keygen2RunUrl);
+                    response.sendRedirect(SaturnDirectModeService.keygen2RunUrl);
                     return;
 
                 default:
@@ -430,7 +430,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
 
                 @Override
                 public PublicKey getPublicKey() throws IOException {
-                    return LocalIntegrationService.carrierCaKeyPair.getPublic();
+                    return SaturnDirectModeService.carrierCaKeyPair.getPublic();
                 }
 
                 @Override
@@ -439,7 +439,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     try {
                         return new SignatureWrapper(
                                 algorithm, 
-                                LocalIntegrationService.carrierCaKeyPair.getPrivate())
+                                SaturnDirectModeService.carrierCaKeyPair.getPrivate())
                             .setEcdsaSignatureEncoding(true)
                             .update(data)
                             .sign();
@@ -495,9 +495,9 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                           "<div class='description' style='padding-top:0.5em'>" +
                            "You may now pay with the card at a merchant like:<br>" +
                            "<a href='")
-                .append(LocalIntegrationService.testMerchantUrl)
+                .append(SaturnDirectModeService.testMerchantUrl)
                 .append("'>")
-                .append(LocalIntegrationService.testMerchantUrl)
+                .append(SaturnDirectModeService.testMerchantUrl)
                 .append("</a></div>");
         }
         HTML.standardPage(response,

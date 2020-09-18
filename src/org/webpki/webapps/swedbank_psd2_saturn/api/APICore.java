@@ -54,7 +54,7 @@ import org.webpki.saturn.common.Currencies;
 import org.webpki.saturn.common.HttpSupport;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 // This is the core API class.  It is both API and provider specific
 //
@@ -125,7 +125,7 @@ abstract class APICore extends HttpServlet {
                 throw new IOException("Unexpected content type: " + wrapper.getContentType());
             }
             html = wrapper.getDataUTF8();
-            if (LocalIntegrationService.logging) {
+            if (SaturnDirectModeService.logging) {
                 logger.info("Scraping html:\n" + html);
             }
         }
@@ -165,13 +165,13 @@ abstract class APICore extends HttpServlet {
     
     private static void setHeader(HTTPSWrapper wrapper, String key, String value) throws IOException {
         wrapper.setHeader(key, value);
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info(key + ": " + value);
         }
     }
     
     private static void postData(HTTPSWrapper wrapper, String url, byte[] data) throws IOException {
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("POST to " + url + " data=\n" + new String(data, "utf-8"));
         }
         wrapper.makePostRequest(url, data);
@@ -237,7 +237,7 @@ abstract class APICore extends HttpServlet {
         if (location == null) {
             throw new IOException("\"Location\" is missing");
         }
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("Location: " + location);
         }
         return location;
@@ -251,7 +251,7 @@ abstract class APICore extends HttpServlet {
             throw new IOException("Unexpected contentType: " + contentType);
         }
         JSONObjectReader json = JSONParser.parse(wrapper.getData());
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("Read JSON:\n" + json.toString());
         }
         return json;
@@ -284,7 +284,7 @@ abstract class APICore extends HttpServlet {
         }
 
         RESTUrl setAppId() throws IOException {
-            return addParameter("app-id", LocalIntegrationService.oauth2ClientId);
+            return addParameter("app-id", SaturnDirectModeService.oauth2ClientId);
         }
 
         RESTUrl addScrapedNameValue(WebScraper webScraper, String name) throws IOException {
@@ -341,15 +341,15 @@ abstract class APICore extends HttpServlet {
                                boolean refresh,
                                String codeOrRefreshToken) throws IOException {
         FormData formData = new FormData()
-            .addElement("client_id", LocalIntegrationService.oauth2ClientId)
-            .addElement("client_secret", LocalIntegrationService.oauth2ClientSecret);
+            .addElement("client_id", SaturnDirectModeService.oauth2ClientId)
+            .addElement("client_secret", SaturnDirectModeService.oauth2ClientSecret);
         if (refresh) {
             formData.addElement("grant_type", "refresh_token")
                     .addElement("refresh_token", codeOrRefreshToken);
         } else {
             formData.addElement("grant_type", "authorization_code")
                     .addElement("code", codeOrRefreshToken)
-                    .addElement("redirect_uri", LocalIntegrationService.bankBaseUrl + 
+                    .addElement("redirect_uri", SaturnDirectModeService.bankBaseUrl + 
                                         OAUTH2_REDIRECT_PATH);
         }
         HTTPSWrapper wrapper = getHTTPSWrapper();
@@ -378,7 +378,7 @@ abstract class APICore extends HttpServlet {
                                      HTTPSWrapper wrapper,
                                      JSONObjectWriter jsonRequestData,
                                      int expectedResponseCode) throws IOException {
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("JSON to be POSTed (" + restUrl + ")\n" + jsonRequestData.toString());
         }
         setHeader(wrapper, HttpSupport.HTTP_CONTENT_TYPE_HEADER,
@@ -400,9 +400,9 @@ abstract class APICore extends HttpServlet {
         setHeader(wrapper, HTTP_HEADER_PSU_HTTP_METHOD, "GET");
         setHeader(wrapper, HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
         setHeader(wrapper, HTTP_HEADER_TTP_REDIRECT_URI,
-                           LocalIntegrationService.bankBaseUrl + CONSENT_SUCCESS_PATH);
+                           SaturnDirectModeService.bankBaseUrl + CONSENT_SUCCESS_PATH);
         setHeader(wrapper, HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
-                           LocalIntegrationService.bankBaseUrl + OPERATION_FAILED_PATH);
+                           SaturnDirectModeService.bankBaseUrl + OPERATION_FAILED_PATH);
         setRequestId(wrapper);
         JSONObjectReader json;
         synchronized (refreshLock) {
@@ -430,7 +430,7 @@ abstract class APICore extends HttpServlet {
 
     static JSONObjectReader performGet(HTTPSWrapper wrapper, 
                                        RESTUrl restUrl) throws IOException {
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("About to GET: " + restUrl.toString());
         }
         wrapper.makeGetRequest(restUrl.toString());
@@ -501,14 +501,14 @@ abstract class APICore extends HttpServlet {
     static String coreInit() throws IOException {
         RESTUrl restUrl = new RESTUrl(OPEN_BANKING_HOST + "/psd2/authorize")
             .setBic()
-            .addParameter("client_id", LocalIntegrationService.oauth2ClientId)
+            .addParameter("client_id", SaturnDirectModeService.oauth2ClientId)
             .addParameter("response_type", "code")
             .addParameter("scope", "PSD2sandbox")
             .addParameter("redirect_uri",
-                          LocalIntegrationService.bankBaseUrl + OAUTH2_REDIRECT_PATH);
+                          SaturnDirectModeService.bankBaseUrl + OAUTH2_REDIRECT_PATH);
         HTTPSWrapper wrapper = getHTTPSWrapper();
         setRequestId(wrapper);
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("About to GET: " + restUrl.toString());
         }
         wrapper.makeGetRequest(restUrl.toString());
@@ -583,7 +583,7 @@ abstract class APICore extends HttpServlet {
             throw new IOException("Didn't find 'code' object");
         }
         String code = location.substring(i + 6);
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("code=" + code);
         }
 
@@ -616,7 +616,7 @@ abstract class APICore extends HttpServlet {
 
         wrapper = getBrowserEmulator(openBanking);
         setHeader(wrapper, "cookie", openBanking.emulatorModeCookie);
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("Faking user at: " + location +
                         "\nwith data: " + new String(formData.toByteArray(),"utf-8"));
         }
@@ -665,9 +665,9 @@ abstract class APICore extends HttpServlet {
         setHeader(wrapper, HTTP_HEADER_PSU_HTTP_METHOD, "GET");
         setHeader(wrapper, HTTP_HEADER_PSU_USER_AGENT, openBanking.userAgent);
         setHeader(wrapper, HTTP_HEADER_TTP_REDIRECT_URI,
-                           LocalIntegrationService.bankBaseUrl + PAYMENT_SUCCESS_PATH);
+                           SaturnDirectModeService.bankBaseUrl + PAYMENT_SUCCESS_PATH);
         setHeader(wrapper, HTTP_HEADER_TPP_NOK_REDIRECT_URI, 
-                           LocalIntegrationService.bankBaseUrl + OPERATION_FAILED_PATH);
+                           SaturnDirectModeService.bankBaseUrl + OPERATION_FAILED_PATH);
         setRequestId(wrapper);
         JSONObjectReader json;
         synchronized (refreshLock) {

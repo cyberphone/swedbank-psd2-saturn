@@ -36,7 +36,7 @@ import org.webpki.saturn.common.MobileProxyParameters;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HomeServlet;
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
@@ -89,17 +89,18 @@ public class KeyProviderInitServlet extends HttpServlet {
         // The following is the actual contract between an issuing server and a KeyGen2 client.
         // The PUP_INIT_URL argument bootstraps the protocol via an HTTP GET
         ////////////////////////////////////////////////////////////////////////////////////////////
-        String urlEncoded = URLEncoder.encode(LocalIntegrationService.keygen2RunUrl, "utf-8");
+        String urlEncoded = URLEncoder.encode(SaturnDirectModeService.keygen2RunUrl, "utf-8");
         return scheme + "://" + MobileProxyParameters.HOST_KEYGEN2 + 
                "?" + MobileProxyParameters.PUP_COOKIE     + "=" + "JSESSIONID%3D" + session.getId() +
                "&" + MobileProxyParameters.PUP_INIT_URL   + "=" + urlEncoded + "%3F" + INIT_TAG + "%3Dtrue" +
                "&" + MobileProxyParameters.PUP_MAIN_URL   + "=" + urlEncoded +
                "&" + MobileProxyParameters.PUP_CANCEL_URL + "=" + urlEncoded + "%3F" + ABORT_TAG + "%3Dtrue" +
-               "&" + MobileProxyParameters.PUP_VERSIONS   + "=" + LocalIntegrationService.androidWebPkiVersions;
+               "&" + MobileProxyParameters.PUP_VERSIONS   + "=" + SaturnDirectModeService.androidWebPkiVersions;
     }
     
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) 
+    		throws IOException, ServletException {
         HttpSession session = request.getSession(false);
         session.setAttribute(USERNAME_SESSION_ATTR, DEFAULT_USER_NAME_JAVA);
         session.setAttribute(CARDTYPE_SESSION_ATTR, DEFAULT_CARDTYPE_JAVA);
@@ -160,14 +161,14 @@ public class KeyProviderInitServlet extends HttpServlet {
             "}\n" +
             "let w3cPaymentRequest = null;\n" +
             "if (" +
-               (LocalIntegrationService.useW3cPaymentRequest ? "window.PaymentRequest" : "false") + 
+               (SaturnDirectModeService.useW3cPaymentRequest ? "window.PaymentRequest" : "false") + 
                  ") {\n" +
             //==================================================================//
             // W3C PaymentRequest using dummy data.                             //
             //==================================================================//
             "  const dummyDetails = {total:{label:'total',amount:{currency:'USD',value:'1.00'}}};\n" +
             "  const methodData = [{\n" +
-            "    supportedMethods: '" + LocalIntegrationService.w3cPaymentRequestUrl + "',\n" +
+            "    supportedMethods: '" + SaturnDirectModeService.w3cPaymentRequestUrl + "',\n" +
 // Test data
 //                        "        supportedMethods: 'weird-pay',\n" +
             "    data: ['" + getInvocationUrl(MobileProxyParameters.SCHEME_W3CPAY, session) + "']\n" +
@@ -310,9 +311,9 @@ public class KeyProviderInitServlet extends HttpServlet {
 
             // Initiate KeyGen2
             ServerState serverState =
-                    new ServerState(new KeyGen2SoftHSM(LocalIntegrationService.keyManagementKey), 
-                                    LocalIntegrationService.keygen2RunUrl,
-                                    LocalIntegrationService.serverCertificate,
+                    new ServerState(new KeyGen2SoftHSM(SaturnDirectModeService.keyManagementKey), 
+                                    SaturnDirectModeService.keygen2RunUrl,
+                                    SaturnDirectModeService.serverCertificate,
                                     null);
             session.setAttribute(KEYGEN2_SESSION_ATTR, serverState);
             response.sendRedirect(THIS_SERVLET);

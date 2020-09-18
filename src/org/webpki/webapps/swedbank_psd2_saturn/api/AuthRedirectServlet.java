@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
 
@@ -53,7 +53,7 @@ public class AuthRedirectServlet extends APICore {
         if (code == null) {
             throw new IOException("Didn't find 'code' object");
         }
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("code=" + code);
         }
         

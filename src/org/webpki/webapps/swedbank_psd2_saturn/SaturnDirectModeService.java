@@ -64,7 +64,7 @@ import org.webpki.saturn.common.AuthorityObjectManager;
 import org.webpki.saturn.common.ExternalCalls;
 import org.webpki.saturn.common.KeyStoreEnumerator;
 import org.webpki.saturn.common.PaymentMethods;
-import org.webpki.saturn.common.ProviderAuthority;
+import org.webpki.saturn.common.ProviderAuthorityDecoder;
 import org.webpki.saturn.common.ServerX509Signer;
 import org.webpki.saturn.common.SignatureProfiles;
 
@@ -75,9 +75,9 @@ import org.webpki.webapps.swedbank_psd2_saturn.kg2.KeyProviderInitServlet;
 
 // This is the starting point for LIS (Local Integration Service)
 
-public class LocalIntegrationService extends InitPropertyReader implements ServletContextListener {
+public class SaturnDirectModeService extends InitPropertyReader implements ServletContextListener {
 
-    static Logger logger = Logger.getLogger(LocalIntegrationService.class.getName());
+    static Logger logger = Logger.getLogger(SaturnDirectModeService.class.getName());
 
     static KeyStoreVerifier certificateVerifier;
 
@@ -376,10 +376,11 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             authorityObjectManager = new AuthorityObjectManager(
                 providerAuthorityUrl = bankBaseUrl + "/prv.authority",
+                "Swedbank",
                 bankBaseUrl,
                 serviceUrl = bankBaseUrl + "/sat.service",
-                new ProviderAuthority.PaymentMethodDeclarations()
-                    .add(new ProviderAuthority
+                new ProviderAuthorityDecoder.PaymentMethodDeclarations()
+                    .add(new ProviderAuthorityDecoder
                             .PaymentMethodDeclaration(
                                     PaymentMethods.BANK_DIRECT.getPaymentMethodUrl())
 /*
@@ -391,8 +392,8 @@ public class LocalIntegrationService extends InitPropertyReader implements Servl
                         .add(se.bankgirot.BGAccountDataDecoder.class)),
                 optionalProviderExtensions,
                 SignatureProfiles.values(),
-                new ProviderAuthority.EncryptionParameter[]{
-                        new ProviderAuthority.EncryptionParameter(
+                new ProviderAuthorityDecoder.EncryptionParameter[]{
+                        new ProviderAuthorityDecoder.EncryptionParameter(
                                 dataEncryptionAlgorithm,
                                 currentDecryptionKey.getKeyEncryptionAlgorithm(), 
                                 currentDecryptionKey.getPublicKey())},

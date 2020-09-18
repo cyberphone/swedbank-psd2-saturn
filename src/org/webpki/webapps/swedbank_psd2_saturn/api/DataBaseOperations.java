@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 import org.webpki.crypto.HashAlgorithms;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 // All database operation are performed in this class
 
@@ -64,7 +64,7 @@ class DataBaseOperations {
                                                  IN p_S256BalReq BINARY(32))
 */
 
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+            try (Connection connection = SaturnDirectModeService.jdbcDataSource.getConnection();
                  CallableStatement stmt = 
                     connection.prepareCall("{call CreateCredentialSP(?,?,?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
@@ -105,7 +105,7 @@ class DataBaseOperations {
                                                IN p_S256PayReq BINARY(32))
 */
 
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+            try (Connection connection = SaturnDirectModeService.jdbcDataSource.getConnection();
                  CallableStatement stmt = 
                     connection.prepareCall("{call AuthenticatePayReqSP(?,?,?,?,?,?,?)}");) {
                 stmt.registerOutParameter(1, java.sql.Types.INTEGER);
@@ -166,7 +166,7 @@ class DataBaseOperations {
                                                IN p_S256BalKey BINARY(32))
 */
         
-        try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+        try (Connection connection = SaturnDirectModeService.jdbcDataSource.getConnection();
                 CallableStatement stmt = connection.prepareCall("{call AuthenticateBalReqSP(?,?,?,?,?)}");) {
             stmt.registerOutParameter(1, java.sql.Types.INTEGER);
             stmt.registerOutParameter(2, java.sql.Types.VARCHAR);
@@ -206,7 +206,7 @@ class DataBaseOperations {
 
     public static void scanAll(OpenBanking.CallBack callBack) throws IOException {
         try {
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+            try (Connection connection = SaturnDirectModeService.jdbcDataSource.getConnection();
                  PreparedStatement stmt = 
                          connection.prepareStatement("SELECT * FROM OAUTH2TOKENS");
                  ResultSet rs = stmt.executeQuery()) {
@@ -224,7 +224,7 @@ class DataBaseOperations {
 
     static String getAccessToken(String identityToken) throws IOException {
         try {
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+            try (Connection connection = SaturnDirectModeService.jdbcDataSource.getConnection();
                  PreparedStatement stmt = connection
             .prepareStatement("SELECT AccessToken FROM OAUTH2TOKENS WHERE IdentityToken=?");) {
                 stmt.setString(1, identityToken);
@@ -252,7 +252,7 @@ class DataBaseOperations {
                                                  IN p_IdentityToken VARCHAR(50))
 */
 
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+            try (Connection connection = SaturnDirectModeService.jdbcDataSource.getConnection();
                  CallableStatement stmt = connection.prepareCall("{call StoreAccessTokenSP(?,?,?,?)}");) {
                 stmt.setString(1, accessToken);
                 stmt.setString(2, refreshToken);

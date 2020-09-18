@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.saturn.common.AuthorityBaseServlet;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 // This servlet publishes the Payment Provider (Bank) "ProviderAuthority" object.
 
@@ -37,7 +37,7 @@ public class ProviderAuthorityServlet extends AuthorityBaseServlet {
     throws IOException, ServletException {
         processAuthorityRequest(request, 
                                 response,
-                                LocalIntegrationService
+                                SaturnDirectModeService
                                     .authorityObjectManager.getProviderAuthorityBlob());
     }
 

@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 // This servlet is only called in the Test mode (using Open Banking GUI)
 
@@ -50,7 +50,7 @@ public class TestExtendedAccountServlet extends APICore {
         // Now get more details.  For that we need a consent                          //
         ////////////////////////////////////////////////////////////////////////////////
         String scaRedirectUrl = getConsent(accounts.getAccountIds(), openBanking);
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("Redirect to:\n" + scaRedirectUrl);
         }
         response.sendRedirect(scaRedirectUrl);

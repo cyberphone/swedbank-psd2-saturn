@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.webpki.saturn.common.AuthorityBaseServlet;
 import org.webpki.saturn.common.HttpSupport;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 /////////////////////////////////////////////////////////////////////////////////
 // This is a debugger/demo servlet showing the currently enrolled credentials  //
@@ -50,9 +50,10 @@ public class CredentialListingServlet extends HttpServlet {
                               "COALESCE(LastAccess,'') FROM CREDENTIALS " +
                               "ORDER BY Created DESC LIMIT " + MAX_ROWS;
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
         try {
-            try (Connection connection = LocalIntegrationService.jdbcDataSource.getConnection();
+            try (Connection connection = SaturnDirectModeService.jdbcDataSource.getConnection();
                  PreparedStatement stmt = connection.prepareStatement(SQL);
                  ResultSet rs = stmt.executeQuery();) {
                 StringBuilder html = new StringBuilder(AuthorityBaseServlet.TOP_ELEMENT +

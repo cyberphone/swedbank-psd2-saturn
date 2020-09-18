@@ -27,7 +27,7 @@ import org.webpki.saturn.common.BalanceRequestDecoder;
 import org.webpki.saturn.common.BalanceResponseEncoder;
 import org.webpki.saturn.common.UrlHolder;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 import org.webpki.webapps.swedbank_psd2_saturn.api.OpenBanking;
 
@@ -47,7 +47,7 @@ public class BalanceRequestServlet extends ProcessingBaseServlet {
         // Decode the balance request
         BalanceRequestDecoder balanceRequest = 
                 new BalanceRequestDecoder(providerRequest,
-                                          LocalIntegrationService.AUTHORIZATION_SIGNATURE_POLICY);
+                                          SaturnDirectModeService.AUTHORIZATION_SIGNATURE_POLICY);
         
         // The request parsed and the signature was (technically) correct, continue
         String credentialId = balanceRequest.getCredentialId();

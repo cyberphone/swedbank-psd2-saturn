@@ -40,10 +40,10 @@ import org.webpki.saturn.common.HttpSupport;
 import org.webpki.saturn.common.UserChallengeItem;
 import org.webpki.saturn.common.BaseProperties;
 import org.webpki.saturn.common.PaymentRequestDecoder;
-import org.webpki.saturn.common.ProviderUserResponse;
+import org.webpki.saturn.common.ProviderUserResponseEncoder;
 import org.webpki.saturn.common.UrlHolder;
 
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 //////////////////////////////////////////////////////////////////////////
 // This is the core Payment Provider (Bank) processing servlet          //
@@ -76,11 +76,11 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
                                                        UserChallengeItem[] optionalUserChallengeItems,
                                                        AuthorizationDataDecoder authorizationData)
     throws IOException, GeneralSecurityException {
-        return ProviderUserResponse.encode(LocalIntegrationService.bankCommonName,
-                                           text,
-                                           optionalUserChallengeItems,
-                                           authorizationData.getDataEncryptionKey(),
-                                           authorizationData.getDataEncryptionAlgorithm());
+        return ProviderUserResponseEncoder.encode(SaturnDirectModeService.bankCommonName,
+                                                  text,
+                                                  optionalUserChallengeItems,
+                                                  authorizationData.getDataEncryptionKey(),
+                                                  authorizationData.getDataEncryptionAlgorithm());
     }
 
     abstract JSONObjectWriter processCall(UrlHolder urlHolder, 
@@ -112,7 +112,7 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
             /////////////////////////////////////////////////////////////////////////////////////////
             // First control passed...                                                             //
             /////////////////////////////////////////////////////////////////////////////////////////
-            if (LocalIntegrationService.logging) {
+            if (SaturnDirectModeService.logging) {
                 logger.info("Call from" + urlHolder.getCallerAddress() +
                             "with data:\n" + providerRequest);
             }
@@ -124,7 +124,7 @@ public abstract class ProcessingBaseServlet extends HttpServlet implements BaseP
                                                             providerRequest,
                                                             request);
 
-            if (LocalIntegrationService.logging) {
+            if (SaturnDirectModeService.logging) {
                 logger.info("Responded to caller"  + urlHolder.getCallerAddress() + 
                             "with data:\n" + providerResponse);
             }

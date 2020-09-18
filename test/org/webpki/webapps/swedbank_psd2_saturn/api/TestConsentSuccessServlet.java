@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.webapps.swedbank_psd2_saturn.HTML;
-import org.webpki.webapps.swedbank_psd2_saturn.LocalIntegrationService;
+import org.webpki.webapps.swedbank_psd2_saturn.SaturnDirectModeService;
 
 public class TestConsentSuccessServlet extends APICore {
     
@@ -38,7 +38,7 @@ public class TestConsentSuccessServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Successful return after SCA (a dummy in the Sandbox)                       //
         ////////////////////////////////////////////////////////////////////////////////
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("Successful return after SCA");
         }
 
@@ -130,7 +130,7 @@ public class TestConsentSuccessServlet extends APICore {
         ////////////////////////////////////////////////////////////////////////////////
         // Successful return after SCA (a dummy in the Sandbox)                       //
         ////////////////////////////////////////////////////////////////////////////////
-        if (LocalIntegrationService.logging) {
+        if (SaturnDirectModeService.logging) {
             logger.info("Successful return after SCA");
         }
 
