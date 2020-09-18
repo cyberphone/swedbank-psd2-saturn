@@ -419,7 +419,7 @@ public class SaturnDirectModeService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             OpenBanking.initialize();
 
-            logger.info("Swedbank LIS Demo Successfully Initiated");
+            logger.info("Swedbank Saturn \"Direct Mode\" Demo Successfully Initiated");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "********\n" + e.getMessage() + "\n********", e);
         }
