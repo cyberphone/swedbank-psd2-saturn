@@ -376,8 +376,9 @@ public class SaturnDirectModeService extends InitPropertyReader implements Servl
             /////////////////////////////////////////////////////////////////////////////////////////////
             authorityObjectManager = new AuthorityObjectManager(
                 providerAuthorityUrl = bankBaseUrl + "/prv.authority",
-                "Swedbank",
+                "Swedbank/Open Banking",
                 bankBaseUrl,
+                bankBaseUrl + "/images/logotype.svg",
                 serviceUrl = bankBaseUrl + "/sat.service",
                 new ProviderAuthorityDecoder.PaymentMethodDeclarations()
                     .add(new ProviderAuthorityDecoder
