@@ -14,10 +14,6 @@
   <fail message="'${application.secrets}' not found!" unless="app_secrets_set"/>
   <property file="${application.secrets}"/>
     
-  <condition property="inhouse" value="inhouse-" else="">
-    <equals arg1="${inhouse_service_host}" arg2="${service_host}"/>
-  </condition>
-    
   <property name="openkeystore.dir" location="${@openkeystore}"/>
   <property name="saturn.dir" location="${@saturn}"/>
     
@@ -49,9 +45,13 @@
   <property name="logging" value="false"/>
   <property name="biometricsupport" value="true"/>
   <condition property="inhouselogo" value="true" else="false">
-    <equals arg1="${inhouse_service_host}" arg2="${service_host}"/>
+    <equals arg1="${inhouse_bank_base_url}" arg2="${bank_base_url}"/>
   </condition>    
 
+  <condition property="inhouse" value="inhouse-" else="">
+     <istrue value="${inhouselogo}"/>
+  </condition>
+    
   <property name="debug" value="on"/>
 
   <property name="javaversion" value="${ant.java.version}"/>
