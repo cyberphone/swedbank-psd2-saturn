@@ -46,6 +46,7 @@ import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
 import org.webpki.crypto.CertificateUtil;
+import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyStoreVerifier;
 
@@ -258,6 +259,7 @@ public class SaturnDirectModeService extends InitPropertyReader implements Servl
     @Override
     public void contextInitialized(ServletContextEvent event) {
         initProperties(event);
+        CustomCryptoProvider.forcedLoad(false);
         try {
             /////////////////////////////////////////////////////////////////////////////////////////////
             // Logging?

@@ -18,6 +18,7 @@ package org.webpki.webapps.swedbank_psd2_saturn.api;
 
 import java.io.IOException;
 
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 import java.sql.CallableStatement;
@@ -50,7 +51,7 @@ class DataBaseOperations {
                                    String paymentMethodUrl,     // Saturn method
                                    PublicKey authorizationKey,  // Payment authorization
                                    PublicKey balanceRequestKey) // Balance request authorization
-    throws SQLException, IOException {
+    throws SQLException, IOException, GeneralSecurityException {
         try {
 
 /*
@@ -88,7 +89,7 @@ class DataBaseOperations {
                                                                String accountId,
                                                                String paymentMethodUrl,
                                                                PublicKey authorizationKey)
-    throws SQLException, IOException {
+    throws SQLException, IOException, GeneralSecurityException {
         try {
 
 /*
@@ -151,7 +152,7 @@ class DataBaseOperations {
     static OpenBanking.AuthenticationResult authenticateBalReq(String credentialId,
                                                                String accountId,
                                                                PublicKey balanceKey)
-        throws SQLException, IOException {
+        throws SQLException, IOException, GeneralSecurityException {
         try {
         
 /*
@@ -200,7 +201,8 @@ class DataBaseOperations {
         }
     }
 
-    private static byte[] s256(PublicKey publicKey) throws IOException {
+    private static byte[] s256(PublicKey publicKey) 
+            throws IOException, GeneralSecurityException {
         return publicKey == null ? null : HashAlgorithms.SHA256.digest(publicKey.getEncoded());
     }
 

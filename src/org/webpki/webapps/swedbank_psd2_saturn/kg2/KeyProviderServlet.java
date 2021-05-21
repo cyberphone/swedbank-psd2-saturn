@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.security.GeneralSecurityException;
-import java.security.PublicKey;
 
 import java.security.cert.X509Certificate;
 
@@ -118,7 +117,8 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                               URLEncoder.encode(errorMessage, "UTF-8"));
     }
     
-    void keygen2JSONBody(HttpServletResponse response, JSONEncoder object) throws IOException {
+    void keygen2JSONBody(HttpServletResponse response, JSONEncoder object) 
+            throws IOException, GeneralSecurityException {
         byte[] jsonData = object.serializeJSONDocument(JSONOutputFormats.PRETTY_PRINT);
         if (SaturnDirectModeService.logging) {
             logger.info("Sent message\n" + new String(jsonData, "UTF-8"));
@@ -412,7 +412,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
     void createCarrierCerificate(ServerState.Key key, 
                                  String userName,
                                  String credentialId,
-                                 String accountId) throws IOException {
+                                 String accountId) throws IOException, GeneralSecurityException {
         CertSpec certSpec = new CertSpec();
         certSpec.setKeyUsageBit(KeyUsageBits.DIGITAL_SIGNATURE);
         certSpec.setSubject("CN=" + userName + ", serialNumber=" + accountId);
@@ -425,29 +425,26 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             new BigInteger(credentialId), 
             new Date(startTime),
             new Date(startTime + (20 * 365 * 24 * 3600 * 1000l)), 
-            AsymSignatureAlgorithms.ECDSA_SHA256,
             new AsymKeySignerInterface() {
 
                 @Override
-                public PublicKey getPublicKey() throws IOException {
-                    return SaturnDirectModeService.carrierCaKeyPair.getPublic();
+                public byte[] signData(byte[] data) throws IOException, GeneralSecurityException {
+                    return new SignatureWrapper(
+                            getAlgorithm(), 
+                            SaturnDirectModeService.carrierCaKeyPair.getPrivate())
+                        .setEcdsaSignatureEncoding(true)
+                        .update(data)
+                        .sign();
                 }
 
                 @Override
-                public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm)
-                throws IOException {
-                    try {
-                        return new SignatureWrapper(
-                                algorithm, 
-                                SaturnDirectModeService.carrierCaKeyPair.getPrivate())
-                            .setEcdsaSignatureEncoding(true)
-                            .update(data)
-                            .sign();
-                    } catch (GeneralSecurityException e) {
-                        throw new IOException(e);
-                    }
+                public AsymSignatureAlgorithms getAlgorithm() {
+                    return AsymSignatureAlgorithms.ECDSA_SHA256;
                 }
-            }, key.getPublicKey())
+
+            }, 
+            SaturnDirectModeService.carrierCaKeyPair.getPublic(),
+            key.getPublicKey())
         });
     }
 

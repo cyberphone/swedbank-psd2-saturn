@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import java.math.BigDecimal;
 
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 import java.sql.SQLException;
@@ -197,7 +198,7 @@ public class OpenBanking implements Serializable {
                                    String paymentMethodUrl,
                                    PublicKey authorizationKey,
                                    PublicKey optionalBalanceRequestKey)
-    throws SQLException, IOException {
+    throws SQLException, IOException, GeneralSecurityException {
         return DataBaseOperations.createCredential(identityToken,
                                                    currentAccount.accountId,
                                                    userName,
@@ -211,7 +212,7 @@ public class OpenBanking implements Serializable {
                                                           String accountId,
                                                           String paymentMethodUrl,
                                                           PublicKey authorizationKey)
-    throws SQLException, IOException {
+    throws SQLException, IOException, GeneralSecurityException {
         return DataBaseOperations.authenticatePayReq(credentialId,
                                                      accountId,
                                                      paymentMethodUrl,
@@ -273,7 +274,7 @@ public class OpenBanking implements Serializable {
     public static AuthenticationResult authenticateBalReq(String credentialId,
                                                           String accountId,
                                                           PublicKey balanceKey)
-    throws SQLException, IOException {
+    throws SQLException, IOException, GeneralSecurityException {
         return DataBaseOperations.authenticateBalReq(credentialId, accountId, balanceKey);
     }
 }
