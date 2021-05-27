@@ -48,16 +48,18 @@ import javax.sql.DataSource;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
-import org.webpki.crypto.KeyStoreVerifier;
 
-import org.webpki.json.DataEncryptionAlgorithms;
+import org.webpki.crypto.signatures.KeyStoreVerifier;
+
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+import org.webpki.crypto.encryption.KeyEncryptionAlgorithms;
+
 import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONDecryptionDecoder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Verifier;
-import org.webpki.json.KeyEncryptionAlgorithms;
 
 import org.webpki.util.ArrayUtil;
 
@@ -112,8 +114,8 @@ public class SaturnDirectModeService extends InitPropertyReader implements Servl
     public static ArrayList<JSONDecryptionDecoder.DecryptionKeyHolder> decryptionKeys = 
             new ArrayList<>();
     
-    public static final DataEncryptionAlgorithms dataEncryptionAlgorithm = 
-            DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID;
+    public static final ContentEncryptionAlgorithms dataEncryptionAlgorithm = 
+            ContentEncryptionAlgorithms.A128CBC_HS256_ALG_ID;
     
     public static final JSONCryptoHelper.Options AUTHORIZATION_SIGNATURE_POLICY = 
             new JSONCryptoHelper.Options();
@@ -311,9 +313,9 @@ public class SaturnDirectModeService extends InitPropertyReader implements Servl
                     keyStoreEnumerator.getPublicKey(),
                     keyStoreEnumerator.getPrivateKey(),
                     keyStoreEnumerator.getPublicKey() instanceof RSAKey ?
-                                                 KeyEncryptionAlgorithms.JOSE_RSA_OAEP_256_ALG_ID
+                                                 KeyEncryptionAlgorithms.RSA_OAEP_256_ALG_ID
                                                                         :
-                                                 KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID,
+                                                 KeyEncryptionAlgorithms.ECDH_ES_ALG_ID,
                     null);
             decryptionKeys.add(currentDecryptionKey);
 
