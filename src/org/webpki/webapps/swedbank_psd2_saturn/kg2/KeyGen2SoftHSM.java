@@ -59,8 +59,6 @@ import org.webpki.saturn.common.KeyStoreEnumerator;
 
 public class KeyGen2SoftHSM implements ServerCryptoInterface {
 
-    private static final long serialVersionUID = 1L;
-  
     ////////////////////////////////////////////////////////////////////////////////////////
     // Private and secret keys would in a HSM implementation be represented as handles
     ////////////////////////////////////////////////////////////////////////////////////////
