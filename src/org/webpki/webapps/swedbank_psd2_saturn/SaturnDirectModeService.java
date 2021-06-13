@@ -115,7 +115,7 @@ public class SaturnDirectModeService extends InitPropertyReader implements Servl
             new ArrayList<>();
     
     public static final ContentEncryptionAlgorithms dataEncryptionAlgorithm = 
-            ContentEncryptionAlgorithms.A128CBC_HS256_ALG_ID;
+            ContentEncryptionAlgorithms.A128CBC_HS256;
     
     public static final JSONCryptoHelper.Options AUTHORIZATION_SIGNATURE_POLICY = 
             new JSONCryptoHelper.Options();
@@ -313,9 +313,9 @@ public class SaturnDirectModeService extends InitPropertyReader implements Servl
                     keyStoreEnumerator.getPublicKey(),
                     keyStoreEnumerator.getPrivateKey(),
                     keyStoreEnumerator.getPublicKey() instanceof RSAKey ?
-                                                 KeyEncryptionAlgorithms.RSA_OAEP_256_ALG_ID
+                                                 KeyEncryptionAlgorithms.RSA_OAEP_256
                                                                         :
-                                                 KeyEncryptionAlgorithms.ECDH_ES_ALG_ID,
+                                                 KeyEncryptionAlgorithms.ECDH_ES,
                     null);
             decryptionKeys.add(currentDecryptionKey);
 
