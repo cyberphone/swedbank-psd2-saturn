@@ -81,15 +81,9 @@ public class LoginServlet extends HttpServlet {
             "<form name='login' action='login' method='POST'></form>" +
             "<div class='centerbox'>" +
               "<div class='description'>The login in the Swedbank Open Banking " +
-                "&quot;sandbox&quot; is rather primitive, respond with <i>any</i> " +
-                 "data (like <b>55</b>) and proceed&nbsp;&#x1f642;</div>" +
-            "</div>")
-        .append(request.getParameter("demo") == null ?
-            "<div class='centerbox' style='color:red;padding-top:1em'>" +
-              "<div class='description'>Due to a bug in the Swedbank &quot;sandbox&quot; " +
-              "you may be requested for certificates.  Ignore this request and click CANCEL!</div>" +
-            "</div>" : "")
-        .append(
+                "&quot;sandbox&quot; is rather primitive, respond with " +
+                 "data like <b>12341234-1234</b> and proceed&nbsp;&#x1f642;</div>" +
+            "</div>" +
             "<div class='centerbox'>" +
               "<table>" +
                 "<tr><td><div class='multibtn' " +
@@ -97,6 +91,11 @@ public class LoginServlet extends HttpServlet {
                   "title='Login and retrieve account list'>" +
                   "Login...</div></td></tr>" +
               "</table>" +
-            "</div>"));
+            "</div>")
+        .append(request.getParameter("demo") == null ?
+            "<div class='centerbox' style='color:red;padding-top:1em'>" +
+              "<div class='description'>Due to a bug in the Swedbank &quot;sandbox&quot; " +
+              "you may be requested for certificates.  Ignore this request and click CANCEL!</div>" +
+            "</div>" : ""));
     }
 }
