@@ -66,7 +66,7 @@ abstract class APICore extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     static final String OPEN_BANKING_HOST = "https://psd2.api.swedbank.com";
-    static final String API_VERSION       = "v3";
+    static final String API_VERSION       = "v4";
 
     static final String OPEN_BANKING_SESSION_ATTR        = "j7543sLk.6";  // Unique?
     
@@ -609,10 +609,9 @@ abstract class APICore extends HttpServlet {
         openBanking.emulatorModeCookie = setCookie.substring(0, setCookie.indexOf(';'));
         webScraper.scanTo("<form ").scanTo("<form ");
         location = combineUrl(location, webScraper.findWithin("action"));
+System.out.println("\n" + location + "\n");
         FormData formData = new FormData()
-            .addScrapedNameValue(webScraper, "token")
-            .addScrapedNameValue(webScraper, "bic")
-            .addScrapedNameValue(webScraper, "action");
+            .addScrapedNameValue(webScraper, "authPageId");
 
         wrapper = getBrowserEmulator(openBanking);
         setHeader(wrapper, "cookie", openBanking.emulatorModeCookie);
