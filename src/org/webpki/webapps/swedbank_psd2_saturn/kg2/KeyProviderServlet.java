@@ -432,7 +432,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     return new SignatureWrapper(
                             getAlgorithm(), 
                             SaturnDirectModeService.carrierCaKeyPair.getPrivate())
-                        .setEcdsaSignatureEncoding(true)
+                        .ecdsaAsn1SignatureEncoding(true)
                         .update(data)
                         .sign();
                 }
