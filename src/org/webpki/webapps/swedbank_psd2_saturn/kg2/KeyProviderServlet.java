@@ -270,7 +270,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                     // Create the authorization key
                     ServerState.Key authKey = 
                             keygen2State.createKey(AppUsage.SIGNATURE,
-                                                   new KeySpecifier(KeyAlgorithms.NIST_P_256),
+                                                   new KeySpecifier(KeyAlgorithms.P_256),
                                                    standardPinPolicy);                           
                     authKey.addEndorsedAlgorithm(AsymSignatureAlgorithms.ECDSA_SHA256);
                     authKey.setFriendlyName(SaturnDirectModeService.bankCommonName);
@@ -280,7 +280,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
 
                     // Then create the balance key
                     keygen2State.createKey(AppUsage.SIGNATURE,
-                                           new KeySpecifier(KeyAlgorithms.NIST_P_256),
+                                           new KeySpecifier(KeyAlgorithms.P_256),
                                            null)
                         .setFriendlyName(SaturnDirectModeService.bankCommonName + " balance key");
  

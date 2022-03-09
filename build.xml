@@ -182,16 +182,16 @@
 
   <target name="createkeys">
     <antcall target="_createonekey">
-      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore inhouse-${bank_kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore inhouse-${bank_kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve P_256 -sigalg ECDSA_SHA256 -serial 1"/>
     </antcall>
     <antcall target="_createonekey">
-      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_kg2kmk} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve P_256 -sigalg ECDSA_SHA256 -serial 1"/>
     </antcall>
     <antcall target="_createonekey">
-      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Encryption Key&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_encrypt} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+      <param name="cmd" value="-out/keyalias mykey -selfsigned -entity/ee -subject &quot;CN=Swedbank Encryption Key&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_encrypt} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve P_256 -sigalg ECDSA_SHA256 -serial 1"/>
     </antcall>
     <antcall target="_createonekey">
-      <param name="cmd" value="-out/keyalias mykey -ca/addpath all -ca/keypass ${keypassword} -ca/storetype PKCS12 -ca/storepass ${keypassword} -ca/keystore ${saturn.dir}/resources/keys/payment-network-subca.p12 -entity/ee -extension/ku digitalSignature -subject &quot;CN=Swedbank, O=PSD2, serialNumber=502017-7753, C=SE&quot; -validity/start 2019-01-01T00:00:00 -validity/end 2022-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_eecert} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
+      <param name="cmd" value="-out/keyalias mykey -ca/addpath all -ca/keypass ${keypassword} -ca/storetype PKCS12 -ca/storepass ${keypassword} -ca/keystore ${saturn.dir}/resources/keys/payment-network-subca.p12 -entity/ee -extension/ku digitalSignature -subject &quot;CN=Swedbank, O=PSD2, serialNumber=502017-7753, C=SE&quot; -validity/start 2019-01-01T00:00:00 -validity/end 2022-07-10T09:59:59 -out/storetype PKCS12 -out/keystore ${bank_eecert} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
   </target>
   
